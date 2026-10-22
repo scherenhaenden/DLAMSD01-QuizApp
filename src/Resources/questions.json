@@ -1,0 +1,170 @@
+[
+  {
+    "id": "11111111-1111-1111-1111-111111111001",
+    "prompt": "Welches Architekturmuster trennt in SwiftUI die UI-Präsentation deklarativ von der Geschäftslogik?",
+    "options": [
+      "Model-View-Controller (MVC)",
+      "Model-View-ViewModel (MVVM)",
+      "Model-View-Presenter (MVP)",
+      "Entity-Boundary-Control (EBC)"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "MVVM ist das empfohlene Architekturmuster in SwiftUI. Das ViewModel stellt observable States bereit, an die sich deklarative Views binden.",
+    "category": "software_engineering",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111002",
+    "prompt": "Was besagt das 'Single Responsibility Principle' (SRP) aus den SOLID-Prinzipien?",
+    "options": [
+      "Eine Klasse sollte nur eine einzige Methode besitzen.",
+      "Ein Modul darf nur von einer einzigen Person entwickelt werden.",
+      "Eine Klasse sollte genau einen Grund für eine Änderung haben.",
+      "Jedes System darf nur eine einzige Datenbankverbindung öffnen."
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "Nach Robert C. Martin besagt das SRP, dass ein Modul oder eine Klasse nur eine einzige fachliche Verantwortung und somit nur einen Grund zur Änderung haben sollte.",
+    "category": "software_engineering",
+    "difficulty": "medium"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111003",
+    "prompt": "Welches Vorgehensmodell setzt auf sequentielle Phasen mit strengen Quality Gates vor dem Übergang?",
+    "options": [
+      "Scrum",
+      "Kanban",
+      "Wasserfallmodell",
+      "Extreme Programming (XP)"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "Das klassische Wasserfallmodell durchläuft Phasen sequentiell (Analyse, Entwurf, Implementierung, Test, Betrieb) mit formalen Abnahmen an Phasenenden.",
+    "category": "software_engineering",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111004",
+    "prompt": "Welche Speicherverwaltung verwendet Swift standardmäßig für Referenztypen (Klassen)?",
+    "options": [
+      "Garbage Collection mit Tracing Mark-and-Sweep",
+      "Automatic Reference Counting (ARC)",
+      "Manuelle Speicherfreigabe mit malloc() und free()",
+      "Rust-ähnliches Borrow Checking ohne Referenzzähler"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Swift verwendet Automatic Reference Counting (ARC), um Referenzen zur Laufzeit zählend zu verwalten und Objekte freizugeben, sobald der Zähler null erreicht.",
+    "category": "swift_apple",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111005",
+    "prompt": "Wie verhindert man in Swift starke Referenzzyklen (Retain Cycles) in Closures?",
+    "options": [
+      "Durch Verwendung einer Capture List mit [weak self] oder [unowned self]",
+      "Indem man Closures ausschließlich als struct deklariert",
+      "Durch expliziten Aufruf von deinit() vor dem Verlassen der Funktion",
+      "Closures erzeugen in Swift niemals Referenzzyklen"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Eine Capture List wie `[weak self]` bricht den starken Zyklus zwischen Closure und umgebender Instanz auf, indem eine schwache Referenz gehalten wird.",
+    "category": "swift_apple",
+    "difficulty": "medium"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111006",
+    "prompt": "Was ist der fundamentale Unterschied zwischen einem struct und einer class in Swift?",
+    "options": [
+      "Structs sind Referenztypen, Klassen sind Werttypen.",
+      "Structs sind Werttypen (Value Types), Klassen sind Referenztypen (Reference Types).",
+      "Klassen können Protokolle implementieren, Structs hingegen nicht.",
+      "Structs unterstützen Vererbung, Klassen jedoch nicht."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "In Swift sind Structs Werttypen (werden bei Zuweisung kopiert), während Klassen Referenztypen sind (mehrere Variablen verweisen auf dieselbe Instanz).",
+    "category": "swift_apple",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111007",
+    "prompt": "Welche Zeitkomplexität (Big-O) hat das Nachschlagen eines Schlüssels in einem durchschnittlichen Swift Dictionary?",
+    "options": [
+      "O(1) amortisiert",
+      "O(n)",
+      "O(log n)",
+      "O(n²)"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Ein Swift Dictionary basiert auf einer Hash-Tabelle. Das Einfügen und Suchen besitzt im Durchschnitt eine konstante Zeitkomplexität O(1).",
+    "category": "algorithms_data_structures",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111008",
+    "prompt": "Welcher Sortieralgorithmus besitzt im Worst-Case eine quadratische Laufzeit O(n²), aber im Best-Case O(n log n)?",
+    "options": [
+      "Merge Sort",
+      "Quick Sort (mit schlechter Pivot-Wahl)",
+      "Heap Sort",
+      "Tim Sort"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Quick Sort teilt das Array anhand eines Pivots. Bei ungünstiger Pivot-Wahl (z.B. bereits sortiertes Array bei naivem Pivot) degradiert er auf O(n²).",
+    "category": "algorithms_data_structures",
+    "difficulty": "medium"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111009",
+    "prompt": "Was charakterisiert den klassischen Zyklus im Test-Driven Development (TDD)?",
+    "options": [
+      "Code -> Review -> Deploy",
+      "Red -> Green -> Refactor",
+      "Plan -> Do -> Check -> Act",
+      "Build -> Measure -> Learn"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Der TDD-Microzyklus besteht aus: 1. Red (fehlschlagender Test schreiben), 2. Green (minimalen Code schreiben, damit Test besteht), 3. Refactor (Code bereinigen).",
+    "category": "testing_quality",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111010",
+    "prompt": "Welches Framework ist der native Standard für Unit Tests und UI Tests in Apple Xcode Projekten?",
+    "options": [
+      "Quick & Nimble",
+      "XCTest",
+      "JUnit",
+      "Mocha"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "XCTest ist das von Apple bereitgestellte Standard-Testframework in Xcode für Unit Tests, Performance Tests und UI Tests.",
+    "category": "testing_quality",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111011",
+    "prompt": "Was versteht man unter 'Dynamic Type' in Apples Human Interface Guidelines (HIG)?",
+    "options": [
+      "Dynamische Typumwandlung von Any in konkrete Swift Datentypen.",
+      "Eine Barrierefreiheitsfunktion, mit der Schriftgrößen systemweit skaliert werden.",
+      "Ein animierter Schreibmaschinen-Texteffekt für Onboarding-Screens.",
+      "Automatische Lokalisierung von Texten zur Laufzeit."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Dynamic Type ermöglicht Benutzern, die bevorzugte Textgröße in den Systemeinstellungen festzulegen, an die sich Apps automatisch anpassen müssen.",
+    "category": "swift_apple",
+    "difficulty": "medium"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111012",
+    "prompt": "Welche minimale Touch-Target-Größe empfiehlt Apple in den HIG für interaktive Bedienelemente?",
+    "options": [
+      "24 × 24 pt",
+      "32 × 32 pt",
+      "44 × 44 pt",
+      "64 × 64 pt"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "Apple empfiehlt in den HIG eine Mindestfläche von 44 × 44 Punkten für Buttons und interaktive Controls, um komfortable Treffsicherheit zu gewährleisten.",
+    "category": "swift_apple",
+    "difficulty": "easy"
+  }
+]

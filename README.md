@@ -128,6 +128,21 @@ The test suite covers critical core workflows:
 
 ---
 
+## 🗺 Release Roadmap & Versioning Plan
+
+The project adheres to a hybrid versioning scheme combining **Semantic Versioning (`CFBundleShortVersionString`)** for release maturity and **Calendar Versioning (`CFBundleVersion`)** for build-level chronological traceability:
+
+| Version (SemVer) | Build Target (CalVer) | Milestone / Phase | Scope & Premeditated Deliverables | Status |
+| :---: | :---: | :--- | :--- | :---: |
+| **`v0.1.0`** | `20261022.1000` | Sprint 1: Architecture & Data Core | • Domain entities (`Question`, `Category`, `QuizSession`)<br>• Local JSON decodable pipeline (`questions.json`)<br>• Base `QuizViewModel` state loop<br>• Initial `XCTest` suite for data validation | Planned |
+| **`v0.5.0`** | `20261023.1200` | Sprint 2: Core Gameplay UI | • Declarative SwiftUI interface (`QuizView`, `AnswerButton`)<br>• Real-time countdown timer (15s per question)<br>• Immediate visual (color-coded) & tactile feedback<br>• Question sequencing and answer verification | Planned |
+| **`v0.8.0`** | `20261024.1500` | Sprint 3: Persistence & Flow Polish | • Final results screen (`ResultView`) with percentage analytics<br>• Local high-score persistence via `UserDefaults`<br>• NavigationStack flow (Menu $\leftrightarrow$ Quiz $\leftrightarrow$ Results)<br>• Dark Mode and Dynamic Type accessibility support | Planned |
+| **`v1.0.0`** | `20261025.1800` | Sprint 4: Final Academic Release | • Code freeze & complete `XCTest` test suite execution<br>• Full compliance with Apple Human Interface Guidelines<br>• Evidence collection (screenshots & test logs)<br>• Final deliverable for IU Projektbericht submission | Planned |
+
+> For comprehensive architectural rationale and Xcode `Info.plist` mapping, consult [docs/versioning.md](docs/versioning.md).
+
+---
+
 ## 📜 Academic Deliverable & Credits
 
 *   **Author**: Edward Sergio José Flores Mogollón

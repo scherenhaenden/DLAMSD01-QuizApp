@@ -59,8 +59,11 @@ public struct QuizView: View {
             
             // Countdown timer bar
             if case .playing = viewModel.viewState {
-                TimerBar(timeRemaining: viewModel.timeRemaining)
-                    .padding(.horizontal)
+                TimerBar(
+                    timeRemaining: viewModel.timeRemaining,
+                    totalTime: viewModel.currentQuestion?.difficulty.timeLimitSeconds ?? 15.0
+                )
+                .padding(.horizontal)
             }
             
             ScrollView {

@@ -1,37 +1,37 @@
 # Versioning Strategy & Release Specification
 
-> **Documento de especificación técnica de versionado para DLAMSD01 (Train-your-Brain Quiz App).**  
-> Define los estándares de nomenclatura de versiones, compatibilidad con los esquemas de Apple / Xcode y la trazabilidad temporal exigida por la IU International University of Applied Sciences.
+> **Technical Versioning Specification for DLAMSD01 (Train-your-Brain Quiz App).**  
+> Defines version naming standards, compatibility with Apple / Xcode build toolchains, and chronological traceability required by IU International University of Applied Sciences.
 
 ---
 
-## 1. Análisis de Alternativas de Versionado
+## 1. Analysis of Versioning Approaches
 
-Al planificar el versionado de una aplicación nativa iOS para un proyecto universitario, se evaluaron dos paradigmas principales:
+When designing the release and version management pipeline for a native iOS application within an academic degree project, two primary paradigms were evaluated:
 
-### Alternativa A: CalVer con Marca Temporal (`yyyy.MM.dd-HH.mm.sss`)
-* **Concepto:** Utilizar la fecha y hora exacta de compilación como identificador unívoco.
-* **Ventajas:**
-  * Trazabilidad cronológica inmediata: se identifica de un vistazo cuándo se construyó cada build.
-  * Coherencia directa con la nomenclatura de entrega de trabajos de la IU (`YYYYMMDD_Flores_Edward_...`).
-  * Imposibilidad matemática de colisiones en compilaciones sucesivas.
-* **Limitaciones técnicas en el ecosistema iOS:**
-  * **Restricción de Apple (`Info.plist`):** Apple exige que la versión pública (`CFBundleShortVersionString`) contenga **únicamente números enteros separados por puntos** (formato `X.Y.Z`). No se permiten guiones (`-`), letras ni fracciones de segundo (`.sss`) si el paquete se valida contra las herramientas de verificación de Apple (`xcrun altool`).
-  * **Comunicación de madurez:** No expresa el grado de avance funcional (si el proyecto está en fase alfa `0.1`, beta `0.8` o listo para entrega final `1.0.0`).
+### Approach A: Pure Calendar Versioning with Timestamps (`yyyy.MM.dd-HH.mm.sss`)
+* **Concept:** Using the exact build compilation date and time as a unique identifier.
+* **Advantages:**
+  * Immediate chronological traceability: reveals at a glance when a specific build was compiled.
+  * Direct structural alignment with IU examination submission naming conventions (`YYYYMMDD_Flores_Edward_...`).
+  * Mathematical impossibility of build identifier collisions across successive compilations.
+* **Technical Constraints within the Apple / iOS Ecosystem:**
+  * **Apple Syntax Restriction (`Info.plist`):** Apple mandates that the public marketing version (`CFBundleShortVersionString`) must consist **strictly of period-separated integers** (format `X.Y.Z`). Hyphens (`-`), alphabetic characters, and sub-second fractions (`.sss`) are rejected by Apple validation toolchains (`xcrun altool` and App Store Connect).
+  * **Maturity Communication:** Timestamp strings do not express functional maturity levels (e.g. distinguishing an alpha prototype `0.1`, a feature-complete beta `0.8`, or an exam-submission candidate `1.0.0`).
 
-### Alternativa B: Semantic Versioning (SemVer 2.0.0: `MAJOR.MINOR.PATCH`)
-* **Concepto:** Estándar de facto de la industria del software para comunicar compatibilidad y estabilidad.
-* **Ventajas:**
-  * Claridad metodológica: el evaluador académico reconoce de inmediato el ciclo de vida del software.
-  * Compatibilidad total con los campos de versión de Xcode y Swift Package Manager.
-* **Limitaciones:**
-  * No refleja la fecha ni la hora de la compilación si no se acompaña de metadatos adicionales.
+### Approach B: Semantic Versioning (SemVer 2.0.0: `MAJOR.MINOR.PATCH`)
+* **Concept:** The de facto software industry standard for signaling backward compatibility and release stability.
+* **Advantages:**
+  * Methodological clarity: academic evaluators immediately identify the software lifecycle stage.
+  * Native compatibility with Xcode project build settings and Swift Package Manager version requirements.
+* **Limitations:**
+  * Does not inherently encode the exact build timestamp unless supplemented by secondary metadata.
 
 ---
 
-## 2. Estrategia Adoptada: Enfoque Híbrido Estándar Apple + IU
+## 2. Adopted Architecture: Two-Tier Hybrid Strategy (Apple + IU Standard)
 
-Para obtener lo mejor de ambos mundos (rigor técnico y compatibilidad nativa con Xcode), el proyecto adopta un **modelo híbrido de dos niveles**, alineado con la especificación de Apple:
+To achieve both academic traceability and native Xcode compatibility, the project adopts a **two-tier hybrid versioning model** strictly adhering to Apple platform guidelines:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -43,46 +43,46 @@ Para obtener lo mejor de ambos mundos (rigor técnico y compatibilidad nativa co
 └──────────────────────────────┴──────────────────────────────┘
 ```
 
-### Nivel 1: Versión de Marketing / Pública (`CFBundleShortVersionString`)
-Utiliza **Semantic Versioning** (`MAJOR.MINOR.PATCH`) para comunicar el estado del desarrollo en la interfaz de la app y en el informe académico:
+### Tier 1: Marketing / Public Version (`CFBundleShortVersionString`)
+Uses **Semantic Versioning** (`MAJOR.MINOR.PATCH`) to communicate functional milestones in the user interface and academic deliverables:
 
-| Versión | Fase del Proyecto | Alcance Técnico |
+| Version | Project Milestone | Technical Scope & Deliverables |
 | :---: | :--- | :--- |
-| **`0.1.0`** | Sprint 1 (Prototipo Inicial) | Estructura base MVVM, modelos `Codable` y decodificación de `questions.json`. |
-| **`0.5.0`** | Sprint 2 (Core Gameplay) | Interfaz SwiftUI funcional, temporizador reactivo y flujo de preguntas. |
-| **`0.9.0`** | Sprint 3 (Feature Complete) | Pantalla de resultados, persistencia con `UserDefaults` y Dark Mode. |
-| **`1.0.0`** | Sprint 4 (Final Release IU) | Versión congelada para la entrega formal y capturas del *Projektbericht*. |
+| **`0.1.0`** | Sprint 1 (Architecture & Data Core) | Base MVVM structure, `Codable` domain models, `questions.json` decoding, and TDD test suite. |
+| **`0.5.0`** | Sprint 2 (Core Gameplay UI) | Interactive SwiftUI screens, dynamic countdown timer, and color-coded answer feedback. |
+| **`0.8.0`** | Sprint 3 (Persistence & Ergonomics) | Results dashboard, high-score tracking via `UserDefaults`, and Dark Mode support. |
+| **`1.0.0`** | Sprint 4 (Final Academic Release) | Code freeze, comprehensive test execution logs, and submission candidate for IU examination. |
 
-### Nivel 2: Número de Compilación / Build Interna (`CFBundleVersion`)
-Utiliza **Calendar Versioning numérico** (`YYYYMMDD.HHmm`), satisfaciendo la propuesta de marca temporal del desarrollador de forma 100% compatible con Apple:
+### Tier 2: Internal Build Number (`CFBundleVersion`)
+Uses **Monotonic Numeric Calendar Versioning** (`YYYYMMDD.HHmm`), satisfying granular timestamp tracking while complying 100% with Apple syntax:
 
-* **Sintaxis:** `YYYYMMDD.HHmm`
-* **Ejemplo:** `20261022.0950` (Compilación generada el 22 de octubre de 2026 a las 09:50).
-* **Propiedades:**
-  * Estrictamente monótona creciente (cada build posterior tiene un número mayor).
-  * Válida bajo los estándares del App Store / TestFlight de Apple.
-  * Rastreo exacto del commit o build ejecutada en el simulador.
+* **Syntax:** `YYYYMMDD.HHmm`
+* **Example:** `20261022.0950` (Build generated on October 22, 2026 at 09:50).
+* **Properties:**
+  * Strictly monotonically increasing (each subsequent compilation produces a higher integer value).
+  * Validated against Apple App Store Connect and TestFlight verification rules.
+  * Unambiguous correlation between code commits, simulator runs, and physical iPad testing sessions.
 
 ---
 
-## 3. Convención de Etiquetas en Git (Git Tags)
+## 3. Git Tagging Conventions
 
-Para marcar hitos clave en el repositorio Git, se combinan ambos identificadores en los tags:
+To mark milestone releases in the Git repository, both identifiers are combined:
 
 ```bash
-# Formato de tag
+# Tag naming convention
 v<SemVer>+<BuildNumber>
 
-# Ejemplos prácticos:
-git tag -a v0.1.0 -m "Release 0.1.0 (Build 20261022.1000): Initial core logic"
-git tag -a v1.0.0 -m "Release 1.0.0 (Build 20261025.1830): Final submission candidate for IU"
+# Concrete release examples:
+git tag -a v0.1.0 -m "Release 0.1.0 (Build 20261022.1000): Initial core logic and domain tests"
+git tag -a v1.0.0 -m "Release 1.0.0 (Build 20261025.1830): Final submission candidate for IU examination"
 ```
 
 ---
 
-## 4. Configuración Práctica en Xcode (`Info.plist`)
+## 4. Xcode Project Configuration (`Info.plist`)
 
-En el archivo de configuración del proyecto (`project.pbxproj` / Target General Settings):
+Within target build settings (`project.pbxproj` / Target General Settings):
 
 ```xml
 <key>CFBundleShortVersionString</key>
@@ -92,15 +92,15 @@ En el archivo de configuración del proyecto (`project.pbxproj` / Target General
 <string>20261022.0950</string>
 ```
 
-Y en la vista de pie de página (*Footer*) o en el menú de la app, se mostrará al usuario y al evaluador:
+In the app footer or settings screen, the version string displays as:
 ```text
 Train-your-Brain v1.0.0 (Build 20261022.0950)
 ```
 
 ---
 
-## 5. Resumen Justificativo para el Projektbericht
+## 5. Methodological Justification for the Projektbericht
 
-En el capítulo de **Implementación y Gestión de Configuración** del informe académico, esta decisión se justifica formalmente:
+In the **Implementation and Configuration Management** chapter of the academic project report, this architecture is justified formally:
 
-> *"Para la gestión de versiones se adoptó un enfoque híbrido en cumplimiento estricto de las directrices de Apple. Se asignó una versión semántica (SemVer) como `CFBundleShortVersionString` para clasificar las fases de madurez del software (desde el prototipo `0.1.0` hasta la versión final `1.0.0`), complementada por un número de build basado en Calendar Versioning (`CFBundleVersion`, formato `YYYYMMDD.HHmm`). Este esquema garantiza una trazabilidad temporal absoluta de cada compilación sin infringir los requisitos sintácticos de validación del sistema operativo iOS."*
+> *"To manage software releases, a two-tier hybrid versioning model was implemented in strict accordance with Apple Human Interface Guidelines and App Store packaging standards. A semantic versioning scheme (SemVer) was assigned to `CFBundleShortVersionString` to classify lifecycle maturity (from initial prototype `0.1.0` to final delivery `1.0.0`), complemented by a monotonic calendar-based build number (`CFBundleVersion`, format `YYYYMMDD.HHmm`). This strategy guarantees absolute chronological traceability for each test build while fully respecting the syntax validation constraints of the iOS operating system."*

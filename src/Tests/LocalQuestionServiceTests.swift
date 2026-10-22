@@ -92,4 +92,19 @@ final class LocalQuestionServiceTests: XCTestCase {
             }
         }
     }
+    
+    /// Verifies that the bundled `questions.json` dataset satisfies Agile Backlog User Story US-01 (at least 20 questions) and valid category distribution.
+    func testLoadBundledQuestionsFulfillsUS01MinimumRequirement() throws {
+        let service = LocalQuestionService(bundle: Bundle.module)
+        let questions = try service.loadAllQuestions()
+        
+        XCTAssertGreaterThanOrEqual(questions.count, 20, "US-01 requires decoding at least 20 questions from bundled dataset")
+        XCTAssertEqual(questions.count, 24, "Sprint 1 question bank delivers 24 balanced questions (6 per category)")
+        
+        // Ensure all four academic categories have valid questions loaded
+        for category in QuizCategory.allCases {
+            let categoryQuestions = try service.loadQuestions(for: category)
+            XCTAssertEqual(categoryQuestions.count, 6, "Each category should contain exactly 6 questions in the initial dataset")
+        }
+    }
 }

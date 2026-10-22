@@ -44,14 +44,35 @@ To achieve both academic traceability and native Xcode compatibility, the projec
 ```
 
 ### Tier 1: Marketing / Public Version (`CFBundleShortVersionString`)
-Uses **Semantic Versioning** (`MAJOR.MINOR.PATCH`) to communicate functional milestones in the user interface and academic deliverables:
+Uses **Semantic Versioning** (`MAJOR.MINOR.PATCH`) to communicate functional milestones in the user interface and academic deliverables across 10 disciplined sprints:
 
-| Version | Project Milestone | Technical Scope & Deliverables |
+#### Semantic Progression Criteria (`MAJOR.MINOR.PATCH`)
+- **`MAJOR` (Incrementing to `1.0.0`):**
+  - Triggered exclusively for the final, feature-complete academic release prepared for IU examination submission.
+- **`MINOR` (Incrementing `0.X.0`, e.g., `0.1.0` $\to$ `0.2.0` $\to$ `0.3.0`):**
+  - Triggered upon completing a full sprint milestone that introduces an end-to-end user-facing capability, architectural layer, or formal subsystem.
+- **`PATCH` (Incrementing `0.X.N` where $N \ge 1$, e.g., `0.1.1`, `0.2.1`):**
+  - Triggered for intermediate iterations, hotfixes, refactorings, and maintenance commits within a sprint, specifically:
+    1. **Data expansion or content fixes:** Expanding the question bank without altering schema (e.g., expanding `questions.json` from 12 to 24 questions resulted in patch release `0.1.1`).
+    2. **Bug fixes & edge-case corrections:** Correcting visual glitches, timer edge cases, or button hit-testing on compact screens.
+    3. **Documentation hotfixes:** Clarifications, markdown adjustments, and roadmap updates.
+    4. **Test suite refactoring:** Adding edge-case unit assertions without altering public production APIs.
+    5. **CI / build pipeline maintenance:** Modifying GitHub Actions YAML workflows or linter rules.
+
+#### 10-Sprint Versioning Roadmap
+
+| Version | Sprint / Milestone | Technical Scope & Deliverables |
 | :---: | :--- | :--- |
-| **`0.1.0`** | Sprint 1 (Architecture & Data Core) | Base MVVM structure, `Codable` domain models, `questions.json` decoding, and TDD test suite. |
-| **`0.5.0`** | Sprint 2 (Core Gameplay UI) | Interactive SwiftUI screens, dynamic countdown timer, and color-coded answer feedback. |
-| **`0.8.0`** | Sprint 3 (Persistence & Ergonomics) | Results dashboard, high-score tracking via `UserDefaults`, and Dark Mode support. |
-| **`1.0.0`** | Sprint 4 (Final Academic Release) | Code freeze, comprehensive test execution logs, and submission candidate for IU examination. |
+| **`0.1.0`** | Sprint 1: Architecture Core & Ingestion | Base MVVM structure, `Codable` domain models, `questions.json` decoding (24 questions), and 23 XCTest unit tests. *(Completed)* |
+| **`0.2.0`** | Sprint 2: UI/UX Design System & Tokens | Design system in `design/`, semantic color tokens (Dark/Light), 4pt grid, 56pt touch targets, typography scale, and wireframes. *(In Progress)* |
+| **`0.3.0`** | Sprint 3: Core Interactive UI Components | Production SwiftUI atomic components (`QuestionCard`, `AnswerButton`), Dynamic Type scaling, squircle borders, and category chips. |
+| **`0.4.0`** | Sprint 4: Reactive Timer & State Machine | Combine 10 Hz countdown timer on `@MainActor`, dynamic `TimerBar` with chromatic shifts, pause/resume, and timeout penalty. |
+| **`0.5.0`** | Sprint 5: Sensory Feedback & Haptics | 1.0s pedagogical pause with inline explanation, visual check/cross icons, tactile haptics via `UINotificationFeedbackGenerator`. |
+| **`0.6.0`** | Sprint 6: Results Analytics & Scorecard | Post-game `ResultView`, mathematical accuracy percentage, German university grading scale translation, and category metrics. |
+| **`0.7.0`** | Sprint 7: Persistence & High Scores | Lightweight persistence layer via `UserDefaults` + `Codable`, personal bests tracker (`LeaderboardView`), and state recovery. |
+| **`0.8.0`** | Sprint 8: iPad 9 Ergonomics & Accessibility | iPad 9 (10.2") regular size class optimization (640pt max container), VoiceOver accessibility labeling, and WCAG 2.1 AA audit. |
+| **`0.9.0`** | Sprint 9: Verification & CI Hardening | Boundary testing (0 questions, single question, rapid tapping), test coverage expansion ($\ge 90\%$), SwiftLint compliance. |
+| **`1.0.0`** | Sprint 10: Final Academic Release | Final code freeze, production build generation, comprehensive screenshot evidence collection, and final submission release. |
 
 ### Tier 2: Internal Build Number (`CFBundleVersion`)
 Uses **Monotonic Numeric Calendar Versioning** (`YYYYMMDD.HHmm`), satisfying granular timestamp tracking while complying 100% with Apple syntax:

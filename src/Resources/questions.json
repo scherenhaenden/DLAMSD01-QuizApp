@@ -166,5 +166,173 @@
     "explanation": "Apple empfiehlt in den HIG eine Mindestfläche von 44 × 44 Punkten für Buttons und interaktive Controls, um komfortable Treffsicherheit zu gewährleisten.",
     "category": "swift_apple",
     "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111013",
+    "prompt": "Was versteht man unter 'Inversion of Control' (IoC) in der Softwarearchitektur?",
+    "options": [
+      "Die Umkehrung des gewohnten Kontrollflusses, sodass ein Framework oder Container Module aufruft.",
+      "Die vollständige Steuerung einer Datenbank direkt durch Views der Benutzeroberfläche.",
+      "Das Überschreiben von privaten Variablen in externen Bibliotheken zur Laufzeit.",
+      "Das Vertauschen von Client- und Server-Rollen in Peer-to-Peer-Netzwerken."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Bei Inversion of Control steuert nicht das Anwendungsmodul den globalen Programmablauf, sondern ein Framework oder Container (Hollywood-Prinzip: 'Don't call us, we'll call you').",
+    "category": "software_engineering",
+    "difficulty": "medium"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111014",
+    "prompt": "Welches Entwurfsmuster (Design Pattern) stellt sicher, dass von einer Klasse nur genau eine globale Instanz existiert?",
+    "options": [
+      "Factory Method",
+      "Singleton",
+      "Observer",
+      "Decorator"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Das Singleton-Pattern beschränkt die Instanziierung einer Klasse auf genau ein Objekt und bietet einen globalen Zugriffspunkt darauf an.",
+    "category": "software_engineering",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111015",
+    "prompt": "Was ist der Hauptzweck eines 'Spikes' in agilen Vorgehensmodellen wie Scrum?",
+    "options": [
+      "Eine zeitlich begrenzte Timebox-Untersuchung zur Beherrschung technischer Risiken oder Architekturentscheidungen.",
+      "Eine abrupte Erhöhung der Team-Velocity kurz vor dem Sprint-Review.",
+      "Ein ungeplanter Hotfix nach einem kritischen Serverausfall in Produktion.",
+      "Eine permanente Code-Dokumentation für externe Prüfungsstellen."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Ein Spike ist eine zeitlich limitierte Research-Aufgabe in Scrum/XP, um unklare Anforderungen, Framework-Evaluierungen oder architektonische Risiken vorab zu klären.",
+    "category": "software_engineering",
+    "difficulty": "medium"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111016",
+    "prompt": "Welches Protokoll in Swift ermöglicht das standardisierte Kodieren und Dekodieren von Datentypen nach und aus JSON?",
+    "options": [
+      "Serializable",
+      "JSONConvertible",
+      "Codable",
+      "DataRepresentable"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "Das Protokoll Codable ist eine Typalias-Kombination aus Encodable und Decodable und ermöglicht typsicheres Parsen und Serialisieren.",
+    "category": "swift_apple",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111017",
+    "prompt": "Nach welchem Funktionsprinzip arbeitet die elementare Datenstruktur Stack (Stapel)?",
+    "options": [
+      "FIFO (First In, First Out)",
+      "LIFO (Last In, First Out)",
+      "Prioritätsbasierte Entnahme",
+      "Direkter wahlfreier Zugriff (Random Access)"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Ein Stack arbeitet nach dem LIFO-Prinzip (Last In, First Out): Das zuletzt eingefügte Element wird als erstes wieder entnommen.",
+    "category": "algorithms_data_structures",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111018",
+    "prompt": "Welche Datenstruktur eignet sich am besten zur Implementierung einer Breitensuche (Breadth-First Search, BFS) in Graphen?",
+    "options": [
+      "Stack (Stapel)",
+      "Queue (Warteschlange)",
+      "Priority Heap",
+      "Red-Black Tree"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Die Breitensuche (BFS) nutzt eine Queue (FIFO), um Knoten ebenenweise in der Reihenfolge ihrer Entdeckung zu explorieren.",
+    "category": "algorithms_data_structures",
+    "difficulty": "medium"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111019",
+    "prompt": "Wie viele Kindknoten darf ein einzelner Knoten in einem Binärbaum maximal besitzen?",
+    "options": [
+      "Genau 1",
+      "Maximal 2",
+      "Beliebig viele",
+      "Mindestens 3"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "In einem Binärbaum hat jeder Knoten definitionsgemäß höchstens zwei Nachfolger (üblicherweise als linker und rechter Kindknoten bezeichnet).",
+    "category": "algorithms_data_structures",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111020",
+    "prompt": "Welche informationstheoretische untere Schranke gilt im Worst-Case für vergleichsbasierte Sortieralgorithmen?",
+    "options": [
+      "Ω(n)",
+      "Ω(n log n)",
+      "Ω(log n)",
+      "Ω(n²)"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Vergleichsbasierte Sortierverfahren besitzen anhand des Entscheidungsbaums eine theoretisch bewiesene untere Schranke von Ω(n log n) Vergleichen.",
+    "category": "algorithms_data_structures",
+    "difficulty": "hard"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111021",
+    "prompt": "Was beschreibt der Begriff 'Code Coverage' (Testabdeckung) in der Software-Qualitätssicherung?",
+    "options": [
+      "Den prozentualen Anteil der Codezeilen oder Zweige, die während der Testsuite-Ausführung durchlaufen werden.",
+      "Die Anzahl der Tester im Verhältnis zur Anzahl der Softwareentwickler im Team.",
+      "Die Gesamtzahl der vor dem Release gefundenen und behobenen Regressionen.",
+      "Die Zeitdauer, die ein Compiler benötigt, um Testziele zu kompilieren."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Code Coverage misst, wie viel Prozent des Produktionscodes (z.B. Zeilen, Anweisungen oder Bedingungen) durch automatische Tests mindestens einmal ausgeführt wurden.",
+    "category": "testing_quality",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111022",
+    "prompt": "Was unterscheidet ein 'Mock'-Objekt primär von einem 'Stub' in der Testautomatisierung?",
+    "options": [
+      "Ein Mock verifiziert erwartete Methodenaufrufe und Interaktionen, während ein Stub lediglich vordefinierte Daten zurückgibt.",
+      "Stubs werden ausschließlich für UI-Tests verwendet, Mocks für Performancetests.",
+      "Ein Mock kompiliert schneller als ein Stub, besitzt aber keine Assertions.",
+      "Es gibt in der Softwaretechnik keinen Unterschied; beide Begriffe sind synonym."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Nach Martin Fowler liefert ein Stub vorgefertigte Antworten (State Verification), während ein Mock Erwartungen an den Aufrufverlauf registriert und prüft (Behavior Verification).",
+    "category": "testing_quality",
+    "difficulty": "medium"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111023",
+    "prompt": "Welche Testart überprüft das korrekte Zusammenspiel mehrerer voneinander abhängiger Softwaremodule?",
+    "options": [
+      "Unit Test",
+      "Integration Test",
+      "Stresstest",
+      "Usability Test"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Integrationstests validieren, ob logisch zusammenhängende Module (z.B. Service, Parser und Dateisystem) im Verbund reibungslos miteinander interagieren.",
+    "category": "testing_quality",
+    "difficulty": "easy"
+  },
+  {
+    "id": "11111111-1111-1111-1111-111111111024",
+    "prompt": "Was ist das Hauptziel von 'Regression Testing' (Regressionstests) nach Software-Updates?",
+    "options": [
+      "Neue Features ohne Spezifikation explorativ durch Endnutzer testen zu lassen.",
+      "Sicherzustellen, dass bestehende Funktionalitäten durch kürzlich vorgenommene Änderungen nicht beschädigt wurden.",
+      "Die Codebasis automatisch auf ältere Swift-Sprachversionen zurückzusetzen.",
+      "Ausschließlich die Ladezeiten der App auf älteren iOS-Geräten zu messen."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Regressionstests prüfen, ob funktionierende Systemteile nach Fehlerbehebungen, Refactorings oder Feature-Erweiterungen weiterhin wie spezifiziert arbeiten.",
+    "category": "testing_quality",
+    "difficulty": "easy"
   }
 ]

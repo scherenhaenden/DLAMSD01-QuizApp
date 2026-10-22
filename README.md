@@ -18,7 +18,8 @@ Designed for intuitive interaction, immediate feedback, and cognitive engagement
 *   **Paced Challenge (Timer Mode)**: Configurable countdown timer per question to challenge time-critical decision-making.
 *   **Comprehensive Scoreboard & Analytics**: Detailed performance metrics at round completion, including percentage accuracy, response velocity, and category breakdowns.
 *   **High-Score Persistence**: Local record tracking using `UserDefaults`, ensuring personal achievements persist across app sessions.
-*   **Adaptive Design & Accessibility**: Full support for Dark Mode, Dynamic Type text scaling, and high-contrast color palettes complying with WCAG and HIG standards.
+*   **Adaptive Design & Multi-Device Layout**: Responsive layout engineered for both compact iPhone screens and the expansive iPad canvas, specifically optimized for the **iPad (9th generation)** 10.2" Retina display (portrait & landscape orientations, split-screen adaptability).
+*   **Accessibility & Theming**: Full support for Dark Mode, Dynamic Type text scaling, and high-contrast color palettes complying with WCAG and Apple HIG standards.
 
 ### 🧩 Data & Content Engine
 *   **Local Decodable Datastore**: Resilient JSON-based question bank parsed via Swift's `Codable` protocols with safe fallback handling.
@@ -29,7 +30,7 @@ Designed for intuitive interaction, immediate feedback, and cognitive engagement
 
 ## 🛠 Tech Stack
 
-### iOS Client (`/src`)
+### iOS / iPadOS Client (`/src`)
 *   **Language**: Swift 5.9+
 *   **UI Framework**: SwiftUI (Declarative UI)
 *   **Architecture**: Model-View-ViewModel (MVVM)
@@ -38,7 +39,9 @@ Designed for intuitive interaction, immediate feedback, and cognitive engagement
 *   **Design Standards**: Apple Human Interface Guidelines (HIG)
 *   **Testing**: XCTest Suite (Unit testing, edge-case coverage)
 *   **IDE**: Xcode 15 / 16 (macOS)
-*   **Target Platform**: iOS 17.0+ (iPhone & iPad)
+*   **Target Platform**: iOS 17.0+ / iPadOS 17.0+ (Universal iPhone & iPad)
+*   **Primary Physical Test Device**: **Apple iPad (9th generation)** (10.2" Retina display, A13 Bionic, iPadOS 17+)
+*   **Simulated Test Devices**: iPhone 15 Pro, iPhone SE (3rd gen)
 
 ---
 
@@ -90,8 +93,10 @@ cd DLAMSD01-QuizApp
 
 ### 3. Run the Application
 1.  Select an active target scheme (e.g., `QuizApp`).
-2.  Choose an iOS Simulator (e.g., **iPhone 15 Pro**) or a connected physical iOS device.
-3.  Press **Run** (`Cmd + R`) to compile and launch.
+2.  Choose your execution destination:
+    *   **Physical Device (iPad 9th Generation)**: Connect your iPad via USB or Wi-Fi. In Xcode, select **iPad (9th generation)** from the destination menu. Ensure Developer Mode is activated on the iPad (*Settings > Privacy & Security > Developer Mode*).
+    *   **iOS / iPadOS Simulator**: Select **iPad (9th generation)** or **iPhone 15 Pro** from the simulator list.
+3.  Press **Run** (`Cmd + R`) to compile, deploy, and launch.
 
 ### 4. Execute Automated Tests
 To run the automated `XCTest` suite verifying domain logic, JSON decoding, and scoring algorithms:
@@ -121,7 +126,18 @@ The core quiz session progresses through well-defined operational phases:
 
 ## 🧪 Testing & Verification
 
-The test suite covers critical core workflows:
+The testing strategy validates responsiveness, business logic, and UI adaptability across multiple tiers:
+
+### Target Device Verification Matrix
+*   **Primary Hardware Target**: **Apple iPad (9th generation)**
+    *   *Display*: 10.2-inch Retina display (2160 × 1620 resolution at 264 ppi).
+    *   *SoC*: Apple A13 Bionic.
+    *   *Validation Focus*: Large-canvas layout spacing, touch ergonomics for rapid button interaction, seamless orientation switching (Portrait $\leftrightarrow$ Landscape), and smooth 60 fps timer animations.
+*   **Simulator Matrix**:
+    *   **iPhone 15 Pro**: Compact size class verification, Dynamic Island clearance, and high-density rendering.
+    *   **iPhone SE (3rd gen)**: Smallest supported screen constraint (4.7-inch) testing for text truncations or button overflow.
+
+### Core Test Suites (`XCTest`)
 *   **Decoding & Serialization**: Verifying that corrupted or missing JSON fields do not crash the application.
 *   **Scoring Correctness**: Mathematical assertions checking percentage computations, streak bonuses, and zero-point handling.
 *   **Edge Conditions**: Boundary evaluations for empty question lists, rapid repeated taps on options, and timer expirations.

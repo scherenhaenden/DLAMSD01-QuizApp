@@ -146,16 +146,29 @@ The testing strategy validates responsiveness, business logic, and UI adaptabili
 
 ## 🗺 Release Roadmap & Versioning Plan
 
-The project adheres to a hybrid versioning scheme combining **Semantic Versioning (`CFBundleShortVersionString`)** for release maturity and **Calendar Versioning (`CFBundleVersion`)** for build-level chronological traceability:
+The project adheres to a hybrid versioning scheme combining **Semantic Versioning (`CFBundleShortVersionString`)** for release maturity across 10 disciplined sprint cycles and **Calendar Versioning (`CFBundleVersion`)** for build-level chronological traceability:
+
+### Version Numbering Principles (`MAJOR.MINOR.PATCH`)
+* **MAJOR (`1.0.0`)**: Represents the finalized, feature-complete academic release prepared for IU examination submission.
+* **MINOR (`0.X.0`)**: Incremented upon completing each of the **10 formal sprint milestones** delivering end-to-end architectural or user-facing capabilities.
+* **PATCH (`0.X.N`)**: Incremented for intermediate iterations, bug fixes, documentation adjustments, test additions, or data expansions within a sprint (e.g., `v0.1.1` for question bank expansion from 12 to 24 questions).
+
+### 10-Sprint Milestone Breakdown
 
 | Version (SemVer) | Build Target (CalVer) | Milestone / Phase | Scope & Premeditated Deliverables | Status |
 | :---: | :---: | :--- | :--- | :---: |
-| **`v0.1.0`** | `20261022.1000` | Sprint 1: Architecture & Data Core | • Domain entities (`Question`, `Category`, `QuizSession`)<br>• Local JSON decodable pipeline (`questions.json`)<br>• Base `QuizViewModel` state loop<br>• Initial `XCTest` suite for data validation | Completed |
-| **`v0.5.0`** | `20261023.1200` | Sprint 2: Core Gameplay UI | • Declarative SwiftUI interface (`QuizView`, `AnswerButton`)<br>• Real-time countdown timer (15s per question)<br>• Immediate visual (color-coded) & tactile feedback<br>• Question sequencing and answer verification | Planned |
-| **`v0.8.0`** | `20261024.1500` | Sprint 3: Persistence & Flow Polish | • Final results screen (`ResultView`) with percentage analytics<br>• Local high-score persistence via `UserDefaults`<br>• NavigationStack flow (Menu $\leftrightarrow$ Quiz $\leftrightarrow$ Results)<br>• Dark Mode and Dynamic Type accessibility support | Planned |
-| **`v1.0.0`** | `20261025.1800` | Sprint 4: Final Academic Release | • Code freeze & complete `XCTest` test suite execution<br>• Full compliance with Apple Human Interface Guidelines<br>• Evidence collection (screenshots & test logs)<br>• Final deliverable for IU Projektbericht submission | Planned |
+| **`v0.1.0`** | `20261022.1000` | Sprint 1: Architecture Core & Ingestion | • DDD domain entities (`Question`, `Category`, `Difficulty`, `ScoreRecord`)<br>• Local JSON decodable pipeline (`questions.json`, 24 questions)<br>• Base `QuizViewModel` state loop and 23 XCTest unit tests<br>• Native Xcode project and GitHub Actions CI workflow | Completed |
+| **`v0.2.0`** | `20261022.1400` | Sprint 2: UI/UX Design System & Tokens | • Design system specification (`design/` directory)<br>• Color tokens (Dark/Light mode) & 4pt grid system<br>• Screen wireframes (Home, Active Quiz, Feedback, Results)<br>• Multi-device layout guidelines (iPhone & iPad 9th Gen 10.2") | In Progress |
+| **`v0.3.0`** | `20261022.1800` | Sprint 3: Core Interactive UI Components | • Modular SwiftUI components (`QuestionCard`, `AnswerButton`)<br>• High-contrast feedback states and continuous corner radii<br>• Dynamic Type scaling with zero text clipping<br>• Category selector carousel and domain badges | Planned |
+| **`v0.4.0`** | `20261023.1000` | Sprint 4: Reactive Timer & State Machine | • Combine 10 Hz countdown timer on `@MainActor`<br>• Dynamic `TimerBar` with chromatic shift (Blue $\to$ Orange $\to$ Red)<br>• Pause/resume handling on app lifecycle transitions<br>• Automatic timeout penalty dispatch | Planned |
+| **`v0.5.0`** | `20261023.1400` | Sprint 5: Sensory Feedback & Haptics | • 1.0s pedagogical pause revealing explanation callout<br>• Visual validation icons (`checkmark.circle` / `xmark.circle`)<br>• Tactile feedback via `UINotificationFeedbackGenerator`<br>• Answer button double-tap debouncing lock | Planned |
+| **`v0.6.0`** | `20261023.1800` | Sprint 6: Results Analytics & Scorecard | • Post-game scorecard view (`ResultView`)<br>• Accuracy percentage computation and time-per-question metrics<br>• Academic grading scale conversion (German university tiers)<br>• Category-specific accuracy breakdown | Planned |
+| **`v0.7.0`** | `20261024.1100` | Sprint 7: Persistence & High Scores | • Lightweight persistence with `UserDefaults` and `Codable`<br>• Historical rounds tracking and personal bests (`LeaderboardView`)<br>• Session state restoration and empty-state fallbacks<br>• Reset and clear history utilities | Planned |
+| **`v0.8.0`** | `20261024.1500` | Sprint 8: iPad 9 Ergonomics & Accessibility | • iPad 9 (10.2") regular size class optimization (640pt max container)<br>• Full VoiceOver accessibility labeling and status announcements<br>• WCAG 2.1 AA color contrast compliance verification<br>• Dynamic Type testing with extreme accessibility font sizes | Planned |
+| **`v0.9.0`** | `20261025.1100` | Sprint 9: Verification & CI Hardening | • Boundary tests (0 questions, single question, rapid tapping)<br>• Test suite expansion reaching $\ge 90\%$ business logic coverage<br>• SwiftLint style validation and clean-up<br>• Xcode build diagnostics and release scheme validation | Planned |
+| **`v1.0.0`** | `20261025.1700` | Sprint 10: Final Release & Submission | • Final code freeze and production build generation<br>• Comprehensive screenshot evidence collection for iPad & iPhone<br>• Synchronization with academic *Projektbericht* chapters<br>• Final deliverable package for IU examination submission | Planned |
 
-> For comprehensive architectural rationale and Xcode `Info.plist` mapping, consult [docs/versioning.md](docs/versioning.md).
+> For comprehensive architectural rationale, patch progression rules, and Xcode `Info.plist` mapping, consult [docs/versioning.md](docs/versioning.md).
 
 ---
 

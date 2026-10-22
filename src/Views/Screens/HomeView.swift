@@ -143,37 +143,39 @@ public struct HomeView: View {
                             .padding(.horizontal)
                             
                             // All Categories Tile (Mixed Round)
-                            categoryCard(
-                                title: "All Topics (Mixed)",
-                                subtitle: "Comprehensive cross-discipline challenge (24 questions)",
-                                iconName: "square.grid.2x2.fill",
+                            CategoryCard(
+                                category: nil,
+                                questionCount: 24,
                                 isSelected: selectedCategory == nil,
-                                onSelect: {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        selectedCategory = nil
+                                action: {
+                                    if selectedCategory == nil {
+                                        viewModel.startQuiz(category: nil)
+                                    } else {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            selectedCategory = nil
+                                        }
                                     }
-                                },
-                                onStart: {
-                                    viewModel.startQuiz(category: nil)
                                 }
                             )
+                            .padding(.horizontal)
                             
                             // Individual Subject Domain Tiles
                             ForEach(QuizCategory.allCases) { category in
-                                categoryCard(
-                                    title: category.displayName,
-                                    subtitle: category.localizedDescription,
-                                    iconName: category.iconName,
+                                CategoryCard(
+                                    category: category,
+                                    questionCount: 6,
                                     isSelected: selectedCategory == category,
-                                    onSelect: {
-                                        withAnimation(.easeInOut(duration: 0.2)) {
-                                            selectedCategory = category
+                                    action: {
+                                        if selectedCategory == category {
+                                            viewModel.startQuiz(category: category)
+                                        } else {
+                                            withAnimation(.easeInOut(duration: 0.2)) {
+                                                selectedCategory = category
+                                            }
                                         }
-                                    },
-                                    onStart: {
-                                        viewModel.startQuiz(category: category)
                                     }
                                 )
+                                .padding(.horizontal)
                             }
                         }
                         .frame(maxWidth: 550)
@@ -185,97 +187,5 @@ public struct HomeView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
         }
-    }
-    
-    // MARK: - Subviews & Builders
-    
-    /// Reusable selectable category card with full hit-testing and direct launch support.
-    @ViewBuilder
-    private func categoryCard(
-        title: String,
-        subtitle: String,
-        iconName: String,
-        isSelected: Bool,
-        onSelect: @escaping () -> Void,
-        onStart: @escaping () -> Void
-    ) -> some View {
-        Button {
-            if isSelected {
-                onStart()
-            } else {
-                onSelect()
-            }
-        } label: {
-            HStack(spacing: 14) {
-                // Category icon badge
-                Image(systemName: iconName)
-                    .font(.title2)
-                    .foregroundColor(isSelected ? .accentColor : .secondary)
-                    .frame(width: 40, height: 40)
-                    .background(
-                        Circle()
-                            .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.primary.opacity(0.06))
-                    )
-                
-                // Title and description
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title)
-                        .font(.subheadline.bold())
-                        .foregroundColor(.primary)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                }
-                
-                Spacer()
-                
-                // Visual selection and direct start cue
-                if isSelected {
-                    HStack(spacing: 4) {
-                        Text("Start")
-                            .font(.caption.bold())
-                            .foregroundColor(.accentColor)
-                        Image(systemName: "play.circle.fill")
-                            .foregroundColor(.accentColor)
-                            .font(.title3)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.accentColor.opacity(0.12))
-                    .clipShape(Capsule())
-                } else {
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.secondary.opacity(0.4))
-                        .font(.caption)
-                }
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.12) : Color.adaptiveCardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? Color.accentColor : Color.adaptiveBorder, lineWidth: isSelected ? 2 : 1)
-                    .allowsHitTesting(false)
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal)
-    }
-}
-
-/// Custom button style adding subtle scale and opacity feedback on physical touch down.
-public struct CardPressButtonStyle: ButtonStyle {
-    public init() {}
-    
-    public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .opacity(configuration.isPressed ? 0.85 : 1.0)
-            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }

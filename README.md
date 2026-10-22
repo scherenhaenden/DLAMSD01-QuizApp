@@ -10,17 +10,17 @@ The project is being developed across a disciplined 10-sprint agile lifecycle, p
 
 ## 🚀 Features & Incremental Delivery
 
-### 📱 Active Capabilities (Sprint 1 & Sprint 2)
+### 📱 Active Capabilities (Sprint 1, Sprint 2 & Sprint 3)
 *   **Domain-Driven Core**: Clean DDD models (`Question`, `QuizCategory`, `Difficulty`, `ScoreRecord`, `QuizSession`) enforcing strict invariants (4 non-empty options, UUID tracking, validated correct answer mapping).
 *   **True In-Place Fisher-Yates Randomization**: Algorithmic shuffling of answer choices and question orders tracking the correct index in $O(1)$ space during swaps.
 *   **Local Decodable Datastore**: Resilient JSON parsing (`questions.json`, 24 verified questions across 4 academic domains) with bundle lookups and test fixtures.
 *   **Design System & Dual Theming**: Complete Dark Mode and Light Mode support with OLED black (`#000000`) canvas, semantic elevated cards, and an in-app theme switcher (Auto / Light / Dark) persisted in `@AppStorage`.
+*   **Modular Interactive Components**: Atomic presentation widgets (`QuestionCard`, `AnswerButton`, `CategoryCard`) engineered with continuous squircles, 56pt touch target minimums, and multiline Dynamic Type wrapping (`.fixedSize(horizontal: false, vertical: true)`).
 *   **Reactive Game Loop & View State**: `@MainActor`-bound `QuizViewModel` coordinating `.idle`, `.loading`, `.playing`, `.answered`, and `.finished` states.
-*   **Multi-Device Ergonomics**: Centered max-width constraints (550 pt) designed for comfortable one-handed use on iPhone and ergonomic reading on iPad (9th generation, 10.2").
-*   **Verified by TDD**: 38 automated XCTest unit and view interaction tests achieving **89.75% line coverage**.
+*   **Multi-Device Ergonomics**: Centered max-width constraints (550 pt / 640 pt) designed for comfortable one-handed use on iPhone and ergonomic reading on iPad (9th generation, 10.2").
+*   **Verified by TDD**: 45 automated XCTest unit and view interaction tests achieving **90.94% line coverage**.
 
-### 🗓 Planned Capabilities (Sprints 3 to 10 Roadmap)
-*   **Sprint 3**: Modular interactive UI components (`QuestionCard`, `AnswerButton`) with dynamic text wrap (`lineLimit(nil)`).
+### 🗓 Planned Capabilities (Sprints 4 to 10 Roadmap)
 *   **Sprint 4**: 10 Hz reactive Combine countdown timer and color-shifting `TimerBar`.
 *   **Sprint 5**: Sensory feedback engine with 1.0s pedagogical feedback pause and iPhone tactile haptics (`UIImpactFeedbackGenerator`).
 *   **Sprint 6**: Comprehensive post-game analytics scorecard and German university grading conversion (*Sehr Gut* to *Nicht Ausreichend*).
@@ -163,7 +163,7 @@ The project adheres to a hybrid versioning scheme combining **Semantic Versionin
 | **`v0.1.0`** | `20261022.120645` | Sprint 1: Architecture Core & Ingestion | • DDD domain entities (`Question`, `Category`, `Difficulty`, `ScoreRecord`)<br>• Local JSON decodable pipeline (`questions.json`, 24 questions)<br>• Base `QuizViewModel` state loop and 23 XCTest unit tests<br>• Native Xcode project and GitHub Actions CI workflow | Completed |
 | **`v0.2.0`** | `20261022.140000` | Sprint 2: UI/UX Design System, Dark Mode & Tokens | • Design system specification (`design/` directory)<br>• Semantic color tokens (Light/Dark mode) & 4pt grid system<br>• Screen wireframes (Home, Active Quiz, Feedback, Results)<br>• Native Dark Theme implementation & multi-device guidelines | Completed |
 | **`v0.2.1`** | `20261022.152326` | Sprint 2 Maintenance: Audit Fixes & TDD Hardening | • Bugfix: "Play Again" state reset & in-place Fisher-Yates $O(1)$ index tracking<br>• UI: Restored touch interaction in ScrollView via plain button style<br>• Invariants: Enforced 4 non-empty options & state machine defenses<br>• Tests: 38 automated tests (89.75% line coverage) & incident reporting | Completed |
-| **`v0.3.0`** | `TBD` | Sprint 3: Core Interactive UI Components | • Modular SwiftUI components (`QuestionCard`, `AnswerButton`)<br>• High-contrast feedback states and continuous corner radii<br>• Dynamic Type scaling with zero text clipping<br>• Category selector carousel and domain badges | Planned |
+| **`v0.3.0`** | `20261022.162811` | Sprint 3: Core Interactive UI Components | • Modular SwiftUI components (`QuestionCard`, `AnswerButton`, `CategoryCard`)<br>• High-contrast feedback states and continuous squircle geometry<br>• Dynamic Type scaling with multiline wrap without clipping<br>• Dedicated test suite (45 tests passing, 90.94% coverage) | Completed |
 | **`v0.4.0`** | `TBD` | Sprint 4: Reactive Timer & State Machine | • Combine 10 Hz countdown timer on `@MainActor`<br>• Dynamic `TimerBar` with chromatic shift (Blue $\to$ Orange $\to$ Red)<br>• Pause/resume handling on app lifecycle transitions<br>• Automatic timeout penalty dispatch | Planned |
 | **`v0.5.0`** | `TBD` | Sprint 5: Sensory Feedback & Haptics | • 1.0s pedagogical pause revealing explanation callout<br>• Visual validation icons (`checkmark.circle` / `xmark.circle`)<br>• Tactile feedback via `UINotificationFeedbackGenerator`<br>• Answer button double-tap debouncing lock | Planned |
 | **`v0.6.0`** | `TBD` | Sprint 6: Results Analytics & Scorecard | • Post-game scorecard view (`ResultView`)<br>• Accuracy percentage computation and time-per-question metrics<br>• Academic grading scale conversion (German university tiers)<br>• Category-specific accuracy breakdown | Planned |
@@ -173,7 +173,8 @@ The project adheres to a hybrid versioning scheme combining **Semantic Versionin
 | **`v1.0.0`** | `TBD` | Sprint 10: Final Release & Submission | • Final code freeze and production build generation<br>• Comprehensive screenshot evidence collection for iPad & iPhone<br>• Synchronization with academic *Projektbericht* chapters<br>• Final deliverable package for IU examination submission | Planned |
 
 > For comprehensive architectural rationale, patch progression rules, and Xcode `Info.plist` mapping, consult [docs/versioning.md](docs/versioning.md).  
-> For technical incident retrospectives, audit resolutions, and simulator debugging guidelines, consult [docs/sprint2_incident_and_bugfix_report.md](docs/sprint2_incident_and_bugfix_report.md).
+> For technical incident retrospectives, audit resolutions, and simulator debugging guidelines, consult [docs/sprint2_incident_and_bugfix_report.md](docs/sprint2_incident_and_bugfix_report.md).  
+> For Sprint 3 atomic components, coverage report (90.94%), and simulator verification evidence, consult [docs/sprint3_interactive_ui_components_report.md](docs/sprint3_interactive_ui_components_report.md).
 
 ---
 

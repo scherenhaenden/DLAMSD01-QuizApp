@@ -98,7 +98,7 @@ public struct QuizSession: Equatable, Sendable {
     
     /// Transitions the session from `idle` to `inProgress`.
     public mutating func start() {
-        guard !questions.isEmpty else { return }
+        guard state == .idle, !questions.isEmpty else { return }
         self.state = .inProgress
     }
     
@@ -146,7 +146,10 @@ public struct QuizSession: Equatable, Sendable {
     }
     
     /// Advances the cursor to the subsequent question or finalizes the session if all questions are completed.
+    /// Strictly guarded: only advances if the active question has been answered or timed out.
     public mutating func advanceToNext() {
+        guard case .questionAnswered = state else { return }
+        
         if hasNextQuestion {
             currentIndex += 1
             state = .inProgress

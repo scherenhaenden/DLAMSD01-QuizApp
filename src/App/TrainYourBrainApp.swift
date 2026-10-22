@@ -9,12 +9,14 @@ import SwiftUI
 @main
 public struct TrainYourBrainApp: App {
     @StateObject private var viewModel = QuizViewModel()
+    @AppStorage("app_theme") private var selectedTheme: String = AppTheme.system.rawValue
     
     public init() {}
     
     public var body: some Scene {
         WindowGroup {
             ContentView(viewModel: viewModel)
+                .preferredColorScheme(AppTheme(rawValue: selectedTheme)?.colorScheme)
         }
     }
 }

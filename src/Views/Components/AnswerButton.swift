@@ -68,11 +68,11 @@ public struct AnswerButton: View {
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(Color.primary.opacity(0.08)))
                 
-                // Answer text with multi-line wrap support
+                // Answer text with multi-line wrap support and Dynamic Type scaling
                 Text(optionText)
                     .font(.body)
                     .multilineTextAlignment(.leading)
-                    .lineLimit(4)
+                    .lineLimit(nil)
                     .minimumScaleFactor(0.85)
                 
                 Spacer()
@@ -101,6 +101,7 @@ public struct AnswerButton: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(isAnswerRevealed && isCorrectAnswer == true ? Color.green : Color.clear, lineWidth: 2)
             )
+            .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .foregroundColor(foregroundColor)
         }
         .buttonStyle(.plain)

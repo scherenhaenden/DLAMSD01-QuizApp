@@ -6,11 +6,36 @@ import UIKit
 import AppKit
 #endif
 
-/// Cross-platform dynamic color helpers ensuring native system appearance
+/// Cross-platform dynamic color helpers ensuring native Apple system appearance
 /// across iOS, iPadOS, and macOS preview environments.
 extension Color {
-    /// Adaptive secondary background color supporting iOS, iPadOS, and macOS previews/tests.
-    /// Maps to `UIColor.secondarySystemBackground` on iOS and `NSColor.windowBackgroundColor` on macOS.
+    /// Adaptive grouped canvas background:
+    /// - Light mode: `#F2F2F7` (`UIColor.systemGroupedBackground`)
+    /// - Dark mode: `#000000` (Pure OLED black)
+    public static var adaptiveBackground: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: .systemGroupedBackground)
+        #elseif canImport(AppKit)
+        return Color(nsColor: .windowBackgroundColor)
+        #else
+        return Color(.sRGB, red: 0.95, green: 0.95, blue: 0.97, opacity: 1)
+        #endif
+    }
+    
+    /// Adaptive elevated card surface color:
+    /// - Light mode: `#FFFFFF` (Pure white)
+    /// - Dark mode: `#1C1C1E` (Elevated dark gray)
+    public static var adaptiveCardBackground: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: .secondarySystemGroupedBackground)
+        #elseif canImport(AppKit)
+        return Color(nsColor: .controlBackgroundColor)
+        #else
+        return Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        #endif
+    }
+    
+    /// Adaptive secondary background color for input elements and unselected option buttons.
     public static var adaptiveSecondaryBackground: Color {
         #if canImport(UIKit)
         return Color(uiColor: .secondarySystemBackground)
@@ -21,8 +46,7 @@ extension Color {
         #endif
     }
     
-    /// Adaptive tertiary background color supporting iOS, iPadOS, and macOS previews/tests.
-    /// Maps to `UIColor.tertiarySystemBackground` on iOS and `NSColor.controlBackgroundColor` on macOS.
+    /// Adaptive tertiary background color for explanation banners.
     public static var adaptiveTertiaryBackground: Color {
         #if canImport(UIKit)
         return Color(uiColor: .tertiarySystemBackground)
@@ -30,6 +54,15 @@ extension Color {
         return Color(nsColor: .controlBackgroundColor)
         #else
         return Color.gray.opacity(0.08)
+        #endif
+    }
+    
+    /// Subtle adaptive border/separator color.
+    public static var adaptiveBorder: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: .separator)
+        #else
+        return Color.gray.opacity(0.2)
         #endif
     }
 }

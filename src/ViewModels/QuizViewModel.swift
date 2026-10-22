@@ -84,13 +84,21 @@ public final class QuizViewModel: ObservableObject {
                 loadedQuestions = try questionService.loadAllQuestions()
             }
             
+            guard !loadedQuestions.isEmpty else {
+                throw QuestionServiceError.emptyQuestionSet
+            }
+            
             // Randomize question order and options for session replayability
-            let shuffledQuestions = loadedQuestions.shuffled().map { $0.shuffledOptions() }
+            let shuffledQuestions = loadedQuestions.shuffled().map { $0.fisherYatesShuffled() }
             var newSession = QuizSession(questions: shuffledQuestions, category: category)
             newSession.start()
             
             self.session = newSession
             self.totalQuestions = newSession.totalQuestions
+            self.selectedAnswerIndex = nil
+            self.questionIndex = 0
+            self.currentScore = 0
+            self.streak = 0
             self.syncFromSession()
             self.startTimer()
             self.viewState = .playing
@@ -118,7 +126,7 @@ public final class QuizViewModel: ObservableObject {
     
     /// Advances the quiz to the subsequent question or transitions to `.finished` when all are completed.
     public func nextQuestion() {
-        guard var currentSession = session else { return }
+        guard case .answered = viewState, var currentSession = session else { return }
         
         currentSession.advanceToNext()
         self.session = currentSession

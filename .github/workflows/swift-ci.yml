@@ -26,4 +26,12 @@ jobs:
         run: swift build -v
 
       - name: Run Test Suite
-        run: swift test -v
+        run: swift test -v --enable-code-coverage
+
+      - name: Build iOS Simulator Target
+        run: |
+          xcodebuild -project TrainYourBrain.xcodeproj \
+            -scheme TrainYourBrain \
+            -destination "generic/platform=iOS Simulator" \
+            CODE_SIGNING_ALLOWED=NO \
+            build

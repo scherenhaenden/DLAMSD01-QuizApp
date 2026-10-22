@@ -6,8 +6,11 @@ import UIKit
 import AppKit
 #endif
 
+/// Cross-platform dynamic color helpers ensuring native system appearance
+/// across iOS, iPadOS, and macOS preview environments.
 extension Color {
     /// Adaptive secondary background color supporting iOS, iPadOS, and macOS previews/tests.
+    /// Maps to `UIColor.secondarySystemBackground` on iOS and `NSColor.windowBackgroundColor` on macOS.
     public static var adaptiveSecondaryBackground: Color {
         #if canImport(UIKit)
         return Color(uiColor: .secondarySystemBackground)
@@ -19,6 +22,7 @@ extension Color {
     }
     
     /// Adaptive tertiary background color supporting iOS, iPadOS, and macOS previews/tests.
+    /// Maps to `UIColor.tertiarySystemBackground` on iOS and `NSColor.controlBackgroundColor` on macOS.
     public static var adaptiveTertiaryBackground: Color {
         #if canImport(UIKit)
         return Color(uiColor: .tertiarySystemBackground)

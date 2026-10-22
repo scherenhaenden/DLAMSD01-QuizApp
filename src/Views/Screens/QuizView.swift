@@ -1,6 +1,13 @@
 import SwiftUI
 
 /// Core gameplay view where the user answers questions against the timer.
+///
+/// Interaction Design & Flow:
+/// - Header displaying active streak indicator with fire badge, running score tally, and close button.
+/// - Dynamic countdown timer bar animating horizontally with color shifts as deadline approaches.
+/// - Question card rendering the category chip, question counter, and prompt text.
+/// - 4 multiple choice buttons with immediate chromatic feedback upon tap.
+/// - Bottom explanation sheet revealing the pedagogical rationale and advance action button.
 public struct QuizView: View {
     @ObservedObject public var viewModel: QuizViewModel
     
@@ -22,6 +29,7 @@ public struct QuizView: View {
                 
                 Spacer()
                 
+                // Streak indicator badge (displays only when streak >= 2)
                 if viewModel.streak > 1 {
                     HStack(spacing: 4) {
                         Image(systemName: "flame.fill")
@@ -38,6 +46,7 @@ public struct QuizView: View {
                 
                 Spacer()
                 
+                // Current score display
                 VStack(alignment: .trailing) {
                     Text("Score")
                         .font(.caption2)
@@ -83,7 +92,7 @@ public struct QuizView: View {
                             }
                         }
                         
-                        // Pedagogical explanation on answer reveal
+                        // Pedagogical explanation on answer reveal (Immediate Feedback Principle)
                         if case .answered(_, let isCorrect) = viewModel.viewState {
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack {

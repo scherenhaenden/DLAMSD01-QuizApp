@@ -1,6 +1,11 @@
 import SwiftUI
 
 /// Main application entry point for Train-your-Brain.
+///
+/// Lifecycle & State:
+/// - Annotated with `@main` to designate the root execution entry of the iOS application.
+/// - Instantiates the single source of truth `QuizViewModel` as a `@StateObject`,
+///   preserving game state across view graph re-renders.
 @main
 public struct TrainYourBrainApp: App {
     @StateObject private var viewModel = QuizViewModel()
@@ -14,6 +19,7 @@ public struct TrainYourBrainApp: App {
     }
 }
 
+/// Root coordinating container routing between Home, Quiz, and Result screens.
 public struct ContentView: View {
     @ObservedObject public var viewModel: QuizViewModel
     

@@ -1,6 +1,12 @@
 import SwiftUI
 
 /// Main home menu view allowing category selection and game initiation.
+///
+/// Features & Layout:
+/// - Hero banner with app branding and curriculum description.
+/// - Prominent quick-start button triggering a mixed round or category-specific challenge.
+/// - Scrollable category selector grid showing SF Symbols and localized topic overviews.
+/// - Constrained maximum width (550 pt) ensuring optimal ergonomics on the iPad (9th gen) 10.2" canvas.
 public struct HomeView: View {
     @ObservedObject public var viewModel: QuizViewModel
     @State private var selectedCategory: QuizCategory?
@@ -29,7 +35,7 @@ public struct HomeView: View {
                     }
                     .padding(.bottom, 8)
                     
-                    // Quick play button
+                    // Quick play CTA button
                     Button(action: {
                         viewModel.startQuiz(category: selectedCategory)
                     }) {
@@ -48,13 +54,13 @@ public struct HomeView: View {
                     .padding(.horizontal)
                     .frame(maxWidth: 550)
                     
-                    // Category Selection Grid
+                    // Category Selection Section
                     VStack(alignment: .leading, spacing: 14) {
                         Text("Select Domain Focus")
                             .font(.headline)
                             .padding(.horizontal)
                         
-                        // All categories tile
+                        // All categories tile (mixed questions)
                         Button(action: {
                             selectedCategory = nil
                         }) {
@@ -92,6 +98,7 @@ public struct HomeView: View {
                         .buttonStyle(.plain)
                         .padding(.horizontal)
                         
+                        // Category tiles
                         ForEach(QuizCategory.allCases) { category in
                             let isSelected = selectedCategory == category
                             Button(action: {

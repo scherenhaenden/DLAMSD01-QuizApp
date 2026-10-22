@@ -1,8 +1,11 @@
 import XCTest
 @testable import TrainYourBrainCore
 
+/// Unit test suite verifying the Domain-Driven Design (DDD) rules,
+/// invariant validations, and Fisher-Yates randomization of the `Question` model.
 final class QuestionTests: XCTestCase {
     
+    /// Verifies that a well-formed Question model initializes with all properties intact.
     func testValidQuestionInitialization() throws {
         let question = try Question(
             prompt: "What is the primary role of the ViewModel in MVVM?",
@@ -25,6 +28,7 @@ final class QuestionTests: XCTestCase {
         XCTAssertFalse(question.isCorrect(selectedOptionIndex: 0))
     }
     
+    /// Verifies that an empty prompt (or one containing solely whitespace) is rejected by invariant validation.
     func testEmptyPromptThrowsValidationError() {
         XCTAssertThrowsError(
             try Question(
@@ -39,6 +43,7 @@ final class QuestionTests: XCTestCase {
         }
     }
     
+    /// Verifies that providing fewer than 2 choices triggers an `insufficientOptions` error.
     func testInsufficientOptionsThrowsValidationError() {
         XCTAssertThrowsError(
             try Question(
@@ -53,6 +58,7 @@ final class QuestionTests: XCTestCase {
         }
     }
     
+    /// Verifies that specifying an answer index outside `options.indices` is caught defensively.
     func testInvalidCorrectIndexThrowsValidationError() {
         XCTAssertThrowsError(
             try Question(
@@ -67,6 +73,7 @@ final class QuestionTests: XCTestCase {
         }
     }
     
+    /// Verifies that duplicate answer options are detected to prevent ambiguous question prompts.
     func testDuplicateOptionsThrowsValidationError() {
         XCTAssertThrowsError(
             try Question(
@@ -81,6 +88,8 @@ final class QuestionTests: XCTestCase {
         }
     }
     
+    /// Verifies that Fisher-Yates randomization shuffles choices while recalculating
+    /// the correct answer index so that the correct answer choice is never decoupled.
     func testShuffledOptionsPreservesCorrectAnswerMapping() throws {
         let question = try Question(
             prompt: "What is Swift's primary memory management model?",
@@ -92,7 +101,7 @@ final class QuestionTests: XCTestCase {
         
         let originalCorrectText = question.correctAnswerText
         
-        // Run shuffle multiple times to test randomness consistency
+        // Execute multiple trials to rigorously test randomized permutations
         for _ in 0..<10 {
             let shuffled = question.shuffledOptions()
             XCTAssertEqual(shuffled.prompt, question.prompt)
@@ -102,6 +111,7 @@ final class QuestionTests: XCTestCase {
         }
     }
     
+    /// Verifies lossless Codable JSON serialization and deserialization.
     func testQuestionCodableRoundtrip() throws {
         let original = try Question(
             prompt: "What does TDD stand for?",

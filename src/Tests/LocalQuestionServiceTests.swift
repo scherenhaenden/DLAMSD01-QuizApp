@@ -1,8 +1,10 @@
 import XCTest
 @testable import TrainYourBrainCore
 
+/// Unit test suite testing data retrieval, JSON deserialization resilience, and error handling in `LocalQuestionService`.
 final class LocalQuestionServiceTests: XCTestCase {
     
+    /// Verifies that well-structured JSON mock data is parsed into valid domain `Question` objects.
     func testLoadQuestionsFromValidMockData() throws {
         let jsonString = """
         [
@@ -40,6 +42,7 @@ final class LocalQuestionServiceTests: XCTestCase {
         XCTAssertEqual(swiftQuestions[0].category, .swiftAndApple)
     }
     
+    /// Verifies that malformed or syntax-corrupted JSON throws a descriptive `decodingFailed` error instead of crashing.
     func testLoadQuestionsThrowsOnMalformedJSON() {
         let malformedJson = "{ not a valid json }"
         let service = LocalQuestionService(mockData: Data(malformedJson.utf8))
@@ -52,6 +55,7 @@ final class LocalQuestionServiceTests: XCTestCase {
         }
     }
     
+    /// Verifies that an empty JSON array payload is flagged as an `emptyQuestionSet` error.
     func testLoadQuestionsThrowsOnEmptyArray() {
         let emptyJson = "[]"
         let service = LocalQuestionService(mockData: Data(emptyJson.utf8))
@@ -64,6 +68,7 @@ final class LocalQuestionServiceTests: XCTestCase {
         }
     }
     
+    /// Verifies that querying for a category with zero matches throws an `emptyQuestionSet` error.
     func testLoadQuestionsThrowsWhenCategoryHasNoMatches() throws {
         let jsonString = """
         [

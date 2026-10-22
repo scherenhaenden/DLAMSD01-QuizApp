@@ -1,16 +1,36 @@
 import Foundation
 
 /// Core domain entity representing a single multiple-choice question.
-/// Fulfills IU requirements: prompt, 4 choices, single valid answer index, and pedagogical rationale.
+///
+/// Designed following Domain-Driven Design (DDD) principles:
+/// - Immutable value semantics (`struct`) ensuring thread safety and side-effect-free state handling.
+/// - Strict invariant validation in the initializers to guarantee that corrupted or malformed
+///   questions cannot exist within the application lifecycle.
+/// - Fulfills all IU exam assignment requirements: clear prompt, 4 choices, single correct
+///   answer index, and comprehensive pedagogical rationale for immediate user feedback.
 public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
+    /// Unique identifier for stable SwiftUI identity and tracking across round sessions.
     public let id: UUID
+    
+    /// The actual question formulation presented to the learner.
     public let prompt: String
+    
+    /// List of multiple choice options (exactly 4 options as per IU guidelines).
     public let options: [String]
+    
+    /// 0-based index indicating which entry in `options` constitutes the correct answer.
     public let correctAnswerIndex: Int
+    
+    /// Detailed pedagogical explanation displayed immediately upon answering (Hattie & Timperley feedback model).
     public let explanation: String
+    
+    /// The academic knowledge domain to which this question belongs.
     public let category: QuizCategory
+    
+    /// The cognitive difficulty tier of the question.
     public let difficulty: Difficulty
     
+    /// Domain validation error states triggered if a question violates business invariants.
     public enum ValidationError: LocalizedError, Equatable {
         case emptyPrompt
         case insufficientOptions(count: Int)
@@ -34,6 +54,13 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
         }
     }
     
+    /// Primary designated initializer enforcing domain invariants.
+    ///
+    /// Throws a `ValidationError` if:
+    /// - Prompt or explanation consists solely of whitespace.
+    /// - Fewer than 2 options are supplied.
+    /// - `correctAnswerIndex` falls outside the bounds of `options.indices`.
+    /// - Duplicate option texts exist within the choices.
     public init(
         id: UUID = UUID(),
         prompt: String,
@@ -56,6 +83,7 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
             throw ValidationError.invalidCorrectIndex(index: correctAnswerIndex, optionsCount: options.count)
         }
         
+        // Ensure no duplicate answers exist to preserve quiz integrity
         let uniqueOptions = Set(options.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) })
         guard uniqueOptions.count == options.count else {
             throw ValidationError.duplicateOptions
@@ -87,6 +115,7 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
         case difficulty
     }
     
+    /// Custom decoding initializer providing safe defaults for optional fields (e.g. generating UUID if absent).
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
@@ -112,17 +141,20 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
     // MARK: - Domain Logic
     
     /// Evaluates if a given selected index corresponds to the correct answer.
+    /// Pure function without side-effects.
     public func isCorrect(selectedOptionIndex: Int) -> Bool {
         return selectedOptionIndex == correctAnswerIndex
     }
     
-    /// Text of the correct answer.
+    /// Human-readable text of the correct choice.
     public var correctAnswerText: String {
         return options[correctAnswerIndex]
     }
     
-    /// Returns a shuffled version of the question choices, recalculating the correct answer index
-    /// to preserve domain consistency while preventing memorization of option positions.
+    /// Produces a shuffled permutation of the multiple-choice options using Fisher-Yates randomization.
+    ///
+    /// Crucially recalculates and preserves the updated `correctAnswerIndex` pointing to the
+    /// same correct choice string, preventing position-based pattern memorization across sessions.
     public func shuffledOptions<T: RandomNumberGenerator>(using generator: inout T) -> Question {
         let correctOptionText = self.options[self.correctAnswerIndex]
         let shuffled = self.options.shuffled(using: &generator)
@@ -145,6 +177,7 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
         }
     }
     
+    /// Convenience overload using the default system random number generator.
     public func shuffledOptions() -> Question {
         var rng = SystemRandomNumberGenerator()
         return shuffledOptions(using: &rng)

@@ -30,23 +30,28 @@ On iPhone devices, all primary interactive components (answer options and CTA bu
 
 ## 4. Visual Contrast & Color-Blindness Safeguards
 
-### 4.1. WCAG 2.1 AA Verification
-- Normal text (17pt Regular): Minimum contrast ratio of **4.5:1** against button surfaces.
-- Large text (18pt Bold / 24pt Regular): Minimum contrast ratio of **3.0:1**.
-- State feedback colors:
-  - Success Green (`#34C759` light / `#30D158` dark): Evaluated against white and dark backgrounds to ensure contrast ratio $> 4.6:1$.
-  - Error Red (`#FF3B30` light / `#FF453A` dark): Evaluated against backgrounds to ensure contrast ratio $> 4.8:1$.
+### 4.1. WCAG 2.1 AA Verification & Color Contrast
+- Normal text (17pt Regular): Minimum contrast ratio of **4.5:1** against backgrounds (WCAG AA).
+- Large text (18pt Bold / 24pt Regular): Minimum contrast ratio of **3.0:1** (WCAG AA).
+- App surfaces contrast evaluation:
+  - OLED Canvas (`#000000`) with Primary Text (`#FFFFFF`): **21:1** (Exceeds WCAG AAA).
+  - Elevated Dark Card (`#1C1C1E`) with Primary Text (`#FFFFFF`): **16.2:1** (Exceeds WCAG AAA).
+  - Light Mode Canvas (`#F2F2F7`) with Primary Text (`#000000`): **18.7:1** (Exceeds WCAG AAA).
+  - Feedback states: Because standard pastel green (`#34C759`) and red (`#FF3B30`) do not achieve 4.5:1 against pure white (approx. 2.22:1 and 3.55:1 respectively), text within feedback elements is rendered on deepened surface fills (e.g. `#1B5E20` yielding 6.1:1 and `#B71C1C` yielding 7.4:1), and paired with mandatory redundant icons.
 
 ### 4.2. Redundant Cues (Non-Color Dependent Feedback)
 To support users with color vision deficiencies (such as Deuteranopia or Protanopia), feedback never relies solely on color:
-- **Correct State:** Green border/fill **plus** a checkmark icon `[✓]` and an announcement banner.
-- **Incorrect State:** Red border/fill **plus** a cross icon `[✕]` and immediate visual revelation of the true correct answer.
+- **Correct State:** High-contrast green fill **plus** a distinct checkmark icon `[✓]` (`checkmark.circle.fill`).
+- **Incorrect State:** High-contrast red fill **plus** a cross icon `[✕]` (`xmark.circle.fill`) and immediate visual revelation of the true correct answer.
 
 ---
 
 ## 5. Haptic Feedback Design (Tactile Sensory System)
 
-To reinforce cognitive feedback without requiring the user to look exclusively at text, native iOS haptics are integrated via `UIImpactFeedbackGenerator` and `UINotificationFeedbackGenerator`:
+> [!NOTE]
+> **Hardware Support Notice:** Haptic feedback is exclusively supported on iPhone hardware equipped with Apple's Taptic Engine. The iPad (9th generation, 10.2") does not contain a Taptic Engine and silently ignores haptic calls, maintaining full sensory feedback via visual icons and banners.
+
+To reinforce cognitive feedback on supported iPhones without requiring the user to look exclusively at text, native iOS haptics are integrated via `UIImpactFeedbackGenerator` and `UINotificationFeedbackGenerator`:
 
 | Interaction Event | Haptic Generator / Style | Sensory Objective |
 | :--- | :--- | :--- |

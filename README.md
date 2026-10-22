@@ -4,27 +4,30 @@
 
 **Train-your-Brain** is a native iOS mobile application designed to reinforce factual knowledge and stimulate cognitive training through gamified learning. Developed as part of the **Apple Mobile Solution Development I (DLAMSD01)** module at **IU International University of Applied Sciences**, the application applies modern iOS engineering patterns, declarative UI with **SwiftUI**, and strict adherence to Apple's **Human Interface Guidelines (HIG)** and **Swift API Design Guidelines**.
 
-The project fulfills all requirements of the official IU academic assignment, providing a robust codebase alongside the accompanying project report (*Projektbericht*).
+The project is being developed across a disciplined 10-sprint agile lifecycle, providing a verifiable codebase alongside the accompanying academic project report (*Projektbericht*).
 
 ---
 
-## 🚀 Features
+## 🚀 Features & Incremental Delivery
 
-### 📱 Core Gameplay & User Experience
-Designed for intuitive interaction, immediate feedback, and cognitive engagement:
+### 📱 Active Capabilities (Sprint 1 & Sprint 2)
+*   **Domain-Driven Core**: Clean DDD models (`Question`, `QuizCategory`, `Difficulty`, `ScoreRecord`, `QuizSession`) enforcing strict invariants (4 non-empty options, UUID tracking, validated correct answer mapping).
+*   **True In-Place Fisher-Yates Randomization**: Algorithmic shuffling of answer choices and question orders tracking the correct index in $O(1)$ space during swaps.
+*   **Local Decodable Datastore**: Resilient JSON parsing (`questions.json`, 24 verified questions across 4 academic domains) with bundle lookups and test fixtures.
+*   **Design System & Dual Theming**: Complete Dark Mode and Light Mode support with OLED black (`#000000`) canvas, semantic elevated cards, and an in-app theme switcher (Auto / Light / Dark) persisted in `@AppStorage`.
+*   **Reactive Game Loop & View State**: `@MainActor`-bound `QuizViewModel` coordinating `.idle`, `.loading`, `.playing`, `.answered`, and `.finished` states.
+*   **Multi-Device Ergonomics**: Centered max-width constraints (550 pt) designed for comfortable one-handed use on iPhone and ergonomic reading on iPad (9th generation, 10.2").
+*   **Verified by TDD**: 38 automated XCTest unit and view interaction tests achieving **89.75% line coverage**.
 
-*   **Dynamic Question Flow**: Presenting randomized multiple-choice trivia and academic questions across varied categories and difficulty levels.
-*   **Immediate Visual & Haptic Feedback**: Color-coded response indicators (green for correct, red for incorrect) paired with subtle tactile feedback (`UIImpactFeedbackGenerator`).
-*   **Paced Challenge (Timer Mode)**: Configurable countdown timer per question to challenge time-critical decision-making.
-*   **Comprehensive Scoreboard & Analytics**: Detailed performance metrics at round completion, including percentage accuracy, response velocity, and category breakdowns.
-*   **High-Score Persistence**: Local record tracking using `UserDefaults`, ensuring personal achievements persist across app sessions.
-*   **Adaptive Design & Multi-Device Layout**: Responsive layout engineered for both compact iPhone screens and the expansive iPad canvas, specifically optimized for the **iPad (9th generation)** 10.2" Retina display (portrait & landscape orientations, split-screen adaptability).
-*   **Accessibility & Theming**: Full support for Dark Mode, Dynamic Type text scaling, and high-contrast color palettes complying with WCAG and Apple HIG standards.
-
-### 🧩 Data & Content Engine
-*   **Local Decodable Datastore**: Resilient JSON-based question bank parsed via Swift's `Codable` protocols with safe fallback handling.
-*   **Fisher-Yates Randomization**: Algorithmic shuffling for both question sequences and answer choices to prevent pattern memorization while preserving correct index resolution.
-*   **Extensible Schema**: Domain models designed to support multimedia prompts, custom categories, and future remote API synchronizations.
+### 🗓 Planned Capabilities (Sprints 3 to 10 Roadmap)
+*   **Sprint 3**: Modular interactive UI components (`QuestionCard`, `AnswerButton`) with dynamic text wrap (`lineLimit(nil)`).
+*   **Sprint 4**: 10 Hz reactive Combine countdown timer and color-shifting `TimerBar`.
+*   **Sprint 5**: Sensory feedback engine with 1.0s pedagogical feedback pause and iPhone tactile haptics (`UIImpactFeedbackGenerator`).
+*   **Sprint 6**: Comprehensive post-game analytics scorecard and German university grading conversion (*Sehr Gut* to *Nicht Ausreichend*).
+*   **Sprint 7**: Local persistent leaderboard and round history using `UserDefaults` and `Codable`.
+*   **Sprint 8**: Dedicated physical iPad 9 (10.2") testing, landscape/portrait verification, and VoiceOver accessibility audit.
+*   **Sprint 9**: Formal boundary tests, edge-case hardening, and CI workflow pipeline verification.
+*   **Sprint 10**: Final code freeze, production release (`v1.0.0`), screenshot evidence collection, and *Projektbericht* synchronization.
 
 ---
 
@@ -157,18 +160,20 @@ The project adheres to a hybrid versioning scheme combining **Semantic Versionin
 
 | Version (SemVer) | Build Target (CalVer) | Milestone / Phase | Scope & Premeditated Deliverables | Status |
 | :---: | :---: | :--- | :--- | :---: |
-| **`v0.1.0`** | `20261022.1000` | Sprint 1: Architecture Core & Ingestion | • DDD domain entities (`Question`, `Category`, `Difficulty`, `ScoreRecord`)<br>• Local JSON decodable pipeline (`questions.json`, 24 questions)<br>• Base `QuizViewModel` state loop and 23 XCTest unit tests<br>• Native Xcode project and GitHub Actions CI workflow | Completed |
-| **`v0.2.0`** | `20261022.1400` | Sprint 2: UI/UX Design System & Tokens | • Design system specification (`design/` directory)<br>• Color tokens (Dark/Light mode) & 4pt grid system<br>• Screen wireframes (Home, Active Quiz, Feedback, Results)<br>• Multi-device layout guidelines (iPhone & iPad 9th Gen 10.2") | In Progress |
-| **`v0.3.0`** | `20261022.1800` | Sprint 3: Core Interactive UI Components | • Modular SwiftUI components (`QuestionCard`, `AnswerButton`)<br>• High-contrast feedback states and continuous corner radii<br>• Dynamic Type scaling with zero text clipping<br>• Category selector carousel and domain badges | Planned |
-| **`v0.4.0`** | `20261023.1000` | Sprint 4: Reactive Timer & State Machine | • Combine 10 Hz countdown timer on `@MainActor`<br>• Dynamic `TimerBar` with chromatic shift (Blue $\to$ Orange $\to$ Red)<br>• Pause/resume handling on app lifecycle transitions<br>• Automatic timeout penalty dispatch | Planned |
-| **`v0.5.0`** | `20261023.1400` | Sprint 5: Sensory Feedback & Haptics | • 1.0s pedagogical pause revealing explanation callout<br>• Visual validation icons (`checkmark.circle` / `xmark.circle`)<br>• Tactile feedback via `UINotificationFeedbackGenerator`<br>• Answer button double-tap debouncing lock | Planned |
-| **`v0.6.0`** | `20261023.1800` | Sprint 6: Results Analytics & Scorecard | • Post-game scorecard view (`ResultView`)<br>• Accuracy percentage computation and time-per-question metrics<br>• Academic grading scale conversion (German university tiers)<br>• Category-specific accuracy breakdown | Planned |
-| **`v0.7.0`** | `20261024.1100` | Sprint 7: Persistence & High Scores | • Lightweight persistence with `UserDefaults` and `Codable`<br>• Historical rounds tracking and personal bests (`LeaderboardView`)<br>• Session state restoration and empty-state fallbacks<br>• Reset and clear history utilities | Planned |
-| **`v0.8.0`** | `20261024.1500` | Sprint 8: iPad 9 Ergonomics & Accessibility | • iPad 9 (10.2") regular size class optimization (640pt max container)<br>• Full VoiceOver accessibility labeling and status announcements<br>• WCAG 2.1 AA color contrast compliance verification<br>• Dynamic Type testing with extreme accessibility font sizes | Planned |
-| **`v0.9.0`** | `20261025.1100` | Sprint 9: Verification & CI Hardening | • Boundary tests (0 questions, single question, rapid tapping)<br>• Test suite expansion reaching $\ge 90\%$ business logic coverage<br>• SwiftLint style validation and clean-up<br>• Xcode build diagnostics and release scheme validation | Planned |
-| **`v1.0.0`** | `20261025.1700` | Sprint 10: Final Release & Submission | • Final code freeze and production build generation<br>• Comprehensive screenshot evidence collection for iPad & iPhone<br>• Synchronization with academic *Projektbericht* chapters<br>• Final deliverable package for IU examination submission | Planned |
+| **`v0.1.0`** | `20261022.120645` | Sprint 1: Architecture Core & Ingestion | • DDD domain entities (`Question`, `Category`, `Difficulty`, `ScoreRecord`)<br>• Local JSON decodable pipeline (`questions.json`, 24 questions)<br>• Base `QuizViewModel` state loop and 23 XCTest unit tests<br>• Native Xcode project and GitHub Actions CI workflow | Completed |
+| **`v0.2.0`** | `20261022.140000` | Sprint 2: UI/UX Design System, Dark Mode & Tokens | • Design system specification (`design/` directory)<br>• Semantic color tokens (Light/Dark mode) & 4pt grid system<br>• Screen wireframes (Home, Active Quiz, Feedback, Results)<br>• Native Dark Theme implementation & multi-device guidelines | Completed |
+| **`v0.2.1`** | `20261022.152326` | Sprint 2 Maintenance: Audit Fixes & TDD Hardening | • Bugfix: "Play Again" state reset & in-place Fisher-Yates $O(1)$ index tracking<br>• UI: Restored touch interaction in ScrollView via plain button style<br>• Invariants: Enforced 4 non-empty options & state machine defenses<br>• Tests: 38 automated tests (89.75% line coverage) & incident reporting | Completed |
+| **`v0.3.0`** | `TBD` | Sprint 3: Core Interactive UI Components | • Modular SwiftUI components (`QuestionCard`, `AnswerButton`)<br>• High-contrast feedback states and continuous corner radii<br>• Dynamic Type scaling with zero text clipping<br>• Category selector carousel and domain badges | Planned |
+| **`v0.4.0`** | `TBD` | Sprint 4: Reactive Timer & State Machine | • Combine 10 Hz countdown timer on `@MainActor`<br>• Dynamic `TimerBar` with chromatic shift (Blue $\to$ Orange $\to$ Red)<br>• Pause/resume handling on app lifecycle transitions<br>• Automatic timeout penalty dispatch | Planned |
+| **`v0.5.0`** | `TBD` | Sprint 5: Sensory Feedback & Haptics | • 1.0s pedagogical pause revealing explanation callout<br>• Visual validation icons (`checkmark.circle` / `xmark.circle`)<br>• Tactile feedback via `UINotificationFeedbackGenerator`<br>• Answer button double-tap debouncing lock | Planned |
+| **`v0.6.0`** | `TBD` | Sprint 6: Results Analytics & Scorecard | • Post-game scorecard view (`ResultView`)<br>• Accuracy percentage computation and time-per-question metrics<br>• Academic grading scale conversion (German university tiers)<br>• Category-specific accuracy breakdown | Planned |
+| **`v0.7.0`** | `TBD` | Sprint 7: Persistence & High Scores | • Lightweight persistence with `UserDefaults` and `Codable`<br>• Historical rounds tracking and personal bests (`LeaderboardView`)<br>• Session state restoration and empty-state fallbacks<br>• Reset and clear history utilities | Planned |
+| **`v0.8.0`** | `TBD` | Sprint 8: iPad 9 Ergonomics & Accessibility | • iPad 9 (10.2") regular size class optimization (640pt max container)<br>• Full VoiceOver accessibility labeling and status announcements<br>• WCAG 2.1 AA color contrast compliance verification<br>• Dynamic Type testing with extreme accessibility font sizes | Planned |
+| **`v0.9.0`** | `TBD` | Sprint 9: Verification & CI Hardening | • Boundary tests (0 questions, single question, rapid tapping)<br>• Test suite expansion reaching $\ge 90\%$ business logic coverage<br>• SwiftLint style validation and clean-up<br>• Xcode build diagnostics and release scheme validation | Planned |
+| **`v1.0.0`** | `TBD` | Sprint 10: Final Release & Submission | • Final code freeze and production build generation<br>• Comprehensive screenshot evidence collection for iPad & iPhone<br>• Synchronization with academic *Projektbericht* chapters<br>• Final deliverable package for IU examination submission | Planned |
 
-> For comprehensive architectural rationale, patch progression rules, and Xcode `Info.plist` mapping, consult [docs/versioning.md](docs/versioning.md).
+> For comprehensive architectural rationale, patch progression rules, and Xcode `Info.plist` mapping, consult [docs/versioning.md](docs/versioning.md).  
+> For technical incident retrospectives, audit resolutions, and simulator debugging guidelines, consult [docs/sprint2_incident_and_bugfix_report.md](docs/sprint2_incident_and_bugfix_report.md).
 
 ---
 

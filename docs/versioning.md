@@ -64,7 +64,8 @@ Uses **Semantic Versioning** (`MAJOR.MINOR.PATCH`) to communicate functional mil
 | Version | Sprint / Milestone | Technical Scope & Deliverables |
 | :---: | :--- | :--- |
 | **`0.1.0`** | Sprint 1: Architecture Core & Ingestion | Base MVVM structure, `Codable` domain models, `questions.json` decoding (24 questions), and 23 XCTest unit tests. *(Completed)* |
-| **`0.2.0`** | Sprint 2: UI/UX Design System & Tokens | Design system in `design/`, semantic color tokens (Dark/Light), 4pt grid, 56pt touch targets, typography scale, and wireframes. *(In Progress)* |
+| **`0.2.0`** | Sprint 2: UI/UX Design System & Tokens | Design system in `design/`, semantic color tokens (Dark/Light), 4pt grid, 56pt touch targets, typography scale, and wireframes. *(Completed)* |
+| **`0.2.1`** | Sprint 2 Maintenance: Audit Fixes & TDD | Bugfix for "Play Again" state reset, in-place Fisher-Yates $O(1)$ tracking, ScrollView touch recognition, and strict 4 options invariant. *(Completed)* |
 | **`0.3.0`** | Sprint 3: Core Interactive UI Components | Production SwiftUI atomic components (`QuestionCard`, `AnswerButton`), Dynamic Type scaling, squircle borders, and category chips. |
 | **`0.4.0`** | Sprint 4: Reactive Timer & State Machine | Combine 10 Hz countdown timer on `@MainActor`, dynamic `TimerBar` with chromatic shifts, pause/resume, and timeout penalty. |
 | **`0.5.0`** | Sprint 5: Sensory Feedback & Haptics | 1.0s pedagogical pause with inline explanation, visual check/cross icons, tactile haptics via `UINotificationFeedbackGenerator`. |
@@ -75,14 +76,15 @@ Uses **Semantic Versioning** (`MAJOR.MINOR.PATCH`) to communicate functional mil
 | **`1.0.0`** | Sprint 10: Final Academic Release | Final code freeze, production build generation, comprehensive screenshot evidence collection, and final submission release. |
 
 ### Tier 2: Internal Build Number (`CFBundleVersion`)
-Uses **Monotonic Numeric Calendar Versioning** (`YYYYMMDD.HHmm`), satisfying granular timestamp tracking while complying 100% with Apple syntax:
+Uses **Monotonic Numeric Calendar Versioning** (`YYYYMMDD.HHmmss`) including date, hours, minutes, and seconds, recorded only when an actual build is executed and approved:
 
-* **Syntax:** `YYYYMMDD.HHmm`
-* **Example:** `20261022.0950` (Build generated on October 22, 2026 at 09:50).
+* **Syntax:** `YYYYMMDD.HHmmss`
+* **Real Completed Example:** `20261022.120645` (Build generated on October 22, 2026 at 12:06:45).
+* **Future Builds:** Explicitly marked as `TBD` until compilation occurs. No speculative or fictitious future timestamps are permitted.
 * **Properties:**
-  * Strictly monotonically increasing (each subsequent compilation produces a higher integer value).
+  * Strictly monotonically increasing.
   * Validated against Apple App Store Connect and TestFlight verification rules.
-  * Unambiguous correlation between code commits, simulator runs, and physical iPad testing sessions.
+  * Precise correlation down to the exact second between Git commits, simulator runs, and physical iPad testing sessions.
 
 ---
 
@@ -94,9 +96,11 @@ To mark milestone releases in the Git repository, both identifiers are combined:
 # Tag naming convention
 v<SemVer>+<BuildNumber>
 
-# Concrete release examples:
-git tag -a v0.1.0 -m "Release 0.1.0 (Build 20261022.1000): Initial core logic and domain tests"
-git tag -a v1.0.0 -m "Release 1.0.0 (Build 20261025.1830): Final submission candidate for IU examination"
+# Concrete release example:
+git tag -a v0.1.0 -m "Release 0.1.0 (Build 20261022.120645): Initial core logic and domain tests"
+
+# Milestone template for future completed sprints (recorded at build time):
+# git tag -a v<SemVer> -m "Release <SemVer> (Build <YYYYMMDD.HHmmss>): <Scope Summary>"
 ```
 
 ---

@@ -1,8 +1,11 @@
 import XCTest
 @testable import TrainYourBrainCore
 
+/// Unit test suite validating the state machine, scoring mathematics,
+/// streak multipliers, and timeout penalties in `QuizSession`.
 final class QuizSessionTests: XCTestCase {
     
+    /// Test helper creating a standardized 3-question fixture with tiered difficulties.
     private func makeSampleQuestions() throws -> [Question] {
         return [
             try Question(
@@ -32,6 +35,7 @@ final class QuizSessionTests: XCTestCase {
         ]
     }
     
+    /// Verifies the pristine default state of a newly created session before starting.
     func testInitialSessionState() throws {
         let questions = try makeSampleQuestions()
         let session = QuizSession(questions: questions, category: .softwareEngineering)
@@ -45,6 +49,7 @@ final class QuizSessionTests: XCTestCase {
         XCTAssertEqual(session.currentQuestion?.prompt, "Question 1")
     }
     
+    /// Verifies that calling `start()` moves the state machine to `.inProgress`.
     func testStartSessionMovesToInProgress() throws {
         let questions = try makeSampleQuestions()
         var session = QuizSession(questions: questions)
@@ -53,12 +58,13 @@ final class QuizSessionTests: XCTestCase {
         XCTAssertEqual(session.state, .inProgress)
     }
     
+    /// Verifies that consecutive correct answers accumulate points with the 10% streak bonus.
     func testAnsweringCorrectlyIncrementsScoreAndStreak() throws {
         let questions = try makeSampleQuestions()
         var session = QuizSession(questions: questions)
         session.start()
         
-        // Question 1: Easy (10 base points)
+        // Question 1: Easy (10 base points, streak = 1 -> multiplier 1.0)
         let isCorrect = session.submitAnswer(optionIndex: 0)
         XCTAssertTrue(isCorrect)
         XCTAssertEqual(session.score, 10)
@@ -70,7 +76,7 @@ final class QuizSessionTests: XCTestCase {
         XCTAssertEqual(session.currentIndex, 1)
         XCTAssertEqual(session.state, .inProgress)
         
-        // Question 2: Medium (20 base points * 1.1 streak multiplier = 22)
+        // Question 2: Medium (20 base points * 1.1 streak multiplier = 22 points)
         let isCorrect2 = session.submitAnswer(optionIndex: 1)
         XCTAssertTrue(isCorrect2)
         XCTAssertEqual(session.score, 10 + 22)
@@ -78,6 +84,7 @@ final class QuizSessionTests: XCTestCase {
         XCTAssertEqual(session.bestStreak, 2)
     }
     
+    /// Verifies that an incorrect answer immediately breaks the active streak back to 0.
     func testAnsweringIncorrectlyResetsStreak() throws {
         let questions = try makeSampleQuestions()
         var session = QuizSession(questions: questions)
@@ -88,14 +95,15 @@ final class QuizSessionTests: XCTestCase {
         XCTAssertEqual(session.currentStreak, 1)
         
         session.advanceToNext()
-        // Wrong answer next
+        // Wrong answer next (resets streak to 0, score remains 10)
         let isCorrect = session.submitAnswer(optionIndex: 0) // expected 1
         XCTAssertFalse(isCorrect)
         XCTAssertEqual(session.currentStreak, 0)
         XCTAssertEqual(session.bestStreak, 1)
-        XCTAssertEqual(session.score, 10) // Score doesn't change
+        XCTAssertEqual(session.score, 10)
     }
     
+    /// Verifies timeout handling when user fails to answer before timer runs out.
     func testTimeoutHandling() throws {
         let questions = try makeSampleQuestions()
         var session = QuizSession(questions: questions)
@@ -107,6 +115,7 @@ final class QuizSessionTests: XCTestCase {
         XCTAssertEqual(session.state, .questionAnswered(selectedIndex: -1, isCorrect: false))
     }
     
+    /// Verifies full session completion produces an accurate `ScoreRecord` value object.
     func testFullSessionCompletionEmitsScoreRecord() throws {
         let questions = try makeSampleQuestions()
         var session = QuizSession(questions: questions, category: .softwareEngineering)

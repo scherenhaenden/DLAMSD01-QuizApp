@@ -1,12 +1,18 @@
 import Foundation
 
 /// Production implementation of `QuestionServiceProtocol` reading questions from bundled JSON files.
+///
+/// Implements resilient error handling and flexible initialization:
+/// - Supports standard application bundle lookups (`Bundle.main`).
+/// - Supports Swift Package Manager modular resources (`Bundle.module`).
+/// - Supports raw in-memory `Data` injection for fast, deterministic unit testing.
 public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sendable {
     private let resourceName: String
     private let resourceExtension: String
     private let customBundle: Bundle?
     private let customData: Data?
     
+    /// Default initializer configured for reading a bundled resource file (defaults to `questions.json`).
     public init(
         resourceName: String = "questions",
         resourceExtension: String = "json",
@@ -18,7 +24,7 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
         self.customData = nil
     }
     
-    /// Initializer intended for unit testing with mocked JSON in-memory data.
+    /// Testing initializer accepting in-memory JSON data, bypassing file system lookups.
     public init(mockData: Data) {
         self.resourceName = "mock"
         self.resourceExtension = "json"
@@ -26,6 +32,9 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
         self.customData = mockData
     }
     
+    /// Reads and decodes all questions from the configured source.
+    ///
+    /// Throws `QuestionServiceError` if the resource is missing, corrupted, or yields zero questions.
     public func loadAllQuestions() throws -> [Question] {
         let data: Data
         
@@ -49,6 +58,7 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
         }
     }
     
+    /// Filters questions by category, throwing `emptyQuestionSet` if no matching entries exist.
     public func loadQuestions(for category: QuizCategory) throws -> [Question] {
         let all = try loadAllQuestions()
         let filtered = all.filter { $0.category == category }
@@ -60,6 +70,7 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
     
     // MARK: - Private Helpers
     
+    /// Resolves the resource URL using the appropriate bundle context (SPM vs. App Bundle).
     private func readDataFromBundle() throws -> Data {
         let targetBundle: Bundle
         if let customBundle = customBundle {

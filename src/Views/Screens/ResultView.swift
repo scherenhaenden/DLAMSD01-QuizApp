@@ -1,6 +1,12 @@
 import SwiftUI
 
 /// Screen displayed upon round completion, displaying analytics, accuracy %, and academic evaluation tier.
+///
+/// Features:
+/// - Celebratory / encouragement trophy icon matching user performance.
+/// - Academic evaluation tier according to German university standards (Sehr Gut, Gut, etc.).
+/// - Comprehensive performance metric tiles: total score points, accuracy percentage, and best streak.
+/// - Call to action buttons to initiate another round or return to the main menu.
 public struct ResultView: View {
     public let record: ScoreRecord
     public let onPlayAgain: () -> Void
@@ -16,6 +22,7 @@ public struct ResultView: View {
         self.onBackToMenu = onBackToMenu
     }
     
+    /// Chromatic tone reflecting whether the user passed (green) or requires review (orange).
     private var gradeColor: Color {
         return record.isPassing ? .green : .orange
     }
@@ -30,6 +37,7 @@ public struct ResultView: View {
                 .foregroundColor(gradeColor)
                 .padding(.bottom, 4)
             
+            // Academic evaluation header
             VStack(spacing: 8) {
                 Text(record.isPassing ? "Round Completed!" : "Good Effort!")
                     .font(.title.bold())
@@ -52,6 +60,7 @@ public struct ResultView: View {
                 
                 Divider()
                 
+                // Detailed fraction tally
                 HStack {
                     Text("Correct Answers")
                         .font(.subheadline)
@@ -71,7 +80,7 @@ public struct ResultView: View {
             
             Spacer()
             
-            // Action buttons
+            // Action navigation buttons
             VStack(spacing: 12) {
                 Button(action: onPlayAgain) {
                     Text("Play Again")
@@ -100,6 +109,7 @@ public struct ResultView: View {
     }
 }
 
+/// Small metric tile helper for dashboard analytics.
 private struct MetricTile: View {
     let title: String
     let value: String

@@ -1,9 +1,12 @@
 import XCTest
 @testable import TrainYourBrainCore
 
+/// Unit test suite verifying the presentation and state orchestration in `QuizViewModel`.
+/// Runs on `@MainActor` to match the ViewModel's thread confinement.
 @MainActor
 final class QuizViewModelTests: XCTestCase {
     
+    /// Test spy conforming to `QuestionServiceProtocol` enabling controlled error injection and fast in-memory execution.
     private final class MockQuestionService: QuestionServiceProtocol, @unchecked Sendable {
         let questions: [Question]
         var shouldThrow: Bool = false
@@ -31,6 +34,7 @@ final class QuizViewModelTests: XCTestCase {
         }
     }
     
+    /// Generates a two-question test fixture.
     private func makeMockQuestions() throws -> [Question] {
         return [
             try Question(
@@ -52,6 +56,7 @@ final class QuizViewModelTests: XCTestCase {
         ]
     }
     
+    /// Verifies that calling `startQuiz()` transitions from `.idle` to `.playing` and populates questions.
     func testStartQuizInitializesGameState() throws {
         let questions = try makeMockQuestions()
         let service = MockQuestionService(questions: questions)
@@ -68,6 +73,7 @@ final class QuizViewModelTests: XCTestCase {
         XCTAssertEqual(vm.currentScore, 0)
     }
     
+    /// Verifies that service failures (e.g. empty datastore) gracefully transition the ViewModel to `.error`.
     func testStartQuizHandlesServiceError() {
         let service = MockQuestionService(questions: [])
         service.shouldThrow = true
@@ -76,12 +82,13 @@ final class QuizViewModelTests: XCTestCase {
         vm.startQuiz()
         
         if case .error = vm.viewState {
-            // Success
+            // Expected behavior
         } else {
             XCTFail("Expected viewState to be .error")
         }
     }
     
+    /// Verifies the full user progression loop: answering Q1, advancing to Q2, answering Q2, and transitioning to `.finished`.
     func testSelectAnswerAndAdvanceToFinish() throws {
         let questions = try makeMockQuestions()
         let service = MockQuestionService(questions: questions)
@@ -89,7 +96,7 @@ final class QuizViewModelTests: XCTestCase {
         
         vm.startQuiz()
         guard let firstQ = vm.currentQuestion else {
-            XCTFail("No current question")
+            XCTFail("No current question found")
             return
         }
         
@@ -105,7 +112,7 @@ final class QuizViewModelTests: XCTestCase {
         XCTAssertEqual(vm.questionIndex, 1)
         
         guard let secondQ = vm.currentQuestion else {
-            XCTFail("No second question")
+            XCTFail("No second question found")
             return
         }
         
@@ -124,6 +131,7 @@ final class QuizViewModelTests: XCTestCase {
         }
     }
     
+    /// Verifies that `resetToMenu()` thoroughly cleans up session state and cancels timers.
     func testResetToMenu() throws {
         let questions = try makeMockQuestions()
         let service = MockQuestionService(questions: questions)

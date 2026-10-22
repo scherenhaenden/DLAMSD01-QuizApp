@@ -1,7 +1,12 @@
 import SwiftUI
 
 /// Reusable answer selection button conforming to Apple Human Interface Guidelines (HIG).
-/// Guarantees comfortable touch target (minimum 50 pt height, adaptable width) and stateful color feedback.
+///
+/// Ergonomic & Accessibility Features:
+/// - Guarantees comfortable touch target size (minimum 56 pt height, exceeding the 44x44 pt HIG baseline).
+/// - Dynamic text scaling with minimum scale factor to prevent clipping on compact screens (iPhone SE).
+/// - State-dependent chromatic feedback: emerald green for correct choices, crimson red for wrong picks.
+/// - Integrated VoiceOver accessibility labeling combining option letter and prompt text.
 public struct AnswerButton: View {
     public let optionText: String
     public let index: Int
@@ -26,6 +31,7 @@ public struct AnswerButton: View {
         self.action = action
     }
     
+    /// Dynamically resolves the button background color based on active evaluation state.
     private var backgroundColor: Color {
         if isAnswerRevealed {
             if isCorrectAnswer == true {
@@ -39,6 +45,7 @@ public struct AnswerButton: View {
         return Color.adaptiveSecondaryBackground
     }
     
+    /// Ensures high-contrast text readability across light, dark, and colored states.
     private var foregroundColor: Color {
         if isAnswerRevealed && (isCorrectAnswer == true || isSelected) {
             return .white
@@ -46,6 +53,7 @@ public struct AnswerButton: View {
         return .primary
     }
     
+    /// Converts numeric 0-based index to standard multiple-choice letters (A, B, C, D).
     private var optionLetter: String {
         let letters = ["A", "B", "C", "D"]
         return index < letters.count ? letters[index] : "\(index + 1)"
@@ -54,11 +62,13 @@ public struct AnswerButton: View {
     public var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
+                // Choice letter badge
                 Text(optionLetter)
                     .font(.subheadline.bold())
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(Color.primary.opacity(0.08)))
                 
+                // Answer text with multi-line wrap support
                 Text(optionText)
                     .font(.body)
                     .multilineTextAlignment(.leading)
@@ -67,6 +77,7 @@ public struct AnswerButton: View {
                 
                 Spacer()
                 
+                // Visual validation icon upon answer reveal
                 if isAnswerRevealed {
                     if isCorrectAnswer == true {
                         Image(systemName: "checkmark.circle.fill")
@@ -93,7 +104,7 @@ public struct AnswerButton: View {
             .foregroundColor(foregroundColor)
         }
         .buttonStyle(.plain)
-        .disabled(isAnswerRevealed)
+        .disabled(isAnswerRevealed) // Prevent double-tap race conditions after selection
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Option \(optionLetter): \(optionText)")
     }

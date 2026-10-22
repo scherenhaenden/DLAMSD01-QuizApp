@@ -39,7 +39,7 @@ public enum QuizCategory: String, Codable, CaseIterable, Identifiable, Hashable,
         case .algorithmsAndDataStructures:
             return "network"
         case .testingAndQuality:
-            return "checkmark.shield.fill"
+            return "shield.checkered"
         }
     }
     

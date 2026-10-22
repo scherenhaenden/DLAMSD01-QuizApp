@@ -34,6 +34,7 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
     public enum ValidationError: LocalizedError, Equatable {
         case emptyPrompt
         case insufficientOptions(count: Int)
+        case emptyOption
         case invalidCorrectIndex(index: Int, optionsCount: Int)
         case duplicateOptions
         case emptyExplanation
@@ -43,7 +44,9 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
             case .emptyPrompt:
                 return "The question prompt cannot be empty."
             case .insufficientOptions(let count):
-                return "A question must provide at least 2 options (expected 4, found \(count))."
+                return "A question must provide exactly 4 options (found \(count))."
+            case .emptyOption:
+                return "Question options cannot be empty or purely whitespace."
             case .invalidCorrectIndex(let index, let optionsCount):
                 return "Correct answer index \(index) is out of range for \(optionsCount) options."
             case .duplicateOptions:
@@ -58,7 +61,8 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
     ///
     /// Throws a `ValidationError` if:
     /// - Prompt or explanation consists solely of whitespace.
-    /// - Fewer than 2 options are supplied.
+    /// - Not exactly 4 options are supplied.
+    /// - Any option consists solely of whitespace.
     /// - `correctAnswerIndex` falls outside the bounds of `options.indices`.
     /// - Duplicate option texts exist within the choices.
     public init(
@@ -75,17 +79,22 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
             throw ValidationError.emptyPrompt
         }
         
-        guard options.count >= 2 else {
+        guard options.count == 4 else {
             throw ValidationError.insufficientOptions(count: options.count)
         }
         
-        guard correctAnswerIndex >= 0 && correctAnswerIndex < options.count else {
-            throw ValidationError.invalidCorrectIndex(index: correctAnswerIndex, optionsCount: options.count)
+        let trimmedOptions = options.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        guard trimmedOptions.allSatisfy({ !$0.isEmpty }) else {
+            throw ValidationError.emptyOption
+        }
+        
+        guard correctAnswerIndex >= 0 && correctAnswerIndex < 4 else {
+            throw ValidationError.invalidCorrectIndex(index: correctAnswerIndex, optionsCount: 4)
         }
         
         // Ensure no duplicate answers exist to preserve quiz integrity
-        let uniqueOptions = Set(options.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) })
-        guard uniqueOptions.count == options.count else {
+        let uniqueOptions = Set(trimmedOptions)
+        guard uniqueOptions.count == 4 else {
             throw ValidationError.duplicateOptions
         }
         
@@ -151,15 +160,26 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
         return options[correctAnswerIndex]
     }
     
-    /// Produces a shuffled permutation of the multiple-choice options using Fisher-Yates randomization.
+    /// Produces a shuffled permutation of the multiple-choice options using an in-place Fisher-Yates randomization
+    /// while tracking the exact index migration of the correct answer in O(1) space during swaps.
     ///
     /// Crucially recalculates and preserves the updated `correctAnswerIndex` pointing to the
     /// same correct choice string, preventing position-based pattern memorization across sessions.
-    public func shuffledOptions<T: RandomNumberGenerator>(using generator: inout T) -> Question {
-        let correctOptionText = self.options[self.correctAnswerIndex]
-        let shuffled = self.options.shuffled(using: &generator)
-        guard let newCorrectIndex = shuffled.firstIndex(of: correctOptionText) else {
-            return self
+    public func fisherYatesShuffled<T: RandomNumberGenerator>(using generator: inout T) -> Question {
+        var shuffled = self.options
+        var newCorrectIndex = self.correctAnswerIndex
+        
+        // In-place Knuth/Fisher-Yates shuffle with index tracking
+        for i in stride(from: shuffled.count - 1, through: 1, by: -1) {
+            let j = Int.random(in: 0...i, using: &generator)
+            if i != j {
+                shuffled.swapAt(i, j)
+                if newCorrectIndex == i {
+                    newCorrectIndex = j
+                } else if newCorrectIndex == j {
+                    newCorrectIndex = i
+                }
+            }
         }
         
         do {
@@ -177,9 +197,20 @@ public struct Question: Identifiable, Codable, Equatable, Hashable, Sendable {
         }
     }
     
+    /// Overload for `fisherYatesShuffled` using the system random number generator.
+    public func fisherYatesShuffled() -> Question {
+        var rng = SystemRandomNumberGenerator()
+        return fisherYatesShuffled(using: &rng)
+    }
+    
+    /// Backward-compatible alias delegating to `fisherYatesShuffled`.
+    public func shuffledOptions<T: RandomNumberGenerator>(using generator: inout T) -> Question {
+        return fisherYatesShuffled(using: &generator)
+    }
+    
     /// Convenience overload using the default system random number generator.
     public func shuffledOptions() -> Question {
         var rng = SystemRandomNumberGenerator()
-        return shuffledOptions(using: &rng)
+        return fisherYatesShuffled(using: &rng)
     }
 }

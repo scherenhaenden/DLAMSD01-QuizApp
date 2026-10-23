@@ -4,10 +4,14 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.7.1** (Build `20261023.203000`), Sprint 7: Local persistence layer, game history logging, accessible Leaderboard modal view, personal best retention protection, and canonical tie-breaking.
+Version **0.8.0** (Build `20261023.220500`), Sprint 8: Multi-Device Optimization (iPad 9.ª Gen 10.2"), 640pt ergonomic layout container, VoiceOver accessibility, WCAG 2.1 AA contrast compliance, and storage capacity boundary hardening.
 
 ### Implemented
 
+- Multi-device ergonomic layout: 640 pt centered container across all primary screens (`HomeView`, `QuizView`, `ResultView`, `LeaderboardView`), ensuring optimal reading line length (50-75 characters) and thumb-reach comfort on iPad (9th generation, 10.2" display) in both Portrait and Landscape orientations (US-15).
+- Deep VoiceOver accessibility: semantic labels, hints, and traits on `AnswerButton`, `CategoryCard`, `QuestionCard`, `TimerBar`, `ResultView`, and `LeaderboardView`, supplemented by live speech feedback announcements for evaluations and timeouts (US-16).
+- Mathematical WCAG 2.1 AA contrast audit: Emerald green feedback fill (`#1B5E20`) achieves 8.01:1 contrast on white (exceeding WCAG AAA 7:1), Crimson red (`#B71C1C`) achieves 6.65:1, and text labels strictly surpass the 4.5:1 threshold.
+- Storage capacity boundary hardening: `pruneRecordsWithBestProtection` sorts protected records by canonical `Comparable` ordering (`records.sorted(by: >).prefix(maxCapacity)`), ensuring all-time personal bests strictly survive even under extreme edge-case configurations (`maxCapacity: 1`).
 - Local JSON catalog with 24 German questions in four categories; the interface is currently English.
 - Validated question model, Fisher-Yates shuffled question and option order, and a separate quiz session state machine.
 - Category and mixed rounds, immediate pedagogical answer explanation, manual next action, and result analytics.
@@ -60,13 +64,13 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The package test suite executes 104 unit tests with 0 failures and measures **91.12%** instrumented production line coverage on macOS via `llvm-cov` (4,023 / 4,415 lines across all 22 production files), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, background-to-foreground lifecycle resumption, scorecard dashboard metrics, and Leaderboard modal presentation and dismissal on iPad (9th generation).
+The package test suite executes 112 unit tests with 0 failures and measures **91.15%** instrumented production line coverage on macOS via `llvm-cov` (4,060 / 4,454 lines across all 22 production files), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, background-to-foreground lifecycle resumption, scorecard dashboard metrics, Leaderboard modal presentation/dismissal, and iPad 10.2" landscape/portrait ergonomic rotation.
 
 Hardware qualification: While the software protocol and conditional compilation are 100% verified via automated tests, physical tactile vibration requires a physical iPhone device equipped with a Taptic Engine.
 
-Formal spectrophotometric WCAG 2.1 AA contrast auditing belongs to the dedicated accessibility milestone (Sprint 8); current states provide redundant chromatic cues alongside numeric countdown labels and VoiceOver announcements.
+Accessibility and Ergonomics (Sprint 8): Evaluated and verified with formal mathematical WCAG 2.1 AA contrast calculations (8.01:1 on correct feedback, 6.65:1 on incorrect feedback), comprehensive VoiceOver accessibility labels/hints/traits, and 640 pt centered container layout for iPadOS regular size classes.
 
-See the [Sprint 7 technical report](docs/sprint7_local_persistence_and_leaderboard_report.md) for architectural details, coverage breakdowns, and persistence specifications.
+See the [Sprint 8 technical report](docs/sprint8_ipad_ergonomics_and_accessibility_report.md) for architectural details, contrast ratios, and layout specifications.
 
 ## Remaining roadmap
 

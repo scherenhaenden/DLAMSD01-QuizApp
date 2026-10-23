@@ -7,6 +7,15 @@ final class Sprint6ResultsAnalyticsTests: XCTestCase {
     
     // MARK: - Test Helpers
     
+    private final class TestQuestionService: QuestionServiceProtocol, @unchecked Sendable {
+        let questions: [Question]
+        init(questions: [Question]) {
+            self.questions = questions
+        }
+        func loadAllQuestions() throws -> [Question] { questions }
+        func loadQuestions(for category: QuizCategory) throws -> [Question] { questions }
+    }
+    
     private func makeTestQuestion(
         category: QuizCategory = .softwareEngineering,
         correctIndex: Int = 0
@@ -97,6 +106,17 @@ final class Sprint6ResultsAnalyticsTests: XCTestCase {
         XCTAssertFalse(grade0.isPassing)
     }
     
+    func testGermanGradeAndAcademicEvaluationTierConsistencyAt75Percent() {
+        // Specific regression test for 75% accuracy (e.g. 18/24 or 3/4)
+        let record75 = ScoreRecord(score: 1800, totalQuestions: 24, correctAnswers: 18)
+        XCTAssertEqual(record75.accuracyPercentage, 75)
+        XCTAssertEqual(record75.germanGrade.numericValue, 2.3)
+        XCTAssertEqual(record75.germanGrade.title, "Gut")
+        XCTAssertEqual(record75.germanGrade.formattedGrade, "2.3 · Gut (Above Average)")
+        // Verify semantic consistency: academicEvaluationTier must align with germanGrade (Gut, not Befriedigend)
+        XCTAssertEqual(record75.academicEvaluationTier, "Gut (Good)")
+    }
+    
     // MARK: - 2. Time Spent & Speed Analytics Tests (US-12)
     
     func testTimeSpentAndSpeedCalculations() {
@@ -133,6 +153,46 @@ final class Sprint6ResultsAnalyticsTests: XCTestCase {
         XCTAssertEqual(zeroRecord.averageResponseTime, 0.0)
         XCTAssertEqual(zeroRecord.formattedAverageSpeed, "0.0s")
         XCTAssertEqual(zeroRecord.formattedDuration, "0s")
+    }
+    
+    func testActiveResponseTimeSeparatedFromReadingTimeInViewModel() {
+        var simulatedUptime: TimeInterval = 1000.0
+        let mockClock = { simulatedUptime }
+        
+        let q = makeTestQuestion(category: .softwareEngineering, correctIndex: 0)
+        let service = TestQuestionService(questions: [q])
+        let vm = QuizViewModel(questionService: service, monotonicClock: mockClock)
+        
+        // 1. Start quiz at t = 1000.0
+        vm.startQuiz(category: .softwareEngineering)
+        XCTAssertEqual(vm.viewState, QuizViewModel.ViewState.playing)
+        
+        // 2. Answer question after 2.0s of active decision time (t = 1002.0)
+        simulatedUptime += 2.0
+        vm.selectAnswer(at: 0)
+        guard case .answered = vm.viewState else {
+            XCTFail("Expected view state to be answered")
+            return
+        }
+        
+        // 3. User spends 60.0s reading the pedagogical explanation before tapping next (t = 1062.0)
+        simulatedUptime += 60.0
+        vm.nextQuestion()
+        
+        // 4. Verify the round completed with decoupled active vs reading time
+        guard case .finished(let record) = vm.viewState else {
+            XCTFail("Expected view state to be finished")
+            return
+        }
+        
+        // Total session duration includes the 60s reading: 62.0s
+        XCTAssertEqual(record.durationSeconds, 62.0, accuracy: 0.01)
+        XCTAssertEqual(record.formattedDuration, "1m 2s")
+        
+        // Active response time measures strictly the 2.0s answering period:
+        XCTAssertEqual(record.totalResponseTime, 2.0, accuracy: 0.01)
+        XCTAssertEqual(record.averageResponseTime, 2.0, accuracy: 0.01)
+        XCTAssertEqual(record.formattedAverageSpeed, "2.0s")
     }
     
     // MARK: - 3. Category Performance Breakdown Tests
@@ -264,6 +324,43 @@ final class Sprint6ResultsAnalyticsTests: XCTestCase {
         XCTAssertTrue(decoded.categoryBreakdown.isEmpty)
         XCTAssertEqual(decoded.accuracyPercentage, 75)
         XCTAssertEqual(decoded.germanGrade.numericValue, 2.3)
+    }
+    
+    func testScoreRecordDecoderRejectsCorruptInvariants() {
+        // 1. Rejects correctAnswers > totalQuestions (e.g. 8 out of 4 = 200%)
+        let invalidAnswersJSON = """
+        {
+            "id": "E621E1F8-C36C-495A-93FC-0C247A3E6E5F",
+            "score": 800,
+            "totalQuestions": 4,
+            "correctAnswers": 8,
+            "streakRecord": 2
+        }
+        """.data(using: .utf8)!
+        XCTAssertThrowsError(try JSONDecoder().decode(ScoreRecord.self, from: invalidAnswersJSON))
+        
+        // 2. Rejects negative score
+        let negativeScoreJSON = """
+        {
+            "id": "E621E1F8-C36C-495A-93FC-0C247A3E6E5F",
+            "score": -100,
+            "totalQuestions": 5,
+            "correctAnswers": 3
+        }
+        """.data(using: .utf8)!
+        XCTAssertThrowsError(try JSONDecoder().decode(ScoreRecord.self, from: negativeScoreJSON))
+        
+        // 3. Rejects negative duration
+        let negativeDurationJSON = """
+        {
+            "id": "E621E1F8-C36C-495A-93FC-0C247A3E6E5F",
+            "score": 500,
+            "totalQuestions": 5,
+            "correctAnswers": 3,
+            "durationSeconds": -12.5
+        }
+        """.data(using: .utf8)!
+        XCTAssertThrowsError(try JSONDecoder().decode(ScoreRecord.self, from: negativeDurationJSON))
     }
     
     // MARK: - 5. ResultView Rendering & Layout Integration

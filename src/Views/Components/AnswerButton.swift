@@ -3,7 +3,9 @@ import SwiftUI
 private struct EvaluationButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .opacity(configuration.isPressed ? 0.96 : 1)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .opacity(configuration.isPressed ? 0.92 : 1.0)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
@@ -193,10 +195,12 @@ public struct AnswerButton: View {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.white)
                         .font(.title3)
+                        .transition(.scale.combined(with: .opacity))
                 } else if visualState == .wrong {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.white)
                         .font(.title3)
+                        .transition(.scale.combined(with: .opacity))
                 }
             }
             .padding(.horizontal, 16)
@@ -214,7 +218,8 @@ public struct AnswerButton: View {
             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .foregroundColor(feedbackForegroundColor)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EvaluationButtonStyle())
+        .animation(.easeInOut(duration: 0.25), value: visualState)
         .disabled(isAnswerRevealed) // Prevent double-tap race conditions after selection
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Self.formattedAccessibilityLabel(letter: optionLetter, text: optionText))

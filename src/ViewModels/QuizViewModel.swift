@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 /// Main ViewModel coordinating game loop states, countdown timer, and scoring for SwiftUI views.
 ///
@@ -7,9 +8,15 @@ import Combine
 /// - Adheres strictly to the MVVM pattern: encapsulates all mutable state and business transitions.
 /// - Bound to `@MainActor` to guarantee that all published mutations and UI re-renders execute safely
 ///   on the main dispatch thread without race conditions.
-/// - Manages timer subscriptions reactively using Combine's `Timer.publish`.
+/// - Manages high-precision reactive timer subscriptions (10 Hz) using Combine's `Timer.publish`.
 @MainActor
 public final class QuizViewModel: ObservableObject {
+    
+    /// High-precision timer frequency in Hertz (10 updates per second).
+    public static let timerFrequencyHz: Double = 10.0
+    
+    /// High-precision timer update interval in seconds (0.1s).
+    public static let timerInterval: TimeInterval = 1.0 / timerFrequencyHz
     
     /// Operational presentation states consumed by SwiftUI views to drive view transitions.
     public enum ViewState: Equatable {
@@ -71,8 +78,11 @@ public final class QuizViewModel: ObservableObject {
     /// Category requested for the most recent round, retained so the error screen can retry it.
     private var lastRequestedCategory: QuizCategory?
     
-    /// Combine cancellable handle for the active 1-second interval timer.
+    /// Combine cancellable handle for the active high-frequency countdown timer.
     private var timerCancellable: AnyCancellable?
+    
+    /// Timestamp recording when the app entered background or inactive state during gameplay.
+    private var backgroundTimestamp: Date?
     
     /// Default fallback duration in seconds if difficulty-specific limits are absent.
     private let standardTimeLimit: TimeInterval = 15.0
@@ -156,6 +166,7 @@ public final class QuizViewModel: ObservableObject {
               question.options.indices.contains(index) else { return }
 
         stopTimer()
+        backgroundTimestamp = nil
         selectedAnswerIndex = index
         let isCorrect = currentSession.submitAnswer(optionIndex: index)
         self.session = currentSession
@@ -171,6 +182,7 @@ public final class QuizViewModel: ObservableObject {
         
         currentSession.advanceToNext()
         self.session = currentSession
+        backgroundTimestamp = nil
         
         if case .completed(let record) = currentSession.state {
             stopTimer()
@@ -186,6 +198,7 @@ public final class QuizViewModel: ObservableObject {
     /// Cancels any active round and returns the application state to the home menu.
     public func resetToMenu() {
         stopTimer()
+        backgroundTimestamp = nil
         session = nil
         currentQuestion = nil
         questionIndex = 0
@@ -198,37 +211,86 @@ public final class QuizViewModel: ObservableObject {
         viewState = .idle
     }
     
-    // MARK: - Timer Mechanics
+    // MARK: - Timer Mechanics & High-Frequency Countdown
     
-    /// Starts a repeating 1-second Combine timer updating `timeRemaining`.
-    private func startTimer() {
+    /// Starts or resumes a high-frequency (10 Hz, 0.1s interval) Combine timer updating `timeRemaining`.
+    public func startTimer(initialRemaining: TimeInterval? = nil) {
         stopTimer()
-        let questionTimeLimit = currentQuestion?.difficulty.timeLimitSeconds ?? standardTimeLimit
-        timeRemaining = questionTimeLimit
+        if let remaining = initialRemaining {
+            timeRemaining = max(remaining, 0.0)
+        } else {
+            let questionTimeLimit = currentQuestion?.difficulty.timeLimitSeconds ?? standardTimeLimit
+            timeRemaining = questionTimeLimit
+        }
         
-        timerCancellable = Timer.publish(every: 1.0, on: .main, in: .common)
+        guard timeRemaining > 0 else {
+            handleTimeout()
+            return
+        }
+        
+        timerCancellable = Timer.publish(every: Self.timerInterval, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 guard let self = self else { return }
-                if self.timeRemaining > 1.0 {
-                    self.timeRemaining -= 1.0
-                } else {
-                    self.timeRemaining = 0.0
-                    self.handleTimeout()
-                }
+                self.tickTimer(delta: Self.timerInterval)
             }
     }
     
     /// Cancels and deallocates the active timer subscription.
-    private func stopTimer() {
+    public func stopTimer() {
         timerCancellable?.cancel()
         timerCancellable = nil
     }
     
+    /// Advances countdown time by `delta` seconds and triggers timeout handling if elapsed.
+    ///
+    /// Exposed for deterministic unit testing and simulated ticks without asynchronous delays.
+    public func tickTimer(delta: TimeInterval) {
+        guard viewState == .playing else { return }
+        if timeRemaining > delta {
+            timeRemaining -= delta
+        } else {
+            timeRemaining = 0.0
+            handleTimeout()
+        }
+    }
+    
+    /// Handles application scene lifecycle transitions to preserve game fairness and anti-cheat constraints.
+    ///
+    /// - Parameters:
+    ///   - phase: The updated SwiftUI `ScenePhase` (.active, .inactive, or .background).
+    ///   - currentDate: Timestamp provider defaulting to `Date()`, injectable for deterministic testing.
+    public func handleScenePhaseChange(to phase: ScenePhase, currentDate: Date = Date()) {
+        switch phase {
+        case .inactive, .background:
+            if viewState == .playing && timerCancellable != nil {
+                backgroundTimestamp = currentDate
+                stopTimer()
+            }
+        case .active:
+            guard let timestamp = backgroundTimestamp else { return }
+            backgroundTimestamp = nil
+            
+            guard viewState == .playing else { return }
+            
+            let elapsed = currentDate.timeIntervalSince(timestamp)
+            if elapsed >= timeRemaining {
+                timeRemaining = 0.0
+                handleTimeout()
+            } else {
+                timeRemaining -= elapsed
+                startTimer(initialRemaining: timeRemaining)
+            }
+        @unknown default:
+            break
+        }
+    }
+    
     /// Handles expiration of the countdown timer without user input.
-    private func handleTimeout() {
+    public func handleTimeout() {
         guard viewState == .playing, var currentSession = session else { return }
         stopTimer()
+        backgroundTimestamp = nil
         currentSession.recordTimeout()
         self.session = currentSession
         self.streak = currentSession.currentStreak

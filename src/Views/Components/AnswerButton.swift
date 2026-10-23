@@ -1,14 +1,23 @@
 import SwiftUI
 
-/// Reusable answer selection button conforming to Apple Human Interface Guidelines (HIG).
+private struct EvaluationButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.96 : 1)
+    }
+}
+
+/// Reusable answer button with explicit evaluation states.
 ///
 /// Ergonomic & Accessibility Features:
 /// - Guarantees comfortable touch target size (minimum 56 pt height, exceeding the 44x44 pt HIG baseline).
-/// - Dynamic text scaling with minimum scale factor to prevent clipping on compact screens (iPhone SE).
+/// - Multiline text and a scaled option badge to accommodate larger text.
 /// - State-dependent chromatic feedback: emerald green for correct choices, crimson red for wrong picks, and dimmed for unselected choices.
 /// - Integrated VoiceOver accessibility labeling combining option letter, prompt text, and contextual status hints.
 public struct AnswerButton: View {
     
+    @ScaledMetric(relativeTo: .subheadline) private var optionBadgeSize: CGFloat = 32
+
     // MARK: - State Machine Definition
     
     /// Discrete presentation and interaction states for answer evaluation.
@@ -81,38 +90,40 @@ public struct AnswerButton: View {
     
     // MARK: - Styling & Layout Tokens
     
-    /// Dynamically resolves the button background color based on active evaluation state.
+    private var stateTint: Color {
+        switch visualState {
+        case .correct: return .quizCorrectFeedback
+        case .wrong: return .quizIncorrectFeedback
+        case .selected: return .accentColor
+        case .idle, .dimmed: return .clear
+        }
+    }
+
     private var backgroundColor: Color {
         switch visualState {
-        case .correct:
-            return Color.green.opacity(0.85)
-        case .wrong:
-            return Color.red.opacity(0.85)
+        case .correct, .wrong:
+            return stateTint
         case .selected:
-            return Color.accentColor.opacity(0.8)
-        case .dimmed:
-            return Color.adaptiveSecondaryBackground.opacity(0.45)
+            return stateTint.opacity(0.12)
         case .idle:
             return Color.adaptiveSecondaryBackground
-        }
-    }
-    
-    /// Ensures high-contrast text readability across light, dark, and colored states.
-    private var foregroundColor: Color {
-        switch visualState {
-        case .correct, .wrong, .selected:
-            return .white
         case .dimmed:
-            return .secondary
-        case .idle:
-            return .primary
+            return Color.adaptiveTertiaryBackground
         }
     }
-    
+
+    private var feedbackForegroundColor: Color {
+        switch visualState {
+        case .correct, .wrong: return .white
+        case .dimmed: return .secondary
+        case .idle, .selected: return .primary
+        }
+    }
+
     /// Converts numeric 0-based index to standard multiple-choice letters (A, B, C, D).
     private var optionLetter: String {
         let letters = ["A", "B", "C", "D"]
-        return index < letters.count ? letters[index] : "\(index + 1)"
+        return letters.indices.contains(index) ? letters[index] : "?"
     }
     
     // MARK: - Accessibility Helpers
@@ -144,18 +155,21 @@ public struct AnswerButton: View {
                 // Choice letter badge
                 Text(optionLetter)
                     .font(.subheadline.bold())
-                    .frame(width: 32, height: 32)
+                    .frame(width: optionBadgeSize, height: optionBadgeSize)
                     .background(
-                        Circle().fill(visualState == .correct || visualState == .wrong || visualState == .selected ? Color.white.opacity(0.2) : Color.primary.opacity(0.08))
+                        Circle().fill(
+                            visualState == .correct || visualState == .wrong
+                                ? Color.white.opacity(0.2)
+                                : Color.primary.opacity(0.08)
+                        )
                     )
                 
                 // Answer text with multi-line wrap support and Dynamic Type scaling
                 Text(optionText)
-                    .font(.body)
+                    .font(.headline)
                     .multilineTextAlignment(.leading)
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
-                    .minimumScaleFactor(0.85)
                 
                 Spacer()
                 
@@ -179,17 +193,18 @@ public struct AnswerButton: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(visualState == .correct ? Color.green : (visualState == .selected ? Color.accentColor : Color.clear), lineWidth: 2)
+                    .stroke(stateTint, lineWidth: 2)
                     .allowsHitTesting(false)
             )
             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .foregroundColor(foregroundColor)
+            .foregroundColor(feedbackForegroundColor)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EvaluationButtonStyle())
         .disabled(isAnswerRevealed) // Prevent double-tap race conditions after selection
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(Self.formattedAccessibilityLabel(letter: optionLetter, text: optionText))
         .accessibilityHint(Self.accessibilityHintText(for: visualState))
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])
+        .accessibilityIdentifier("quiz.answer.\(index)")
     }
 }

@@ -91,6 +91,7 @@ public struct ResultView: View {
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
+                .accessibilityIdentifier("result.playAgain")
                 
                 Button(action: onBackToMenu) {
                     Text("Return to Menu")
@@ -101,6 +102,7 @@ public struct ResultView: View {
                         .foregroundColor(.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
+                .accessibilityIdentifier("result.returnToMenu")
             }
             .padding(.horizontal)
             .frame(maxWidth: 550)

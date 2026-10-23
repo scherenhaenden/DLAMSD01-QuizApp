@@ -9,6 +9,15 @@ import AppKit
 /// Cross-platform dynamic color helpers ensuring native Apple system appearance
 /// across iOS, iPadOS, and macOS preview environments.
 extension Color {
+    /// Fixed feedback fills chosen for white foreground contrast in both appearances.
+    public static var quizCorrectFeedback: Color {
+        Color(red: 27.0 / 255, green: 94.0 / 255, blue: 32.0 / 255)
+    }
+
+    public static var quizIncorrectFeedback: Color {
+        Color(red: 183.0 / 255, green: 28.0 / 255, blue: 28.0 / 255)
+    }
+
     /// Adaptive grouped canvas background:
     /// - Light mode: `#F2F2F7` (`UIColor.systemGroupedBackground`)
     /// - Dark mode: `#000000` (Pure OLED black)

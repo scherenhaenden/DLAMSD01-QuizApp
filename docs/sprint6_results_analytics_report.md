@@ -2,31 +2,35 @@
 
 **Course:** DLAMSD01 Apple Mobile Solution Development I  
 **Maintainer:** `scherenhaenden`
-**Milestone Version:** 0.6.0  
-**Build Identifier:** 20261023.163000  
-**Branch:** `feat/sprint-6-results-analytics-and-scorecard`  
+**Milestone Version:** 0.6.1 (incorporating Sprint 6 baseline `0.6.0` and maintenance patch `0.6.1`)  
+**Build Identifier:** 20261023.181500  
+**Branch:** `fix/sprint-6-analytics-coherence-and-invariants`  
 
 ---
 
 ## 1. Executive Summary & Scope
 
-Sprint 6 implements the post-round cognitive evaluation subsystem, academic performance scorecard, and mental agility metrics for the Train-your-Brain application, delivering implementations of **US-11 (Academic Performance Grade & Accuracy %)** and **US-12 (Performance Analytics & Mental Agility)**.
+Sprint 6 implements the post-round cognitive evaluation subsystem, academic performance scorecard, and mental agility metrics for the Train-your-Brain application, delivering implementations of **US-11 (Academic Performance Grade & Accuracy %)** and **US-12 (Performance Analytics & Mental Agility)**, followed by the **v0.6.1** maintenance cycle to resolve evaluation consistency, active vs. reading duration separation, and domain invariant enforcement in deserialization.
 
-### Key Deliverables Implemented:
-1. **German Academic Grading System (US-11):**
-   - Implemented the official German university grading scale (`GermanAcademicGrade`, 1.0 to 5.0) matching standard IU examination regulations (*Allgemeine Prüfungsordnung* / *Rahmenprüfungsordnung*).
-   - Accurately translates round accuracy percentage to numeric grades (1.0, 1.3, 1.7, 2.0, 2.3, 2.7, 3.0, 3.3, 3.7, 4.0, 5.0) and German designations (*Sehr Gut*, *Gut*, *Befriedigend*, *Ausreichend*, *Nicht Bestanden*).
-   - Preserved backwards compatibility for existing evaluation tiers (`academicEvaluationTier`) to guarantee zero regression across legacy unit tests and serialization pipelines.
-2. **Performance Analytics & Continuous Monotonic Timing (US-12):**
-   - Integrated end-to-end round duration tracking (`durationSeconds`) backed by continuous monotonic hardware timing (`ProcessInfo.processInfo.systemUptime`), insulating total session duration against user clock modifications, leap seconds, or background pauses.
-   - Calculated average response speed per question (`averageResponseTime`), accompanied by human-readable formatting (`formattedDuration` like `"1m 45s"`, `formattedAverageSpeed` like `"3.5s"`).
-   - Persisted maximum continuous streak achieved during the session (`bestStreak`).
-3. **Category Performance Breakdown (US-12 & ADR-09 Forward Compatibility):**
+### Key Deliverables Implemented & Reconciled:
+1. **German Academic Grading System (US-11 & v0.6.1 Coherence):**
+   - Implemented the official German university grading scale (`GermanAcademicGrade`, 1.0 to 5.0) matching the standard linear grading scale (*Lineare Notenskala*) aligned with § 15 of the *Allgemeine Prüfungsordnung* (APO) of IU International University (50% passing cutoff for 4.0, 95% for 1.0, divided into 5% intervals).
+   - Translates accuracy percentage to discrete numeric grades (1.0, 1.3, 1.7, 2.0, 2.3, 2.7, 3.0, 3.3, 3.7, 4.0, 5.0) and German designations (*Sehr Gut*, *Gut*, *Befriedigend*, *Ausreichend*, *Nicht Bestanden*).
+   - In `v0.6.1`, resolved contradictory evaluation strings: `ResultView` displays solely the unified German grade headline (`formattedGrade`), while `academicEvaluationTier` is mapped directly from `germanGrade.title`, guaranteeing that an accuracy of 75% displays consistently as *Gut* across all interfaces and assertions.
+2. **Decoupled Active Response Speed & Monotonic Timing (US-12 & v0.6.1 Fix):**
+   - Separated total round duration (`durationSeconds`) from active decision time (`totalResponseTime`).
+   - `QuizViewModel` tracks `questionStartMonotonic` strictly while the question is presented, accumulating active answering time upon selection or timeout and pausing during the explanation viewing state (`.answered`).
+   - `averageResponseTime` computes strictly `totalResponseTime / Double(totalQuestions)`, preventing explanation reading time from contaminating user mental agility metrics (e.g. 2s answering + 60s reading yields an average speed of 2.0s, not 62.0s).
+3. **Strict Domain Invariant Enforcement in Deserialization (v0.6.1 Fix):**
+   - In `ScoreRecord.init(from decoder: Decoder)`, enforced Domain-Driven Design (DDD) invariants: rejects corrupted JSON payloads with negative scores, negative totals, negative durations, or impossible accuracy ratios (`correctAnswers > totalQuestions`) by throwing `DecodingError.dataCorrupted`.
+   - Preserves tolerant backward-compatibility defaults for legitimate legacy JSON records.
+4. **Category Performance Breakdown (US-12 & ADR-09 Forward Compatibility):**
    - Aggregated per-category outcomes (`CategoryPerformance`) reporting correct answers, total questions answered, and fractional accuracy.
    - Designed with `categoryId: String` rather than tightly-coupled enums, providing immediate forward compatibility with custom user-created question decks in Sprint 7 (ADR-09).
-4. **Academic Scorecard Dashboard UI (`ResultView.swift`):**
+5. **Academic Scorecard Dashboard UI (`ResultView.swift`) & UI Test Assertions:**
    - Transformed the post-game summary into a comprehensive academic scorecard wrapped in a `ScrollView` with responsive maximum width (550 pt) for regular iPad and compact iPhone size classes.
    - Integrated academic seal badge, 4-metric summary grid (Final Score, Accuracy %, Best Streak, Average Speed), category breakdown with horizontal mini-progress bars, and 56 pt minimum touch target primary action buttons (`result.playAgain` and `result.returnToMenu`).
+   - Added explicit UI assertions in `ui-tests/TrainYourBrainUITests.swift` validating that `Score`, `Accuracy`, `Streak`, `Avg Speed`, and `result.returnToMenu` are rendered and verified on iPad (9th generation).
 
 ---
 
@@ -36,37 +40,36 @@ Sprint 6 implements the post-round cognitive evaluation subsystem, academic perf
 +-----------------------------------------------------------------------------------+
 |                                  QuizViewModel                                    |
 |  - sessionStartMonotonic: TimeInterval?                                           |
-|  - monotonicClock: () -> TimeInterval                                            |
-|  - startQuiz() -> captures monotonic start timestamp                              |
-|  - nextQuestion() -> calculates elapsed monotonic duration at round completion    |
+|  - questionStartMonotonic: TimeInterval?                                          |
+|  - accumulatedResponseTime: TimeInterval                                          |
+|  - selectAnswer() / handleTimeout() -> accumulates active answering time          |
+|  - nextQuestion() -> passes totalResponseTime to QuizSession                      |
 +-----------------------------------------+-----------------------------------------+
                                           |
                                           v
 +-----------------------------------------------------------------------------------+
 |                                   QuizSession                                     |
 |  - categoryBreakdown: [CategoryPerformance]                                       |
-|  - advanceToNext(completedAt:duration:) -> creates ScoreRecord                    |
+|  - advanceToNext(completedAt:duration:totalResponseTime:) -> creates ScoreRecord |
 +-----------------------------------------+-----------------------------------------+
                                           |
                                           v
 +-----------------------------------------------------------------------------------+
 |                                   ScoreRecord                                     |
-|  - score: Int                                                                     |
-|  - totalQuestions: Int                                                            |
-|  - maxStreak: Int                                                                 |
-|  - durationSeconds: TimeInterval                                                  |
-|  - categoryBreakdown: [CategoryPerformance]                                       |
+|  - score: Int (invariant: >= 0)                                                   |
+|  - totalQuestions: Int (invariant: >= 0)                                          |
+|  - correctAnswers: Int (invariant: 0...totalQuestions)                           |
+|  - durationSeconds: TimeInterval (total session duration)                         |
+|  - totalResponseTime: TimeInterval (active decision time only)                    |
+|  - averageResponseTime: TimeInterval (totalResponseTime / totalQuestions)         |
 |  - germanGrade: GermanAcademicGrade (1.0 - 5.0)                                   |
-|  - accuracyPercentage: Double                                                     |
-|  - averageResponseTime: TimeInterval                                              |
-|  - formattedDuration: String                                                      |
-|  - formattedAverageSpeed: String                                                  |
+|  - academicEvaluationTier: String (derived from germanGrade.title)                |
 +-----------------------------------------------------------------------------------+
 ```
 
-### 2.1 German Academic Grade Scale (`GermanAcademicGrade`)
+### 2.1 Standardized German Academic Grade Scale (`GermanAcademicGrade`)
 
-In accordance with German higher education examination standards, performance is classified into 11 discrete grade boundaries based on percentage accuracy:
+Performance is classified into 11 discrete grade boundaries based on percentage accuracy according to § 15 APO der IU Internationalen Hochschule:
 
 | Percentage Range | Grade Value | German Title | Classification | Passing? |
 |:---:|:---:|:---|:---|:---:|
@@ -82,15 +85,6 @@ In accordance with German higher education examination standards, performance is
 | $50.0\% \le \text{Accuracy} < 55.0\%$ | **4.0** | Ausreichend | Untere Bestehensgrenze | Yes |
 | $0.0\% \le \text{Accuracy} < 50.0\%$ | **5.0** | Nicht Bestanden | Erhebliche Mängel, nicht bestanden | No |
 
-### 2.2 Backward Compatibility & Serialization Architecture
-
-To ensure uninterrupted user experience and safeguard stored progress during application upgrades:
-- `ScoreRecord` provides custom `init(from decoder: Decoder) throws` decoding:
-  - If `durationSeconds` is missing from stored JSON (pre-0.6.0 records), it falls back to `0.0`.
-  - If `categoryBreakdown` is missing, it falls back to an empty array `[]`.
-  - `bestStreak` is safely decoded or falls back to `0`.
-- The legacy `academicEvaluationTier` property is preserved as a computed projection returning the original English labels (e.g. `"Sehr Gut (Excellent)"`, `"Befriedigend (Satisfactory)"`), ensuring zero regression across legacy assertions.
-
 ---
 
 ## 3. Code Coverage & Verification Metrics
@@ -105,12 +99,12 @@ Code coverage was measured via `swift test --enable-code-coverage` and extracted
 | `src/Models/Difficulty.swift` | 31 | 0 | 31 | 100.00% |
 | `src/Models/Question.swift` | 128 | 24 | 104 | 81.25% |
 | `src/Models/QuizCategory.swift` | 37 | 0 | 37 | 100.00% |
-| `src/Models/QuizSession.swift` | 129 | 6 | 123 | 95.35% |
-| `src/Models/ScoreRecord.swift` | 162 | 9 | 153 | 94.44% |
+| `src/Models/QuizSession.swift` | 130 | 6 | 124 | 95.38% |
+| `src/Models/ScoreRecord.swift` | 209 | 16 | 193 | 92.34% |
 | `src/Services/HapticFeedbackService.swift` | 38 | 0 | 38 | 100.00% |
 | `src/Services/LocalQuestionService.swift` | 61 | 3 | 58 | 95.08% |
 | `src/Services/QuestionServiceProtocol.swift` | 12 | 3 | 9 | 75.00% |
-| `src/ViewModels/QuizViewModel.swift` | 275 | 20 | 255 | 92.73% |
+| `src/ViewModels/QuizViewModel.swift` | 290 | 20 | 270 | 93.10% |
 | `src/Views/Components/AnswerButton.swift` | 250 | 20 | 230 | 92.00% |
 | `src/Views/Components/CategoryCard.swift` | 239 | 9 | 230 | 96.23% |
 | `src/Views/Components/Color+Adaptive.swift` | 21 | 6 | 15 | 71.43% |
@@ -118,10 +112,10 @@ Code coverage was measured via `swift test --enable-code-coverage` and extracted
 | `src/Views/Components/TimerBar.swift` | 114 | 22 | 92 | 80.70% |
 | `src/Views/Screens/HomeView.swift` | 483 | 37 | 446 | 92.34% |
 | `src/Views/Screens/QuizView.swift` | 583 | 74 | 509 | 87.31% |
-| `src/Views/Screens/ResultView.swift` | 650 | 94 | 556 | 85.54% |
-| **Production Files Subtotal** | **3,376** | **328** | **3,048** | **90.28%** |
+| `src/Views/Screens/ResultView.swift` | 630 | 94 | 536 | 85.08% |
+| **Production Files Subtotal** | **3,419** | **335** | **3,084** | **90.20%** |
 | *Derived SPM Bundle Accessor* | 36 | 4 | 32 | 88.89% |
-| **Global Package Total** | **3,412** | **332** | **3,080** | **90.27%** |
+| **Global Package Total** | **3,455** | **339** | **3,116** | **90.19%** |
 
 *Note: All line counts and sums are mathematically verified against raw `llvm-cov` output.*
 
@@ -130,16 +124,19 @@ Code coverage was measured via `swift test --enable-code-coverage` and extracted
 ## 4. Test Suite Execution & UI Acceptance
 
 ### 4.1 Swift Package Core Suite
-- **Total Tests:** 86
+- **Total Tests:** 89
 - **Failures:** 0
-- **Execution Time:** ~0.24 seconds
-- **Sprint 6 Test Suite:** `Sprint6ResultsAnalyticsTests` (7 new dedicated unit tests)
+- **Execution Time:** ~0.23 seconds
+- **Sprint 6 Test Suite:** `Sprint6ResultsAnalyticsTests` (10 dedicated unit tests)
   - `testGermanAcademicGradeScaleMapping`: Exhaustive boundary verification across all 11 German grade tiers.
+  - `testGermanGradeAndAcademicEvaluationTierConsistencyAt75Percent`: Validates that 75% accuracy yields `Gut (Good)` and `2.3 · Gut (Above Average)` without contradiction.
   - `testTimeSpentAndSpeedCalculations`: Verification of elapsed duration and average speed formatting (incorporating IEEE 754 half-to-even rounding).
+  - `testActiveResponseTimeSeparatedFromReadingTimeInViewModel`: Simulates 2s active response + 60s explanation reading; proves `averageResponseTime = 2.0s` while `durationSeconds = 62.0s`.
   - `testCategoryPerformanceModelAndBreakdown`: Validates accuracy percentage, fraction calculations, and formatting.
   - `testQuizSessionAggregatesCategoryBreakdown`: Multi-category round aggregation assertions.
   - `testScoreRecordCodableRoundtrip`: Full JSON encode/decode cycle verification.
   - `testScoreRecordDecodesLegacyJSONWithoutDurationOrBreakdown`: Backward compatibility assertion ensuring legacy JSON schemas decode without data corruption.
+  - `testScoreRecordDecoderRejectsCorruptInvariants`: Verifies rejection of negative scores, negative durations, and impossible accuracy ratios (`correctAnswers > totalQuestions`).
   - `testResultViewRendersWithFullAnalytics`: Full view hierarchy rendering and snapshot readiness.
 
 ### 4.2 Native iOS Simulator UI Acceptance (iPad 9th Generation)
@@ -148,20 +145,9 @@ Executed via `xcodebuild -project TrainYourBrain.xcodeproj -scheme TrainYourBrai
 - **Failures:** 0
 - **Status:** `** TEST SUCCEEDED **`
 - **Verified Flows:**
-  1. `testCategoryRoundShowsFeedbackResultsAndCanReplay`: Passes with completed results scorecard, Play Again replay cycle, and 56 pt touch target verification.
+  1. `testCategoryRoundShowsFeedbackResultsAndCanReplay`: Completed results scorecard, metric tiles assertions (`Score`, `Accuracy`, `Streak`, `Avg Speed`), Return to Menu button, and Play Again replay cycle.
   2. `testMixedRoundStartsAndReturnsToTopics`: 24-question mixed topic initiation and navigation exit.
   3. `testIncorrectAnswerMarksTheCorrectOption`: Shuffled option sampling, incorrect answer feedback, and correct option reveal.
   4. `testAccessibilityDynamicTypeKeepsCategoryStartAvailable`: Dynamic Type XXXL layout and button hittability verification.
   5. `testLiveCountdownReachesTimeoutAndEnablesAdvance`: Timeout penalty, streak reset, and advance enablement.
   6. `testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay`: Home button simulation, 3.0s background suspension, and foreground resume timing deduction.
-
----
-
-## 5. Technical Retrospective & Limitations
-
-1. **Hardware Clock Isolation:**
-   - Round duration uses continuous monotonic hardware timing (`systemUptime`) during active execution, ensuring immunity against clock manipulation.
-2. **IEEE 754 Banker's Rounding:**
-   - Formatting strings (`"%.1fs"`) adhere to IEEE 754 half-to-even rounding. For example, `10.25s` rounds to `10.2s`. Test assertions were aligned accordingly to ensure deterministic mathematical evaluation.
-3. **Future Scope (Sprint 7):**
-   - Round persistence and leaderboard tracking via `UserDefaults` + `Codable` will consume the newly enriched `ScoreRecord` structure in Sprint 7.

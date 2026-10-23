@@ -4,7 +4,7 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.3.0**, Sprint 3 implementation merged to `master` by PR #8. Native XCTest UI acceptance and CI coverage are being completed on the existing `test/sprint-3-ui-acceptance` branch; they are not yet a release. There is no 0.3.x Git tag yet.
+Version **0.3.0**, Sprint 3 implementation merged to `master` by PR #10. Native XCTest UI acceptance and CI coverage are being completed on the existing `test/sprint-3-ui-acceptance` branch; they are not yet a release. There is no 0.3.x Git tag yet.
 
 ### Implemented
 

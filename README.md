@@ -4,7 +4,7 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.3.0**, Sprint 3 implementation merged to `master` by PR #8. The follow-up branch `test/sprint-3-ui-acceptance` adds native XCTest UI acceptance and CI coverage; it is not yet a release. There is no 0.3.x Git tag yet.
+Version **0.3.0**, Sprint 3 implementation merged to `master` by PR #8. Native XCTest UI acceptance and CI coverage are being completed on the existing `test/sprint-3-ui-acceptance` branch; they are not yet a release. There is no 0.3.x Git tag yet.
 
 ### Implemented
 
@@ -49,7 +49,7 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The 0.3.0 package baseline passed 50 Swift Package tests. The follow-up branch adds one accessibility-state regression; its package suite passes 51 tests and measures 2,385/2,619 instrumented production lines (91.07%) on macOS, excluding tests and the app entry point. The four-test iPad 9 UI run passed and captured XCTest attachments. CI for that follow-up and its merge are still pending. These measurements do not prove spoken VoiceOver traversal, timeout presentation, or every device/layout combination.
+The 0.3.0 package baseline passed 50 Swift Package tests. The current branch adds one accessibility-state regression; its package suite passes 51 tests and measures 2,385/2,619 instrumented production lines (91.07%) on macOS, excluding tests and the app entry point. The four-test iPad 9 UI run passed and captured XCTest attachments. Hosted CI and merge of the follow-up are still pending. These measurements do not prove spoken VoiceOver traversal, timeout presentation, or every device/layout combination.
 
 See [the Sprint 3 report](docs/sprint3_interactive_ui_components_report.md) for the implementation and pending checks. Accessibility targets and coverage percentages are project choices, not additional requirements imposed by the IU quiz assignment.
 

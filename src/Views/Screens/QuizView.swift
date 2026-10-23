@@ -145,7 +145,8 @@ public struct QuizView: View {
             }
         }
         .padding(.vertical)
-        .frame(maxWidth: 600) // Constrained max width for iPad 9th gen ergonomics
+        .frame(maxWidth: 640) // Constrained 640pt ergonomic container for iPad (US-15)
+        .frame(maxWidth: .infinity)
         .onChange(of: viewModel.viewState) { _, newState in
             guard case .answered = newState else { return }
             announceAnswerFeedback(for: newState)

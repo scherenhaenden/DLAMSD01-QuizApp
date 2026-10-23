@@ -338,6 +338,11 @@ public struct ScoreRecord: Identifiable, Codable, Equatable, Hashable, Sendable 
     public var formattedAverageSpeed: String {
         return String(format: "%.1fs", averageResponseTime)
     }
+    
+    /// Human-readable title of the category tested in this round, or `"Mixed Topics"`.
+    public var categoryTitle: String {
+        category?.displayName ?? "Mixed Topics"
+    }
 }
 
 // MARK: - Comparable

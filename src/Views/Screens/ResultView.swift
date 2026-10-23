@@ -46,6 +46,8 @@ public struct ResultView: View {
                             .foregroundColor(gradeColor)
                     }
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(record.isPassing ? "Round Completed" : "Good Effort"), Academic Grade: \(record.germanGrade.formattedGrade)")
                 .padding(.top, 16)
                 
                 // Key metrics dashboard card
@@ -73,6 +75,8 @@ public struct ResultView: View {
                             .font(.caption.bold())
                             .foregroundColor(.primary)
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Time spent: \(record.formattedDuration), \(record.correctAnswers) of \(record.totalQuestions) questions correct")
                 }
                 .padding(18)
                 .background(
@@ -80,7 +84,7 @@ public struct ResultView: View {
                         .fill(Color.adaptiveSecondaryBackground)
                 )
                 .padding(.horizontal)
-                .frame(maxWidth: 550)
+                .frame(maxWidth: 640)
                 
                 // Category breakdown card (if available)
                 if !record.categoryBreakdown.isEmpty {
@@ -113,6 +117,8 @@ public struct ResultView: View {
                                 }
                                 .frame(height: 6)
                             }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("\(item.categoryTitle): \(item.correctCount) of \(item.totalCount) correct, \(item.accuracyDescription)")
                         }
                     }
                     .padding(18)
@@ -121,7 +127,7 @@ public struct ResultView: View {
                             .fill(Color.adaptiveSecondaryBackground)
                     )
                     .padding(.horizontal)
-                    .frame(maxWidth: 550)
+                    .frame(maxWidth: 640)
                 }
                 
                 // Action navigation buttons
@@ -153,10 +159,12 @@ public struct ResultView: View {
                     .accessibilityIdentifier("result.returnToMenu")
                 }
                 .padding(.horizontal)
-                .frame(maxWidth: 550)
+                .frame(maxWidth: 640)
                 .padding(.top, 8)
                 .padding(.bottom, 24)
             }
+            .frame(maxWidth: 640)
+            .frame(maxWidth: .infinity)
         }
     }
 }
@@ -178,5 +186,7 @@ private struct MetricTile: View {
                 .foregroundColor(tint)
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(value)")
     }
 }

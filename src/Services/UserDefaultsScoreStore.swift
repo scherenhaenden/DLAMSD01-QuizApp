@@ -118,9 +118,9 @@ public final class UserDefaultsScoreStore: ScoreStoreProtocol, @unchecked Sendab
             index -= 1
         }
         
-        // Final boundary: if protected records alone exceed maxCapacity, retain top records
+        // Final boundary: if protected records alone exceed maxCapacity, retain top-scoring records (canonical Comparable)
         if records.count > maxCapacity {
-            records = Array(records.prefix(maxCapacity))
+            records = Array(records.sorted(by: >).prefix(maxCapacity))
         }
     }
     

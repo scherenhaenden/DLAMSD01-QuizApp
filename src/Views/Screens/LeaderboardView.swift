@@ -39,7 +39,7 @@ public struct LeaderboardView: View {
                         }
                     }
                     .padding(16)
-                    .frame(maxWidth: 550)
+                    .frame(maxWidth: 640)
                     .frame(maxWidth: .infinity)
                 }
             }
@@ -123,6 +123,8 @@ public struct LeaderboardView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color.adaptiveCardBackground)
         )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(value)")
     }
     
     var categoryFilterBar: some View {
@@ -251,7 +253,7 @@ public struct LeaderboardView: View {
                 .fill(Color.adaptiveCardBackground)
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Score \(record.score) points, Grade \(record.germanGrade.formattedGrade), Accuracy \(record.accuracyPercentage) percent")
+        .accessibilityLabel("\(viewModel.selectedTab == .highScores ? "Rank \(index + 1), " : "")\(record.categoryTitle). Score \(record.score) points, Grade \(record.germanGrade.formattedGrade), Accuracy \(record.accuracyPercentage) percent, Streak \(record.streakRecord), Average Speed \(record.formattedAverageSpeed)")
     }
     
     func rankBadge(rank: Int) -> some View {

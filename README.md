@@ -4,7 +4,7 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.5.0** (Build `20261023.144500`), Sprint 5 release: Multisensory Feedback and Haptic Integration. Immediate visual feedback (emerald green/crimson red), color-blind redundant icons, touch debouncing, spring dynamics, decoupled hardware haptics via `UINotificationFeedbackGenerator`, and pre-warming latency optimization.
+Version **0.5.1** (Build `20261023.155500`), Sprint 5 maintenance release: Retained haptic generator lifecycle persistence, empirical coverage reconciliation (91.45%), touch debouncing, spring view transitions, and full iPad 9 UI acceptance.
 
 ### Implemented
 
@@ -12,9 +12,9 @@ Version **0.5.0** (Build `20261023.144500`), Sprint 5 release: Multisensory Feed
 - Validated question model, Fisher-Yates shuffled question and option order, and a separate quiz session state machine.
 - Category and mixed rounds, immediate pedagogical answer explanation, manual next action, and result analytics.
 - Multisensory feedback coordination: emerald green (`quizCorrectFeedback`) with `checkmark.circle.fill` and `.success` haptic for correct answers; crimson red (`quizIncorrectFeedback`) with `xmark.circle.fill` and `.error` haptic for errors; amber/crimson with `.warning` haptic on countdown timeout.
-- Decoupled haptic architecture (`HapticFeedbackServiceProtocol`) with pre-warming on round start (`prepare()`) eliminating initial Taptic Engine latency, safe fallback on non-haptic hardware, and deterministic mocking.
-- Immediate touch debouncing and locking (`.disabled(isAnswerRevealed)`) preventing race conditions from rapid successive taps.
-- Spring-damped press feedback (`EvaluationButtonStyle`) and smooth fluid transitions on answer reveals.
+- Decoupled haptic architecture (`HapticFeedbackServiceProtocol`) retaining a thread-safe `UINotificationFeedbackGenerator` instance across calls (`prepare()` and `trigger()`), ensuring the Taptic Engine retains its prepared state without premature deallocation.
+- Immediate touch debouncing and locking (`.disabled(isAnswerRevealed)` and `guard viewState == .playing`) preventing race conditions from rapid successive taps.
+- Micro-interactions: `EvaluationButtonStyle` with press scaling (`0.98`) via `.easeOut(duration: 0.12)` and spring-damped view transitions in `QuizView`.
 - High-frequency 10 Hz Combine reactive countdown timer (`0.1s` interval) on `@MainActor` with real-time delta compensation preventing RunLoop drift.
 - Deterministic time-stepping API (`tickTimer(delta:)`) allowing instant, deterministic unit testing without asynchronous delays.
 - Proportional chromatic shifts in `TimerBar` (`UrgencyPhase`: Normal $> 50\%$, Warning $20\%-50\%$, Critical $\le 20\%$) dynamically scaling across Easy (20s), Medium (15s), and Hard (12s) difficulty tiers.
@@ -55,7 +55,9 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The package test suite executes 78 unit tests with 0 failures and measures **91.40%** instrumented production line coverage on macOS via `llvm-cov` (2,626 / 2,873 lines), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, and background-to-foreground lifecycle resumption on iPad (9th generation).
+The package test suite executes 79 unit tests with 0 failures and measures **91.45%** instrumented production line coverage on macOS via `llvm-cov` (2,599 / 2,842 lines across the 18 production files, or 91.42% including SPM's intermediate bundle accessor [2,631 / 2,878 lines]), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, and background-to-foreground lifecycle resumption on iPad (9th generation).
+
+Hardware qualification: While the software protocol and conditional compilation are 100% verified via automated tests, physical tactile vibration requires a physical iPhone device equipped with a Taptic Engine.
 
 Formal spectrophotometric WCAG 2.1 AA contrast auditing belongs to the dedicated accessibility milestone (Sprint 8); current states provide redundant chromatic cues alongside numeric countdown labels and VoiceOver announcements.
 
@@ -71,8 +73,9 @@ See the [Sprint 5 technical report](docs/sprint5_sensory_feedback_and_haptics_re
 | **0.3.0** | Modular UI components, iPad 9 acceptance, and tag release *(Completed)* |
 | **0.4.0** | Reactive 10 Hz timer, proportional urgency, and anti-cheat lifecycle *(Completed)* |
 | **0.4.1** | Sprint 4 maintenance patch: drift compensation, retrograde clock fix, UI timeout test *(Completed)* |
-| **0.4.2** | Monotonic hardware clock anti-cheat, background/resume UI test, exact coverage reconciliation *(Current)* |
-| 0.5.0 | Feedback animations and optional haptics |
+| **0.4.2** | Monotonic hardware clock anti-cheat, background/resume UI test, exact coverage reconciliation *(Completed)* |
+| **0.5.0** | Multisensory feedback: visual cues, touch debouncing, and decoupled haptics *(Completed)* |
+| **0.5.1** | Retained haptic generator lifecycle persistence, exact coverage reconciliation (91.45%), documentation alignment *(Current)* |
 | 0.6.0 | Extend and review the existing result screen and score calculations |
 | 0.7.0 | Local result history and personal bests |
 | 0.8.0 | iPhone/iPad accessibility and orientation checks |

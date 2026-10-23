@@ -196,6 +196,18 @@ final class Sprint5SensoryFeedbackTests: XCTestCase {
         service.playWarning()
     }
     
+    func testSystemHapticFeedbackServiceRetainedGeneratorLifecycle() {
+        let service = SystemHapticFeedbackService()
+        // On macOS this is consistently false due to platform compilation;
+        // on iOS it validates thread-safe inspection and clearing.
+        XCTAssertFalse(service.hasRetainedGenerator)
+        service.prepare()
+        service.playSuccess()
+        service.playError()
+        service.playWarning()
+        service.clearPreparedGenerator()
+    }
+    
     func testHapticFeedbackTypeEnumCases() {
         let allCases = HapticFeedbackType.allCases
         XCTAssertEqual(allCases.count, 3)

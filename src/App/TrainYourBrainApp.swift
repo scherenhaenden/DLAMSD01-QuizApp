@@ -24,6 +24,7 @@ public struct TrainYourBrainApp: App {
 /// Root coordinating container routing between Home, Quiz, and Result screens.
 public struct ContentView: View {
     @ObservedObject public var viewModel: QuizViewModel
+    @Environment(\.scenePhase) private var scenePhase
     
     public init(viewModel: QuizViewModel) {
         self.viewModel = viewModel
@@ -73,6 +74,9 @@ public struct ContentView: View {
                 }
                 .padding()
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            viewModel.handleScenePhaseChange(to: newPhase)
         }
     }
 }

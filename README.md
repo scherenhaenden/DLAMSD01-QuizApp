@@ -4,13 +4,17 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.4.2** (Build `20261023.141500`), Sprint 4 maintenance release and monotonic clock anti-cheat integration. High-frequency reactive timer (10 Hz), dynamic proportional urgency alerting in `TimerBar`, real-time drift compensation, hardware monotonic clock lifecycle management (`systemUptime`), and native UI background/resume acceptance are implemented and verified.
+Version **0.5.0** (Build `20261023.144500`), Sprint 5 release: Multisensory Feedback and Haptic Integration. Immediate visual feedback (emerald green/crimson red), color-blind redundant icons, touch debouncing, spring dynamics, decoupled hardware haptics via `UINotificationFeedbackGenerator`, and pre-warming latency optimization.
 
 ### Implemented
 
 - Local JSON catalog with 24 German questions in four categories; the interface is currently English.
 - Validated question model, Fisher-Yates shuffled question and option order, and a separate quiz session state machine.
 - Category and mixed rounds, immediate pedagogical answer explanation, manual next action, and result analytics.
+- Multisensory feedback coordination: emerald green (`quizCorrectFeedback`) with `checkmark.circle.fill` and `.success` haptic for correct answers; crimson red (`quizIncorrectFeedback`) with `xmark.circle.fill` and `.error` haptic for errors; amber/crimson with `.warning` haptic on countdown timeout.
+- Decoupled haptic architecture (`HapticFeedbackServiceProtocol`) with pre-warming on round start (`prepare()`) eliminating initial Taptic Engine latency, safe fallback on non-haptic hardware, and deterministic mocking.
+- Immediate touch debouncing and locking (`.disabled(isAnswerRevealed)`) preventing race conditions from rapid successive taps.
+- Spring-damped press feedback (`EvaluationButtonStyle`) and smooth fluid transitions on answer reveals.
 - High-frequency 10 Hz Combine reactive countdown timer (`0.1s` interval) on `@MainActor` with real-time delta compensation preventing RunLoop drift.
 - Deterministic time-stepping API (`tickTimer(delta:)`) allowing instant, deterministic unit testing without asynchronous delays.
 - Proportional chromatic shifts in `TimerBar` (`UrgencyPhase`: Normal $> 50\%$, Warning $20\%-50\%$, Critical $\le 20\%$) dynamically scaling across Easy (20s), Medium (15s), and Hard (12s) difficulty tiers.
@@ -39,8 +43,8 @@ TrainYourBrain.xcodeproj/   Native app project
 Package.swift              Core package and XCTest target
 src/App/                   App entry and root routing
 src/Models/                Questions, categories, sessions and score records
-src/Services/              Question service protocol and local JSON implementation
-src/ViewModels/            Quiz state and timer coordination
+src/Services/              Question and haptic feedback service protocols and implementations
+src/ViewModels/            Quiz state, haptics, and timer coordination
 src/Views/Components/      AnswerButton, CategoryCard, QuestionCard, TimerBar, colors
 src/Views/Screens/         HomeView, QuizView and ResultView
 src/Resources/             Bundled questions
@@ -51,11 +55,11 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The package test suite executes 69 unit tests with 0 failures and measures **91.71%** instrumented production line coverage on macOS via `llvm-cov` (2,554 / 2,785 lines), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, and background-to-foreground lifecycle resumption on iPad (9th generation).
+The package test suite executes 78 unit tests with 0 failures and measures **91.40%** instrumented production line coverage on macOS via `llvm-cov` (2,626 / 2,873 lines), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, and background-to-foreground lifecycle resumption on iPad (9th generation).
 
 Formal spectrophotometric WCAG 2.1 AA contrast auditing belongs to the dedicated accessibility milestone (Sprint 8); current states provide redundant chromatic cues alongside numeric countdown labels and VoiceOver announcements.
 
-See the [Sprint 4 technical report](docs/sprint4_reactive_timer_and_lifecycle_report.md) for architectural details, coverage breakdowns, and the technical incident retrospective.
+See the [Sprint 5 technical report](docs/sprint5_sensory_feedback_and_haptics_report.md) for architectural details, coverage breakdowns, and the technical incident retrospective.
 
 ## Remaining roadmap
 

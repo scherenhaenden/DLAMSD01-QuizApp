@@ -91,7 +91,9 @@ public struct QuizView: View {
                                     isCorrectAnswer: isCorrect,
                                     isAnswerRevealed: isAnswerRevealed
                                 ) {
-                                    viewModel.selectAnswer(at: index)
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        viewModel.selectAnswer(at: index)
+                                    }
                                 }
                             }
                         }
@@ -113,7 +115,9 @@ public struct QuizView: View {
                                     .lineSpacing(3)
                                 
                                 Button(action: {
-                                    viewModel.nextQuestion()
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        viewModel.nextQuestion()
+                                    }
                                 }) {
                                     Text(viewModel.questionIndex + 1 < viewModel.totalQuestions ? "Next Question" : "View Results")
                                         .font(.headline)

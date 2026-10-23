@@ -11,6 +11,7 @@
 		3CB85C15ED934EE89A7F3E96 /* QuestionServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9A11A8F5EE4BEABA662212 /* QuestionServiceProtocol.swift */; };
 		40518E72833F4F248FEDB415 /* AnswerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2B9DDE5BE0428AA7E667B3 /* AnswerButton.swift */; };
 		420B3221642546E09F503C12 /* LocalQuestionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AE1CBF78DD4971A751D5C1 /* LocalQuestionService.swift */; };
+		420B3221642546E09F503C15 /* HapticFeedbackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AE1CBF78DD4971A751D5C5 /* HapticFeedbackService.swift */; };
 		4A03D752B5654F59AFCC437C /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EE181C3E374111AD7DB2C1 /* HomeView.swift */; };
 		60625869A6744B07991A3691 /* QuizCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B03DF225354E2597EE1BCC /* QuizCategory.swift */; };
 		6CC118F61E4B4AE18F3A7E0C /* Difficulty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887261C704FB4FBD864C0144 /* Difficulty.swift */; };
@@ -49,6 +50,7 @@
 		796A67578CFF48B3B12BF05D /* Question.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Models/Question.swift; sourceTree = "<group>"; };
 		887261C704FB4FBD864C0144 /* Difficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Models/Difficulty.swift; sourceTree = "<group>"; };
 		A2AE1CBF78DD4971A751D5C1 /* LocalQuestionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Services/LocalQuestionService.swift; sourceTree = "<group>"; };
+		A2AE1CBF78DD4971A751D5C5 /* HapticFeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Services/HapticFeedbackService.swift; sourceTree = "<group>"; };
 		AA7100014B208FFD2CCA0001 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Models/AppTheme.swift; sourceTree = "<group>"; };
 		AC2FC18CAE201292C568A463 /* TrainYourBrainUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrainYourBrainUITests.swift; sourceTree = "<group>"; };
 		B1C0000123456789ABCDEF01 /* CategoryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Views/Components/CategoryCard.swift; sourceTree = "<group>"; };
@@ -114,6 +116,7 @@
 				CDB60D69702F48D0A0734B2F /* ScoreRecord.swift */,
 				FD9A11A8F5EE4BEABA662212 /* QuestionServiceProtocol.swift */,
 				A2AE1CBF78DD4971A751D5C1 /* LocalQuestionService.swift */,
+				A2AE1CBF78DD4971A751D5C5 /* HapticFeedbackService.swift */,
 				BD2EF202575B421C90683034 /* QuizViewModel.swift */,
 				5B2B9DDE5BE0428AA7E667B3 /* AnswerButton.swift */,
 				B1C0000123456789ABCDEF01 /* CategoryCard.swift */,
@@ -245,6 +248,7 @@
 				B6B3F803619C40F495F17BF6 /* ScoreRecord.swift in Sources */,
 				3CB85C15ED934EE89A7F3E96 /* QuestionServiceProtocol.swift in Sources */,
 				420B3221642546E09F503C12 /* LocalQuestionService.swift in Sources */,
+				420B3221642546E09F503C15 /* HapticFeedbackService.swift in Sources */,
 				889E4F00F78F4F53BA94C69E /* QuizViewModel.swift in Sources */,
 				40518E72833F4F248FEDB415 /* AnswerButton.swift in Sources */,
 				A1C0000123456789ABCDEF01 /* CategoryCard.swift in Sources */,
@@ -282,7 +286,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20261023.141500;
+				CURRENT_PROJECT_VERSION = 20261023.144500;
 				DEVELOPMENT_ASSET_PATHS = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -293,7 +297,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.2;
+				MARKETING_VERSION = 0.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.scherenhaenden.TrainYourBrain;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -362,7 +366,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20261023.141500;
+				CURRENT_PROJECT_VERSION = 20261023.144500;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -374,7 +378,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.2;
+				MARKETING_VERSION = 0.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.scherenhaenden.TrainYourBrain;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

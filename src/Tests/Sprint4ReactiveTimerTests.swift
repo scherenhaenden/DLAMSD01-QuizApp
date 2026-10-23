@@ -281,4 +281,59 @@ final class Sprint4ReactiveTimerTests: XCTestCase {
         vm.handleScenePhaseChange(to: .active, currentDate: t2)
         XCTAssertEqual(vm.viewState, .idle)
     }
+    
+    // MARK: - 6. Clock Manipulation & Retrograde Jump Anti-Cheat Regressions
+    
+    func testClockRewindAttemptTriggersAntiCheatTimeout() {
+        let q = makeTestQuestion(difficulty: .medium) // 15.0s
+        let vm = makeViewModel(with: [q])
+        vm.startQuiz(category: .swiftAndApple)
+        XCTAssertEqual(vm.timeRemaining, 15.0)
+        
+        let t0 = Date()
+        vm.handleScenePhaseChange(to: .background, currentDate: t0)
+        
+        // Simulating user setting the device clock 30 seconds into the past while in background
+        let rewoundTime = t0.addingTimeInterval(-30.0)
+        vm.handleScenePhaseChange(to: .active, currentDate: rewoundTime)
+        
+        XCTAssertEqual(vm.timeRemaining, 0.0, "Clock rewind attempt must NOT inflate timeRemaining to 45s; must clamp to 0.0")
+        XCTAssertEqual(vm.selectedAnswerIndex, -1)
+        XCTAssertEqual(vm.streak, 0)
+        XCTAssertEqual(vm.viewState, .answered(selectedIndex: -1, isCorrect: false), "Clock rewind triggers immediate anti-cheat timeout")
+    }
+    
+    func testSmallNegativeClockJitterDoesNotInflateTimeRemaining() {
+        let q = makeTestQuestion(difficulty: .medium) // 15.0s
+        let vm = makeViewModel(with: [q])
+        vm.startQuiz(category: .swiftAndApple)
+        XCTAssertEqual(vm.timeRemaining, 15.0)
+        
+        let t0 = Date()
+        vm.handleScenePhaseChange(to: .background, currentDate: t0)
+        
+        // Minor sub-second NTP clock jitter (-0.1s)
+        let jitteredTime = t0.addingTimeInterval(-0.1)
+        vm.handleScenePhaseChange(to: .active, currentDate: jitteredTime)
+        
+        XCTAssertEqual(vm.viewState, .playing)
+        XCTAssertLessThanOrEqual(vm.timeRemaining, 15.0, "Time remaining must never exceed the question's difficulty limit")
+        XCTAssertEqual(vm.timeRemaining, 15.0, accuracy: 0.001)
+    }
+    
+    func testVariableDeltaTicksCompensateForRunLoopDrift() {
+        let q = makeTestQuestion(difficulty: .medium) // 15.0s
+        let vm = makeViewModel(with: [q])
+        vm.startQuiz(category: .swiftAndApple)
+        
+        // Simulate irregular frame durations (e.g. 150ms, 250ms, 80ms)
+        vm.tickTimer(delta: 0.15)
+        XCTAssertEqual(vm.timeRemaining, 14.85, accuracy: 0.0001)
+        
+        vm.tickTimer(delta: 0.25)
+        XCTAssertEqual(vm.timeRemaining, 14.60, accuracy: 0.0001)
+        
+        vm.tickTimer(delta: 0.08)
+        XCTAssertEqual(vm.timeRemaining, 14.52, accuracy: 0.0001)
+    }
 }

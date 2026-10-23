@@ -81,6 +81,9 @@ public final class QuizViewModel: ObservableObject {
     /// Combine cancellable handle for the active high-frequency countdown timer.
     private var timerCancellable: AnyCancellable?
     
+    /// Timestamp of the most recent timer firing to calculate real elapsed duration without drift.
+    private var lastTickTimestamp: Date?
+    
     /// Timestamp recording when the app entered background or inactive state during gameplay.
     private var backgroundTimestamp: Date?
     
@@ -214,6 +217,10 @@ public final class QuizViewModel: ObservableObject {
     // MARK: - Timer Mechanics & High-Frequency Countdown
     
     /// Starts or resumes a high-frequency (10 Hz, 0.1s interval) Combine timer updating `timeRemaining`.
+    ///
+    /// Real-Time Drift Compensation:
+    /// Instead of decrementing by a fixed constant, each tick computes the actual elapsed duration
+    /// since the previous firing, eliminating cumulative timer drift caused by main runloop contention.
     public func startTimer(initialRemaining: TimeInterval? = nil) {
         stopTimer()
         if let remaining = initialRemaining {
@@ -228,11 +235,15 @@ public final class QuizViewModel: ObservableObject {
             return
         }
         
+        lastTickTimestamp = Date()
         timerCancellable = Timer.publish(every: Self.timerInterval, on: .main, in: .common)
             .autoconnect()
-            .sink { [weak self] _ in
+            .sink { [weak self] currentTickDate in
                 guard let self = self else { return }
-                self.tickTimer(delta: Self.timerInterval)
+                let last = self.lastTickTimestamp ?? currentTickDate
+                self.lastTickTimestamp = currentTickDate
+                let realDelta = max(currentTickDate.timeIntervalSince(last), 0.0)
+                self.tickTimer(delta: realDelta)
             }
     }
     
@@ -240,6 +251,7 @@ public final class QuizViewModel: ObservableObject {
     public func stopTimer() {
         timerCancellable?.cancel()
         timerCancellable = nil
+        lastTickTimestamp = nil
     }
     
     /// Advances countdown time by `delta` seconds and triggers timeout handling if elapsed.
@@ -274,11 +286,23 @@ public final class QuizViewModel: ObservableObject {
             guard viewState == .playing else { return }
             
             let elapsed = currentDate.timeIntervalSince(timestamp)
-            if elapsed >= timeRemaining {
+            let questionLimit = currentQuestion?.difficulty.timeLimitSeconds ?? standardTimeLimit
+            
+            // Anti-cheat: If the system clock was set backwards (retrograde jump > 500ms),
+            // treat this as an invalid tampering attempt and trigger timeout immediately.
+            if elapsed < -0.5 {
+                timeRemaining = 0.0
+                handleTimeout()
+                return
+            }
+            
+            // Clamp elapsed duration to never be negative, preventing time inflation
+            let effectiveElapsed = max(elapsed, 0.0)
+            if effectiveElapsed >= timeRemaining {
                 timeRemaining = 0.0
                 handleTimeout()
             } else {
-                timeRemaining -= elapsed
+                timeRemaining = min(timeRemaining - effectiveElapsed, questionLimit)
                 startTimer(initialRemaining: timeRemaining)
             }
         @unknown default:

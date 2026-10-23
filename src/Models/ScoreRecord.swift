@@ -22,9 +22,11 @@ public struct GermanAcademicGrade: Codable, Equatable, Hashable, Sendable {
         return String(format: "%.1f · %@ (%@)", numericValue, title, localizedDescription)
     }
     
-    /// Derives the official German university grade from the mathematical accuracy percentage.
+    /// Derives the German university grade from the mathematical accuracy percentage.
     ///
-    /// IU / German Examination Scale:
+    /// Standardized linear university grading scale (Lineare Notenskala) aligned with
+    /// German higher education standards (§ 15 APO der IU Internationalen Hochschule),
+    /// using a 50% passing threshold for 4.0 and 95% for 1.0 structured in 5% brackets:
     /// - 95% - 100%: 1.0 (Sehr Gut / Outstanding)
     /// - 90% - 94%:  1.3 (Sehr Gut / Excellent)
     /// - 85% - 89%:  1.7 (Gut / Very Good)
@@ -170,8 +172,11 @@ public struct ScoreRecord: Identifiable, Codable, Equatable, Hashable, Sendable 
     /// Category focus of the round, or `nil` if it was a mixed multi-discipline round.
     public let category: QuizCategory?
     
-    /// Total duration of active gameplay in seconds.
+    /// Total duration of the round from start to finish in seconds (including explanation reading).
     public let durationSeconds: TimeInterval
+    
+    /// Total active response time across questions in seconds (excluding explanation reading).
+    public let totalResponseTime: TimeInterval
     
     /// Breakdown of performance by category tested in this round.
     public let categoryBreakdown: [CategoryPerformance]
@@ -188,6 +193,7 @@ public struct ScoreRecord: Identifiable, Codable, Equatable, Hashable, Sendable 
         streakRecord: Int = 0,
         category: QuizCategory? = nil,
         durationSeconds: TimeInterval = 0.0,
+        totalResponseTime: TimeInterval? = nil,
         categoryBreakdown: [CategoryPerformance] = [],
         completedAt: Date = Date()
     ) {
@@ -198,6 +204,7 @@ public struct ScoreRecord: Identifiable, Codable, Equatable, Hashable, Sendable 
         self.streakRecord = max(0, streakRecord)
         self.category = category
         self.durationSeconds = max(0.0, durationSeconds)
+        self.totalResponseTime = max(0.0, totalResponseTime ?? durationSeconds)
         self.categoryBreakdown = categoryBreakdown
         self.completedAt = completedAt
     }
@@ -206,20 +213,63 @@ public struct ScoreRecord: Identifiable, Codable, Equatable, Hashable, Sendable 
     
     private enum CodingKeys: String, CodingKey {
         case id, score, totalQuestions, correctAnswers, streakRecord, category
-        case durationSeconds, categoryBreakdown, completedAt
+        case durationSeconds, totalResponseTime, categoryBreakdown, completedAt
     }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(UUID.self, forKey: .id)
-        self.score = try container.decode(Int.self, forKey: .score)
-        self.totalQuestions = try container.decode(Int.self, forKey: .totalQuestions)
-        self.correctAnswers = try container.decode(Int.self, forKey: .correctAnswers)
-        self.streakRecord = try container.decodeIfPresent(Int.self, forKey: .streakRecord) ?? 0
-        self.category = try container.decodeIfPresent(QuizCategory.self, forKey: .category)
-        self.durationSeconds = try container.decodeIfPresent(TimeInterval.self, forKey: .durationSeconds) ?? 0.0
-        self.categoryBreakdown = try container.decodeIfPresent([CategoryPerformance].self, forKey: .categoryBreakdown) ?? []
-        self.completedAt = try container.decodeIfPresent(Date.self, forKey: .completedAt) ?? Date()
+        let rawScore = try container.decode(Int.self, forKey: .score)
+        let rawTotal = try container.decode(Int.self, forKey: .totalQuestions)
+        let rawCorrect = try container.decode(Int.self, forKey: .correctAnswers)
+        let rawStreak = try container.decodeIfPresent(Int.self, forKey: .streakRecord) ?? 0
+        let rawCategory = try container.decodeIfPresent(QuizCategory.self, forKey: .category)
+        let rawDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .durationSeconds) ?? 0.0
+        let rawResponseTime = try container.decodeIfPresent(TimeInterval.self, forKey: .totalResponseTime)
+        let rawBreakdown = try container.decodeIfPresent([CategoryPerformance].self, forKey: .categoryBreakdown) ?? []
+        let rawCompletedAt = try container.decodeIfPresent(Date.self, forKey: .completedAt) ?? Date()
+
+        // Enforce domain invariants: reject corrupt or negative values
+        guard rawScore >= 0 else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(codingPath: container.codingPath + [CodingKeys.score], debugDescription: "Score cannot be negative: \(rawScore)")
+            )
+        }
+        guard rawTotal >= 0 else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(codingPath: container.codingPath + [CodingKeys.totalQuestions], debugDescription: "Total questions cannot be negative: \(rawTotal)")
+            )
+        }
+        guard rawCorrect >= 0 && rawCorrect <= rawTotal else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(codingPath: container.codingPath + [CodingKeys.correctAnswers], debugDescription: "Correct answers (\(rawCorrect)) must be in range 0...\(rawTotal)")
+            )
+        }
+        guard rawStreak >= 0 else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(codingPath: container.codingPath + [CodingKeys.streakRecord], debugDescription: "Streak cannot be negative: \(rawStreak)")
+            )
+        }
+        guard rawDuration >= 0.0 else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(codingPath: container.codingPath + [CodingKeys.durationSeconds], debugDescription: "Duration cannot be negative: \(rawDuration)")
+            )
+        }
+        if let respTime = rawResponseTime, respTime < 0.0 {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(codingPath: container.codingPath + [CodingKeys.totalResponseTime], debugDescription: "Total response time cannot be negative: \(respTime)")
+            )
+        }
+
+        self.score = rawScore
+        self.totalQuestions = rawTotal
+        self.correctAnswers = rawCorrect
+        self.streakRecord = rawStreak
+        self.category = rawCategory
+        self.durationSeconds = rawDuration
+        self.totalResponseTime = max(0.0, rawResponseTime ?? rawDuration)
+        self.categoryBreakdown = rawBreakdown
+        self.completedAt = rawCompletedAt
     }
     
     /// Decimal ratio of correct answers in the normalized range `[0.0, 1.0]`.
@@ -250,26 +300,26 @@ public struct ScoreRecord: Identifiable, Codable, Equatable, Hashable, Sendable 
     }
     
     /// Academic performance feedback tier according to standard German university grading terminology.
-    /// Provides pedagogical evaluation mapped directly from the achieved accuracy percentage.
+    /// Derived directly from the German academic grade to guarantee 100% semantic and textual consistency.
     public var academicEvaluationTier: String {
-        switch accuracyPercentage {
-        case 90...100:
+        switch germanGrade.title {
+        case "Sehr Gut":
             return "Sehr Gut (Excellent)"
-        case 80..<90:
+        case "Gut":
             return "Gut (Good)"
-        case 65..<80:
+        case "Befriedigend":
             return "Befriedigend (Satisfactory)"
-        case 50..<65:
+        case "Ausreichend":
             return "Ausreichend (Sufficient)"
         default:
             return "Nicht Bestanden (Needs Review)"
         }
     }
     
-    /// Average response time per question in seconds.
+    /// Average active response time per question in seconds (excluding pedagogical reading time).
     public var averageResponseTime: TimeInterval {
         guard totalQuestions > 0 else { return 0.0 }
-        return durationSeconds / Double(totalQuestions)
+        return totalResponseTime / Double(totalQuestions)
     }
     
     /// Formatted elapsed duration string (e.g. `"1m 42s"` or `"42s"`).

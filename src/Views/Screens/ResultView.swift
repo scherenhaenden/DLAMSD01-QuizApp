@@ -44,10 +44,6 @@ public struct ResultView: View {
                         Text(record.germanGrade.formattedGrade)
                             .font(.headline)
                             .foregroundColor(gradeColor)
-                        
-                        Text(record.academicEvaluationTier)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
                     }
                 }
                 .padding(.top, 16)

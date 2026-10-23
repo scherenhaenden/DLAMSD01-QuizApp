@@ -93,6 +93,9 @@ public final class QuizViewModel: ObservableObject {
     /// Monotonic timestamp recording when the app entered background (immune to clock tampering).
     private var backgroundMonotonicTimestamp: TimeInterval?
     
+    /// Monotonic timestamp recording when the active round began.
+    private var sessionStartMonotonic: TimeInterval?
+    
     /// Monotonic time provider closure returning seconds in continuous time.
     private let monotonicClock: () -> TimeInterval
     
@@ -168,6 +171,7 @@ public final class QuizViewModel: ObservableObject {
             self.questionIndex = 0
             self.currentScore = 0
             self.streak = 0
+            self.sessionStartMonotonic = monotonicClock()
             self.hapticService.prepare()
             self.syncFromSession()
             self.startTimer()
@@ -215,7 +219,12 @@ public final class QuizViewModel: ObservableObject {
     public func nextQuestion() {
         guard case .answered = viewState, var currentSession = session else { return }
         
-        currentSession.advanceToNext()
+        if let startUptime = sessionStartMonotonic {
+            let elapsedMono = max(0.0, monotonicClock() - startUptime)
+            currentSession.advanceToNext(duration: elapsedMono)
+        } else {
+            currentSession.advanceToNext()
+        }
         self.session = currentSession
         backgroundTimestamp = nil
         backgroundMonotonicTimestamp = nil
@@ -236,6 +245,7 @@ public final class QuizViewModel: ObservableObject {
         stopTimer()
         backgroundTimestamp = nil
         backgroundMonotonicTimestamp = nil
+        sessionStartMonotonic = nil
         session = nil
         currentQuestion = nil
         questionIndex = 0

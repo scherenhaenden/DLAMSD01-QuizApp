@@ -4,8 +4,9 @@ import SwiftUI
 ///
 /// Features:
 /// - Celebratory / encouragement trophy icon matching user performance.
-/// - Academic evaluation tier according to German university standards (Sehr Gut, Gut, etc.).
-/// - Comprehensive performance metric tiles: total score points, accuracy percentage, and best streak.
+/// - Academic evaluation tier according to German university standards (Sehr Gut, Gut, etc.) and numerical grade (1.0 - 5.0).
+/// - Comprehensive performance metric tiles: total score points, accuracy percentage, best streak, and average response speed.
+/// - Category breakdown showing performance fraction and visual mini-progress bar for each tested category.
 /// - Call to action buttons to initiate another round or return to the main menu.
 public struct ResultView: View {
     public let record: ScoreRecord
@@ -28,89 +29,138 @@ public struct ResultView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 28) {
-            Spacer()
-            
-            // Achievement icon
-            Image(systemName: record.isPassing ? "trophy.fill" : "arrow.triangle.2.circlepath")
-                .font(.system(size: 64))
-                .foregroundColor(gradeColor)
-                .padding(.bottom, 4)
-            
-            // Academic evaluation header
-            VStack(spacing: 8) {
-                Text(record.isPassing ? "Round Completed!" : "Good Effort!")
-                    .font(.title.bold())
+        ScrollView {
+            VStack(spacing: 24) {
+                // Achievement icon & Academic seal
+                VStack(spacing: 12) {
+                    Image(systemName: record.isPassing ? "trophy.fill" : "arrow.triangle.2.circlepath")
+                        .font(.system(size: 60))
+                        .foregroundColor(gradeColor)
+                    
+                    VStack(spacing: 6) {
+                        Text(record.isPassing ? "Round Completed!" : "Good Effort!")
+                            .font(.title2.bold())
+                        
+                        Text(record.germanGrade.formattedGrade)
+                            .font(.headline)
+                            .foregroundColor(gradeColor)
+                        
+                        Text(record.academicEvaluationTier)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.top, 16)
                 
-                Text(record.academicEvaluationTier)
-                    .font(.headline)
-                    .foregroundColor(gradeColor)
+                // Key metrics dashboard card
+                VStack(spacing: 16) {
+                    HStack(spacing: 8) {
+                        MetricTile(title: "Score", value: "\(record.score)", icon: "star.fill", tint: .yellow)
+                        Divider().frame(height: 36)
+                        MetricTile(title: "Accuracy", value: record.accuracyDescription, icon: "percent", tint: gradeColor)
+                        Divider().frame(height: 36)
+                        MetricTile(title: "Streak", value: "\(record.streakRecord)", icon: "flame.fill", tint: .orange)
+                        Divider().frame(height: 36)
+                        MetricTile(title: "Avg Speed", value: record.formattedAverageSpeed, icon: "timer", tint: .blue)
+                    }
+                    .padding(.vertical, 8)
+                    
+                    Divider()
+                    
+                    // Detailed fraction & total duration tally
+                    HStack {
+                        Label("Time Spent: \(record.formattedDuration)", systemImage: "clock")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(record.correctAnswers) of \(record.totalQuestions) Correct")
+                            .font(.caption.bold())
+                            .foregroundColor(.primary)
+                    }
+                }
+                .padding(18)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color.adaptiveSecondaryBackground)
+                )
+                .padding(.horizontal)
+                .frame(maxWidth: 550)
+                
+                // Category breakdown card (if available)
+                if !record.categoryBreakdown.isEmpty {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Label("Performance by Category", systemImage: "chart.bar.xaxis")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.primary)
+                        
+                        ForEach(record.categoryBreakdown) { item in
+                            VStack(spacing: 6) {
+                                HStack {
+                                    Text(item.categoryTitle)
+                                        .font(.footnote)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Text("\(item.correctCount)/\(item.totalCount) (\(item.accuracyDescription))")
+                                        .font(.footnote.bold().monospacedDigit())
+                                        .foregroundColor(item.accuracyRate >= 0.5 ? .green : .orange)
+                                }
+                                
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        Capsule()
+                                            .fill(Color.secondary.opacity(0.15))
+                                            .frame(height: 6)
+                                        Capsule()
+                                            .fill(item.accuracyRate >= 0.5 ? Color.green : Color.orange)
+                                            .frame(width: max(6, geo.size.width * item.accuracyRate), height: 6)
+                                    }
+                                }
+                                .frame(height: 6)
+                            }
+                        }
+                    }
+                    .padding(18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(Color.adaptiveSecondaryBackground)
+                    )
+                    .padding(.horizontal)
+                    .frame(maxWidth: 550)
+                }
+                
+                // Action navigation buttons
+                VStack(spacing: 12) {
+                    Button(action: onPlayAgain) {
+                        Text("Play Again")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.accentColor)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .accessibilityIdentifier("result.playAgain")
+                    
+                    Button(action: onBackToMenu) {
+                        Text("Return to Menu")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.adaptiveSecondaryBackground)
+                            .foregroundColor(.primary)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .accessibilityIdentifier("result.returnToMenu")
+                }
+                .padding(.horizontal)
+                .frame(maxWidth: 550)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            
-            // Score analytics card
-            VStack(spacing: 16) {
-                HStack {
-                    MetricTile(title: "Score", value: "\(record.score)", icon: "star.fill", tint: .yellow)
-                    Divider().frame(height: 40)
-                    MetricTile(title: "Accuracy", value: record.accuracyDescription, icon: "percent", tint: gradeColor)
-                    Divider().frame(height: 40)
-                    MetricTile(title: "Best Streak", value: "\(record.streakRecord)", icon: "flame.fill", tint: .orange)
-                }
-                .padding(.vertical, 12)
-                
-                Divider()
-                
-                // Detailed fraction tally
-                HStack {
-                    Text("Correct Answers")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text("\(record.correctAnswers) of \(record.totalQuestions)")
-                        .font(.subheadline.bold())
-                }
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.adaptiveSecondaryBackground)
-            )
-            .padding(.horizontal)
-            .frame(maxWidth: 550)
-            
-            Spacer()
-            
-            // Action navigation buttons
-            VStack(spacing: 12) {
-                Button(action: onPlayAgain) {
-                    Text("Play Again")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
-                .buttonStyle(.plain)
-                .contentShape(Rectangle())
-                .accessibilityIdentifier("result.playAgain")
-                
-                Button(action: onBackToMenu) {
-                    Text("Return to Menu")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.adaptiveSecondaryBackground)
-                        .foregroundColor(.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
-                .buttonStyle(.plain)
-                .contentShape(Rectangle())
-                .accessibilityIdentifier("result.returnToMenu")
-            }
-            .padding(.horizontal)
-            .frame(maxWidth: 550)
-            .padding(.bottom, 20)
         }
     }
 }

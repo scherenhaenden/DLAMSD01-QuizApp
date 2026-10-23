@@ -352,6 +352,99 @@ final class Sprint7PersistenceAndLeaderboardTests: XCTestCase {
         XCTAssertNotNil(view.metricColumn(label: "Score", value: "100"))
         XCTAssertNotNil(view.clearHistoryButton)
     }
+    
+    // MARK: - 14. Personal Best Survives 100+ Subsequent Low-Score Games (US-13)
+    
+    func testPersonalBestSurvivesHistoryTruncationOver100SubsequentGames() throws {
+        let store = UserDefaultsScoreStore(
+            userDefaults: testUserDefaults,
+            storageKey: testStorageKey,
+            maxCapacity: 100
+        )
+        
+        // 1. User scores a massive personal best
+        let recordDate = Date(timeIntervalSince1970: 1000)
+        let personalBest = ScoreRecord(
+            score: 1000,
+            totalQuestions: 10,
+            correctAnswers: 10,
+            streakRecord: 10,
+            category: .swiftAndApple,
+            completedAt: recordDate
+        )
+        try store.save(record: personalBest)
+        XCTAssertEqual(store.bestScore(for: nil)?.score, 1000)
+        XCTAssertEqual(store.bestScore(for: .swiftAndApple)?.score, 1000)
+        
+        // 2. User subsequently plays 105 quick low-score games (scores 10 to 50)
+        for i in 1...105 {
+            let subsequentGame = ScoreRecord(
+                score: 10,
+                totalQuestions: 10,
+                correctAnswers: 1,
+                streakRecord: 1,
+                category: .algorithmsAndDataStructures,
+                completedAt: Date(timeIntervalSince1970: TimeInterval(2000 + i))
+            )
+            try store.save(record: subsequentGame)
+        }
+        
+        // 3. Verify total records capped at maxCapacity, but personal best is strictly preserved
+        let loaded = store.loadRecords()
+        XCTAssertEqual(loaded.count, 100)
+        
+        // The personal best must not have been evicted!
+        let bestGlobal = store.bestScore(for: nil)
+        XCTAssertEqual(bestGlobal?.id, personalBest.id)
+        XCTAssertEqual(bestGlobal?.score, 1000)
+        
+        let bestCategory = store.bestScore(for: .swiftAndApple)
+        XCTAssertEqual(bestCategory?.id, personalBest.id)
+        XCTAssertEqual(bestCategory?.score, 1000)
+    }
+    
+    // MARK: - 15. Canonical Tie-Breaking Consistency Across Leaderboard and BestScore
+    
+    @MainActor
+    func testCanonicalTieBreakingAcrossLeaderboardAndBestScoreAndPersonalBest() throws {
+        let store = UserDefaultsScoreStore(
+            userDefaults: testUserDefaults,
+            storageKey: testStorageKey
+        )
+        
+        let date = Date(timeIntervalSince1970: 5000)
+        // Two games with equal points (100) and equal accuracy (90%), but gameA has higher streak (5 vs 3)
+        let gameA = ScoreRecord(
+            score: 100,
+            totalQuestions: 10,
+            correctAnswers: 9,
+            streakRecord: 5,
+            completedAt: date
+        )
+        let gameB = ScoreRecord(
+            score: 100,
+            totalQuestions: 10,
+            correctAnswers: 9,
+            streakRecord: 3,
+            completedAt: date
+        )
+        
+        try store.save(record: gameB)
+        try store.save(record: gameA)
+        
+        // 1. Check UserDefaultsScoreStore.bestScore
+        let storeBest = store.bestScore(for: nil)
+        XCTAssertEqual(storeBest?.id, gameA.id, "bestScore must choose gameA on streak tie-breaker")
+        
+        // 2. Check UserDefaultsScoreStore.loadHighScores
+        let highScores = store.loadHighScores(limit: 10)
+        XCTAssertEqual(highScores.first?.id, gameA.id, "loadHighScores must rank gameA as #1")
+        
+        // 3. Check LeaderboardViewModel.personalBest & displayedRecords
+        let vm = LeaderboardViewModel(scoreStore: store)
+        XCTAssertEqual(vm.personalBest?.id, gameA.id, "ViewModel personalBest must match gameA")
+        XCTAssertEqual(vm.displayedRecords.first?.id, gameA.id, "Leaderboard #1 card must match gameA")
+    }
 }
 
 // MARK: - Mock Question Service Helper

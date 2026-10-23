@@ -1,8 +1,8 @@
-# Sprint 7 Technical Report: Local Persistence, History Tracking, and Leaderboard (`v0.7.0`)
+# Sprint 7 Technical Report: Local Persistence, History Tracking, and Leaderboard (`v0.7.0` & `v0.7.1`)
 
 **Author:** Edward Sergio José Flores Mogollón · B.Sc. Softwareentwicklung · IU International University of Applied Sciences  
 **Project:** DLAMSD01 – Apple Mobile Solution Development I (Train-your-Brain iOS)  
-**Target Release:** `v0.7.0` (Build `20261023.190000`)  
+**Target Release:** `v0.7.1` (Build `20261023.203000`)  
 **Architecture Reference:** [ADR-07: Highscore-Persistenz und Spielhistorie](file:///Users/edwardflores/Documents/Studium/Uni/Plan/Semestern/Semester%206/Apple%20Mobile%20Solution%20Development%20(DLAMSD)/Apple%20Mobile%20Solution%20Development%20I%20(DLAMSD01)/06_Architekturentscheidungen_und_Variantenvergleich_ADR.md#L289-L330)
 
 ---
@@ -95,7 +95,7 @@ public protocol ScoreStoreProtocol: Sendable {
 
 ### 3.1. Automated Unit Tests (Swift Package)
 
-The test suite was extended with 13 dedicated unit tests in `Sprint7PersistenceAndLeaderboardTests.swift`:
+The test suite in `Sprint7PersistenceAndLeaderboardTests.swift` was expanded to 15 dedicated unit tests (+13 in v0.7.0, +2 regression tests in v0.7.1):
 1. `testUserDefaultsScoreStoreSavesAndLoadsRecordsChronologically`
 2. `testUserDefaultsScoreStoreSortsHighScoresWithTieBreakers`
 3. `testScoreStoreEnforcesCapacityCap`
@@ -109,9 +109,11 @@ The test suite was extended with 13 dedicated unit tests in `Sprint7PersistenceA
 11. `testScoreStoreErrorDescriptionsAndProtocolExtension`
 12. `testLeaderboardViewModelTabPropertiesAndHistorySorting`
 13. `testLeaderboardViewSubviewsDirectEvaluation`
+14. `testPersonalBestSurvivesHistoryTruncationOver100SubsequentGames` *(v0.7.1)*
+15. `testCanonicalTieBreakingAcrossLeaderboardAndBestScoreAndPersonalBest` *(v0.7.1)*
 
 **Execution Result:**
-* **Total Unit Tests:** **102 executed, 0 failures (100% success)** in 0.321 s.
+* **Total Unit Tests:** **104 executed, 0 failures (100% success)** in 0.407 s.
 
 ### 3.2. Native UI Acceptance Tests (iPad 9th Generation)
 
@@ -122,16 +124,16 @@ Executed via `xcodebuild test` on the native iPad (9th generation) simulator:
 * `testCountdownTimerTimeoutTriggersImmediateFeedback`
 * `testAccessibilityDynamicTypeKeepsCategoryStartAvailable`
 * `testBackgroundTransitionPreservesRemainingTimeOnReturn`
-* `testLeaderboardAndHistoryOpensAndDismisses` *(New in Sprint 7)*
+* `testLeaderboardAndHistoryOpensAndDismisses`
 
 **Execution Result:**
-* **Total UI Tests:** **7 executed, 0 failures (`** TEST SUCCEEDED **`)** in 155.1 s.
+* **Total UI Tests:** **7 executed, 0 failures (`** TEST SUCCEEDED **`)** in 135.6 s.
 
 ---
 
 ## 4. Instrumented Code Coverage (`llvm-cov`)
 
-Production line coverage across all 22 production source files measured via `llvm-cov report`:
+Production line coverage across all 22 production source files measured via `llvm-cov report` for `v0.7.1`:
 
 | Production Source File | Executable Lines | Missed Lines | Line Coverage % | Executed Functions |
 | :--- | :---: | :---: | :---: | :---: |
@@ -140,13 +142,13 @@ Production line coverage across all 22 production source files measured via `llv
 | `Models/Question.swift` | 128 | 24 | **81.25%** | 10 / 14 (71.4%) |
 | `Models/QuizCategory.swift` | 37 | 0 | **100.00%** | 4 / 4 (100.0%) |
 | `Models/QuizSession.swift` | 130 | 6 | **95.38%** | 17 / 18 (94.4%) |
-| `Models/ScoreRecord.swift` | 209 | 16 | **92.34%** | 25 / 26 (96.2%) |
+| `Models/ScoreRecord.swift` | 221 | 16 | **92.76%** | 26 / 27 (96.3%) |
 | `Services/HapticFeedbackService.swift` | 38 | 0 | **100.00%** | 16 / 16 (100.0%) |
 | `Services/LocalQuestionService.swift` | 61 | 3 | **95.08%** | 6 / 6 (100.0%) |
 | `Services/QuestionServiceProtocol.swift` | 12 | 3 | **75.00%** | 1 / 1 (100.0%) |
 | `Services/ScoreStoreProtocol.swift` | 15 | 3 | **80.00%** | 1 / 2 (50.0%) |
-| `Services/UserDefaultsScoreStore.swift` | 177 | 33 | **81.36%** | 20 / 24 (83.3%) |
-| `ViewModels/LeaderboardViewModel.swift` | 106 | 10 | **90.57%** | 19 / 19 (100.0%) |
+| `Services/UserDefaultsScoreStore.swift` | 154 | 20 | **87.01%** | 22 / 25 (88.0%) |
+| `ViewModels/LeaderboardViewModel.swift` | 73 | 2 | **97.26%** | 18 / 18 (100.0%) |
 | `ViewModels/QuizViewModel.swift` | 292 | 20 | **93.15%** | 35 / 40 (87.5%) |
 | `Views/Components/AnswerButton.swift` | 250 | 20 | **92.00%** | 17 / 18 (94.4%) |
 | `Views/Components/CategoryCard.swift` | 239 | 9 | **96.23%** | 18 / 20 (90.0%) |
@@ -157,12 +159,30 @@ Production line coverage across all 22 production source files measured via `llv
 | `Views/Screens/LeaderboardView.swift` | 702 | 26 | **96.30%** | 38 / 46 (82.6%) |
 | `Views/Screens/QuizView.swift` | 583 | 74 | **87.31%** | 12 / 22 (54.5%) |
 | `Views/Screens/ResultView.swift` | 630 | 94 | **85.08%** | 14 / 21 (66.7%) |
-| **TOTAL (All 22 Production Files)** | **4,459** | **413** | **90.74%** | **307 / 365 (84.1%)** |
+| **TOTAL (All 22 Production Files)** | **4,415** | **392** | **91.12%** | **309 / 366 (84.4%)** |
 
 ---
 
 ## 5. Architectural Alignment & Limitations
 
-* **Empirical Line Coverage:** Meets and exceeds the university benchmark requirement of $\ge 90\%$ (**90.74%** line coverage across 4,459 production lines).
+* **Empirical Line Coverage:** Exceeds the university benchmark requirement of $\ge 90\%$ (**91.12%** line coverage across 4,415 production lines).
 * **ADR-07 Compliance:** Lightweight key-value persistence with `Codable` is completely sufficient for individual quiz logs (< 100 entries, < 250 KB) without introducing heavy CoreData or CloudKit synchronization overhead.
-* **Catalog Management Extension (ADR-09 Proposal):** The proposal to allow in-app creation and editing of questions/topics remains an optional post-MVP enhancement. The persistence model established in Sprint 7 uses string-based category IDs (`categoryId: String`), providing direct structural compatibility whenever catalog authoring is scheduled.
+* **Catalog Management Extension (ADR-09):** The proposal to allow in-app creation and editing of questions/topics remains an optional post-MVP enhancement. The persistence model established in Sprint 7 uses string-based category IDs (`categoryId: String`), providing direct structural compatibility whenever catalog authoring is scheduled.
+
+---
+
+## 6. Maintenance Release `v0.7.1` Details
+
+1. **Personal Best Protection Algorithm (`pruneRecordsWithBestProtection`):**
+   * Identified and resolved an issue where naive chronological capping (`records.prefix(maxCapacity)`) evicted all-time personal bests if more than 100 subsequent lower-scoring games were played.
+   * `UserDefaultsScoreStore` now computes `protectedIDs = Set(QuizCategory.allCases.compactMap { bestScore(for: $0)?.id } + [globalBest?.id])`.
+   * When `records.count > maxCapacity`, chronological pruning specifically spares all records in `protectedIDs`. High scores survive indefinitely.
+2. **Canonical 4-Tier Tie-Breaking (`ScoreRecord: Comparable`):**
+   * Implemented `Comparable` directly on `ScoreRecord` to centralize ranking criteria in priority order:
+     1. `score` (descending)
+     2. `accuracyPercentage` (descending)
+     3. `streakRecord` (descending)
+     4. `completedAt` (newest first / descending)
+   * `bestScore(for:)`, `loadHighScores()`, `LeaderboardViewModel.personalBest`, and UI sorting now invoke `all.sorted(by: >)` and `matching.max()`, guaranteeing 100% identity between the #1 podium badge and `personalBest`.
+3. **Roadmap & ADR Alignment:**
+   * Aligned project roadmaps, ADR-09, and documentation to reflect that in-app catalog CRUD is officially deferred to post-MVP versions, confirming Sprint 7's delivered scope as local persistence and leaderboard (ADR-07).

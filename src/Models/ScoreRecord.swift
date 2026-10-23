@@ -339,3 +339,27 @@ public struct ScoreRecord: Identifiable, Codable, Equatable, Hashable, Sendable 
         return String(format: "%.1fs", averageResponseTime)
     }
 }
+
+// MARK: - Comparable
+
+extension ScoreRecord: Comparable {
+    /// Canonical ordering for performance evaluation, leaderboard ranking, and tie-breaking.
+    ///
+    /// Evaluates in priority order:
+    /// 1. Score points (higher is better)
+    /// 2. Accuracy percentage (higher is better)
+    /// 3. Streak record (higher is better)
+    /// 4. Completion date (newer is better)
+    public static func < (lhs: ScoreRecord, rhs: ScoreRecord) -> Bool {
+        if lhs.score != rhs.score {
+            return lhs.score < rhs.score
+        }
+        if lhs.accuracyPercentage != rhs.accuracyPercentage {
+            return lhs.accuracyPercentage < rhs.accuracyPercentage
+        }
+        if lhs.streakRecord != rhs.streakRecord {
+            return lhs.streakRecord < rhs.streakRecord
+        }
+        return lhs.completedAt < rhs.completedAt
+    }
+}

@@ -57,10 +57,19 @@ public struct ContentView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
-                    Button("Retry") {
-                        viewModel.resetToMenu()
+                    HStack(spacing: 12) {
+                        Button("Retry") {
+                            viewModel.retryLastQuiz()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("quiz.error.retry")
+
+                        Button("Back to Topics") {
+                            viewModel.resetToMenu()
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("quiz.error.backToTopics")
                     }
-                    .buttonStyle(.borderedProminent)
                 }
                 .padding()
             }

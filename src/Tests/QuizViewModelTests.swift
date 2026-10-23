@@ -10,12 +10,15 @@ final class QuizViewModelTests: XCTestCase {
     private final class MockQuestionService: QuestionServiceProtocol, @unchecked Sendable {
         let questions: [Question]
         var shouldThrow: Bool = false
+        private(set) var allQuestionsRequestCount = 0
+        private(set) var categoryRequests: [QuizCategory] = []
         
         init(questions: [Question]) {
             self.questions = questions
         }
         
         func loadAllQuestions() throws -> [Question] {
+            allQuestionsRequestCount += 1
             if shouldThrow {
                 throw QuestionServiceError.emptyQuestionSet
             }
@@ -23,6 +26,7 @@ final class QuizViewModelTests: XCTestCase {
         }
         
         func loadQuestions(for category: QuizCategory) throws -> [Question] {
+            categoryRequests.append(category)
             if shouldThrow {
                 throw QuestionServiceError.emptyQuestionSet
             }
@@ -86,6 +90,98 @@ final class QuizViewModelTests: XCTestCase {
         } else {
             XCTFail("Expected viewState to be .error")
         }
+    }
+
+    func testCatalogCountsComeFromLoadedQuestionsAndLoadOnlyOnce() throws {
+        let service = MockQuestionService(questions: try makeMockQuestions())
+        let vm = QuizViewModel(questionService: service)
+
+        vm.loadQuestionCatalog()
+
+        XCTAssertTrue(vm.isCatalogLoaded)
+        XCTAssertNil(vm.catalogError)
+        XCTAssertEqual(vm.availableQuestionCount, 2)
+        XCTAssertEqual(vm.questionCount(for: .softwareEngineering), 2)
+        XCTAssertEqual(vm.questionCount(for: .swiftAndApple), 0)
+        XCTAssertEqual(vm.viewState, .idle)
+
+        service.shouldThrow = true
+        vm.loadQuestionCatalog()
+        XCTAssertEqual(vm.availableQuestionCount, 2, "A loaded catalog is cached for the ViewModel lifetime")
+    }
+
+    func testCatalogLoadFailureCanBeRetried() throws {
+        let service = MockQuestionService(questions: try makeMockQuestions())
+        service.shouldThrow = true
+        let vm = QuizViewModel(questionService: service)
+
+        vm.loadQuestionCatalog()
+        XCTAssertFalse(vm.isCatalogLoaded)
+        XCTAssertNotNil(vm.catalogError)
+
+        service.shouldThrow = false
+        vm.loadQuestionCatalog()
+        XCTAssertTrue(vm.isCatalogLoaded)
+        XCTAssertNil(vm.catalogError)
+        XCTAssertEqual(vm.availableQuestionCount, 2)
+    }
+
+    func testRetryLastQuizRepeatsSpecificCategoryAfterServiceRecovers() throws {
+        let service = MockQuestionService(questions: try makeMockQuestions())
+        service.shouldThrow = true
+        let vm = QuizViewModel(questionService: service)
+
+        vm.startQuiz(category: .softwareEngineering)
+        guard case .error = vm.viewState else {
+            XCTFail("Expected the initial category request to fail")
+            return
+        }
+
+        service.shouldThrow = false
+        vm.retryLastQuiz()
+
+        XCTAssertEqual(service.categoryRequests, [.softwareEngineering, .softwareEngineering])
+        XCTAssertEqual(vm.viewState, .playing)
+        XCTAssertEqual(vm.totalQuestions, 2)
+        XCTAssertEqual(vm.currentQuestion?.category, .softwareEngineering)
+        vm.resetToMenu()
+    }
+
+    func testRetryLastQuizRepeatsMixedRequestAfterServiceRecovers() throws {
+        let service = MockQuestionService(questions: try makeMockQuestions())
+        service.shouldThrow = true
+        let vm = QuizViewModel(questionService: service)
+
+        vm.startQuiz()
+        guard case .error = vm.viewState else {
+            XCTFail("Expected the initial mixed request to fail")
+            return
+        }
+
+        service.shouldThrow = false
+        vm.retryLastQuiz()
+
+        XCTAssertEqual(service.allQuestionsRequestCount, 2)
+        XCTAssertTrue(service.categoryRequests.isEmpty)
+        XCTAssertEqual(vm.viewState, .playing)
+        XCTAssertEqual(vm.totalQuestions, 2)
+        vm.resetToMenu()
+    }
+
+    func testInvalidAnswerIndexLeavesRoundPlaying() throws {
+        let vm = QuizViewModel(questionService: MockQuestionService(questions: try makeMockQuestions()))
+        vm.startQuiz()
+        let initialTime = vm.timeRemaining
+
+        vm.selectAnswer(at: -1)
+        XCTAssertEqual(vm.viewState, .playing)
+        XCTAssertNil(vm.selectedAnswerIndex)
+        XCTAssertEqual(vm.timeRemaining, initialTime)
+
+        vm.selectAnswer(at: 4)
+        XCTAssertEqual(vm.viewState, .playing)
+        XCTAssertNil(vm.selectedAnswerIndex)
+        XCTAssertEqual(vm.timeRemaining, initialTime)
     }
     
     /// Verifies the full user progression loop: answering Q1, advancing to Q2, answering Q2, and transitioning to `.finished`.

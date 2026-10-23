@@ -89,6 +89,7 @@ public struct TimerBar: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Time remaining: \(Int(ceil(max(timeRemaining, 0.0)))) seconds")
+        .accessibilityValue("\(currentUrgencyPhase.rawValue) urgency phase")
         .accessibilityIdentifier("quiz.timerBar")
     }
 }

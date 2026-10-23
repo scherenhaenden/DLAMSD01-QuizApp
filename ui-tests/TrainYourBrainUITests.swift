@@ -184,6 +184,27 @@ final class TrainYourBrainUITests: XCTestCase {
         XCTAssertTrue(category.waitForExistence(timeout: 10))
     }
 
+    func testLeaderboardAndHistoryOpensAndDismisses() {
+        app.launch()
+        let scoresButton = app.buttons["home.scoresButton"]
+        XCTAssertTrue(scoresButton.waitForExistence(timeout: 15), "Scores button must exist on home screen")
+        scoresButton.tap()
+
+        let leaderboardTitle = app.staticTexts["Leaderboard & History"]
+        XCTAssertTrue(leaderboardTitle.waitForExistence(timeout: 10), "Leaderboard title must appear in modal sheet")
+
+        let segmentPicker = app.segmentedControls["leaderboard.segmentPicker"]
+        XCTAssertTrue(segmentPicker.waitForExistence(timeout: 5), "Segmented picker must appear")
+
+        attachScreenshot(named: "Leaderboard - modal sheet")
+
+        let doneButton = app.buttons["leaderboard.dismiss"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 5), "Done button must exist")
+        doneButton.tap()
+
+        XCTAssertTrue(scoresButton.waitForExistence(timeout: 10), "Home screen must return after dismissing leaderboard")
+    }
+
     private func answerAndAdvance(questionCount: Int) {
         for questionIndex in 0..<questionCount {
             let answer = app.buttons["quiz.answer.0"]

@@ -116,13 +116,18 @@ public final class QuizViewModel: ObservableObject {
     /// Haptic feedback provider delivering tactile sensory response upon user answers.
     private let hapticService: HapticFeedbackServiceProtocol
     
+    /// Local persistence store for recording high scores and historical rounds (ADR-07).
+    public let scoreStore: ScoreStoreProtocol
+    
     /// Designated initializer accepting dependency injection for testability.
     public init(
         questionService: QuestionServiceProtocol = LocalQuestionService(),
+        scoreStore: ScoreStoreProtocol = UserDefaultsScoreStore(),
         monotonicClock: @escaping () -> TimeInterval = QuizViewModel.defaultMonotonicClock,
         hapticService: HapticFeedbackServiceProtocol = SystemHapticFeedbackService.shared
     ) {
         self.questionService = questionService
+        self.scoreStore = scoreStore
         self.monotonicClock = monotonicClock
         self.hapticService = hapticService
     }
@@ -244,6 +249,7 @@ public final class QuizViewModel: ObservableObject {
         if case .completed(let record) = currentSession.state {
             stopTimer()
             self.questionStartMonotonic = nil
+            try? scoreStore.save(record: record)
             self.viewState = .finished(record)
         } else {
             selectedAnswerIndex = nil

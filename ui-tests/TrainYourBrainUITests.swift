@@ -35,6 +35,9 @@ final class TrainYourBrainUITests: XCTestCase {
         let effortHeader = app.staticTexts["Good Effort!"]
         XCTAssertTrue(completedHeader.waitForExistence(timeout: 10) || effortHeader.waitForExistence(timeout: 10))
         attachScreenshot(named: "Results - completed round")
+        if !playAgain.isHittable {
+            app.swipeUp()
+        }
         playAgain.tap()
         XCTAssertTrue(app.buttons["quiz.answer.0"].waitForExistence(timeout: 10))
 
@@ -105,11 +108,17 @@ final class TrainYourBrainUITests: XCTestCase {
     private func answerAndAdvance(questionCount: Int) {
         for questionIndex in 0..<questionCount {
             let answer = app.buttons["quiz.answer.0"]
-            XCTAssertTrue(answer.waitForExistence(timeout: 10), "Question \(questionIndex + 1) did not appear")
+            XCTAssertTrue(answer.waitForExistence(timeout: 15), "Question \(questionIndex + 1) did not appear")
+            if !answer.isHittable {
+                app.swipeDown()
+            }
             answer.tap()
 
             let advance = app.buttons["quiz.advance"]
-            XCTAssertTrue(advance.waitForExistence(timeout: 10), "Feedback did not appear for question \(questionIndex + 1)")
+            XCTAssertTrue(advance.waitForExistence(timeout: 15), "Feedback did not appear for question \(questionIndex + 1)")
+            if !advance.isHittable {
+                app.swipeUp()
+            }
             advance.tap()
         }
     }

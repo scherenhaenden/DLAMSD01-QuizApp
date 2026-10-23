@@ -214,7 +214,7 @@ public struct AnswerButton: View {
             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .foregroundColor(feedbackForegroundColor)
         }
-        .buttonStyle(EvaluationButtonStyle())
+        .buttonStyle(.plain)
         .disabled(isAnswerRevealed) // Prevent double-tap race conditions after selection
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Self.formattedAccessibilityLabel(letter: optionLetter, text: optionText))

@@ -114,6 +114,35 @@ final class TrainYourBrainUITests: XCTestCase {
         XCTAssertTrue(app.buttons["quiz.answer.0"].waitForExistence(timeout: 10))
     }
 
+    func testLiveCountdownReachesTimeoutAndEnablesAdvance() {
+        app.launch()
+        let category = app.buttons["home.category.software_engineering"]
+        XCTAssertTrue(category.waitForExistence(timeout: 15))
+        category.tap()
+
+        // 1. Verify active quiz screen and countdown components loaded
+        let firstAnswer = app.buttons["quiz.answer.0"]
+        XCTAssertTrue(firstAnswer.waitForExistence(timeout: 15), "Question and answer options must load")
+        let timer = app.descendants(matching: .any)["quiz.timerBar"]
+        XCTAssertTrue(timer.exists || app.staticTexts.matching(NSPredicate(format: "label ENDSWITH 's'")).firstMatch.exists)
+
+        // 2. Wait for question countdown (12s to 20s) to expire without user input
+        // When timer hits 0.0s, the state transitions to .answered with timeout penalty
+        let advanceButton = app.buttons["quiz.advance"]
+        XCTAssertTrue(advanceButton.waitForExistence(timeout: 25), "Timeout must transition to .answered and display advance button")
+
+        // 3. Verify pedagogical feedback on timeout (Incorrect label & explanation)
+        let feedbackHeader = app.staticTexts["Incorrect"]
+        XCTAssertTrue(feedbackHeader.waitForExistence(timeout: 5))
+        attachScreenshot(named: "Quiz - live countdown timeout")
+
+        // 4. Advance to next question and exit cleanly
+        advanceButton.tap()
+        XCTAssertTrue(app.buttons["quiz.answer.0"].waitForExistence(timeout: 15))
+        app.buttons["quiz.close"].tap()
+        XCTAssertTrue(category.waitForExistence(timeout: 10))
+    }
+
     private func answerAndAdvance(questionCount: Int) {
         for questionIndex in 0..<questionCount {
             let answer = app.buttons["quiz.answer.0"]

@@ -2,9 +2,9 @@
 
 **Course:** DLAMSD01 Apple Mobile Solution Development I  
 **Author:** Edward Sergio José Flores Mogollón  
-**Milestone Version:** 0.4.0  
-**Build Identifier:** 20261023.131100  
-**Branch:** `feat/sprint-4-reactive-timer-and-lifecycle`  
+**Milestone Version:** 0.4.1  
+**Build Identifier:** 20261023.134700  
+**Branch:** `fix/sprint-4-timer-drift-and-clock-manipulation`  
 
 ---
 
@@ -69,9 +69,9 @@ To guarantee academic integrity and fair testing:
 
 ### 3.1 Automated Package Test Results
 Executing `swift test --enable-code-coverage`:
-* **Total Tests Executed:** 64 tests (51 baseline + 13 Sprint 4 additions)
+* **Total Tests Executed:** 67 tests (51 baseline + 16 Sprint 4 additions & regression fixes)
 * **Failures:** 0
-* **Execution Duration:** 0.231s
+* **Execution Duration:** 0.263s
 
 ### 3.2 Coverage Breakdown (`llvm-cov`)
 
@@ -85,7 +85,7 @@ Executing `swift test --enable-code-coverage`:
 | `src/Models/ScoreRecord.swift` | 6 / 6 | 35 / 36 | 97.22% |
 | `src/Services/LocalQuestionService.swift` | 6 / 6 | 58 / 61 | 95.08% |
 | `src/Services/QuestionServiceProtocol.swift` | 1 / 1 | 9 / 12 | 75.00% |
-| `src/ViewModels/QuizViewModel.swift` | 30 / 32 | 194 / 203 | **95.57%** |
+| `src/ViewModels/QuizViewModel.swift` | 30 / 34 | 211 / 225 | **93.78%** |
 | `src/Views/Components/AnswerButton.swift` | 17 / 18 | 225 / 241 | 93.36% |
 | `src/Views/Components/CategoryCard.swift` | 18 / 20 | 230 / 239 | 96.23% |
 | `src/Views/Components/Color+Adaptive.swift` | 5 / 7 | 15 / 21 | 71.43% |
@@ -94,7 +94,7 @@ Executing `swift test --enable-code-coverage`:
 | `src/Views/Screens/HomeView.swift` | 17 / 25 | 446 / 483 | 92.34% |
 | `src/Views/Screens/QuizView.swift` | 12 / 20 | 489 / 551 | 88.75% |
 | `src/Views/Screens/ResultView.swift` | 11 / 13 | 268 / 287 | 93.38% |
-| **TOTAL** | **181 / 214 (84.58%)** | **2,512 / 2,734** | **91.88%** |
+| **TOTAL** | **181 / 216 (83.80%)** | **2,529 / 2,756** | **91.76%** |
 
 ### 3.3 Native UI Acceptance Suite (iPad 9th Generation)
 Executing `xcodebuild test -destination 'platform=iOS Simulator,name=iPad (9th generation)'`:
@@ -102,7 +102,8 @@ Executing `xcodebuild test -destination 'platform=iOS Simulator,name=iPad (9th g
 * `testMixedRoundStartsAndReturnsToTopics`: Passed (11.2s)
 * `testIncorrectAnswerMarksTheCorrectOption`: Passed (13.6s)
 * `testAccessibilityDynamicTypeKeepsCategoryStartAvailable`: Passed (12.6s)
-* **Status:** `** TEST SUCCEEDED **` (4 / 4 passed, 0 failures, 78.8s total).
+* `testLiveCountdownReachesTimeoutAndEnablesAdvance`: Passed (29.6s)
+* **Status:** `** TEST SUCCEEDED **` (5 / 5 passed, 0 failures, 109.7s total).
 
 ---
 
@@ -170,4 +171,53 @@ Throughout the Sprint 3 and Sprint 4 development cycles, multiple real-world eng
   let effortHeader = app.staticTexts["Good Effort!"]
   XCTAssertTrue(completedHeader.waitForExistence(timeout: 10) || effortHeader.waitForExistence(timeout: 10))
   ```
+
+### 5.8 Cumulative Main RunLoop Drift in High-Frequency (10 Hz) Timer
+* **Incident / Symptom:** Under main thread load or during heavy view hierarchy layout updates, subtracting a fixed constant ($0.1\text{s}$) on every timer callback resulted in cumulative time drift. Over a 20-second countdown, the clock could take 22–24 wall-clock seconds to expire.
+* **Root Cause:** Foundation's `Timer.publish` does not guarantee exact, jitter-free scheduling; each firing is subject to RunLoop contention. Decrementing by nominal `0.1s` ignores the scheduling delay between ticks.
+* **Resolution:** Introduced real-time delta compensation in `QuizViewModel`:
+  ```swift
+  let last = self.lastTickTimestamp ?? currentTickDate
+  self.lastTickTimestamp = currentTickDate
+  let realDelta = max(currentTickDate.timeIntervalSince(last), 0.0)
+  self.tickTimer(delta: realDelta)
+  ```
+  Each tick now calculates the exact wall-clock interval since the previous firing, completely eliminating drift and maintaining synchrony with real-world time.
+
+### 5.9 Retrograde Clock Tampering (Anti-Cheat Device Clock Manipulation)
+* **Incident / Symptom:** During background lifecycle verification, setting the device system clock backwards by 30 seconds while the app was backgrounded resulted in negative elapsed duration ($\Delta t = -30\text{s}$), causing `timeRemaining -= elapsed` to increase the timer from 15s to 45s (awarding 30 bonus seconds).
+* **Root Cause:** Naive subtraction of `elapsed = currentDate.timeIntervalSince(timestamp)` without verifying whether the user rewound system time.
+* **Resolution:** Implemented retrograde clock jump detection and clamping:
+  ```swift
+  let elapsed = currentDate.timeIntervalSince(timestamp)
+  let questionLimit = currentQuestion?.difficulty.timeLimitSeconds ?? standardTimeLimit
+
+  // Retrograde jump beyond sub-second NTP jitter triggers anti-cheat timeout
+  if elapsed < -0.5 {
+      timeRemaining = 0.0
+      handleTimeout()
+      return
+  }
+
+  let effectiveElapsed = max(elapsed, 0.0)
+  if effectiveElapsed >= timeRemaining {
+      timeRemaining = 0.0
+      handleTimeout()
+  } else {
+      timeRemaining = min(timeRemaining - effectiveElapsed, questionLimit)
+      startTimer(initialRemaining: timeRemaining)
+  }
+  ```
+  Any backwards jump $> 500\text{ms}$ is flagged as deliberate tampering, immediately resetting streak and zeroing the timer. Normal sub-second NTP synchronizations are clamped to zero, preventing time inflation beyond the difficulty limit.
+
+### 5.10 Live Countdown Expiration UI Acceptance on iPad (9th generation)
+* **Incident / Symptom:** While unit tests confirmed `tickTimer()` state transitions, the native UI test suite previously lacked an end-to-end acceptance test that waited for the actual 10 Hz countdown to hit `0.0s` naturally in the simulator runtime.
+* **Root Cause:** UI tests simulated user taps before expiration to minimize test execution time.
+* **Resolution:** Authored `testLiveCountdownReachesTimeoutAndEnablesAdvance()` in `TrainYourBrainUITests.swift`:
+  - Starts a round and verifies the initial 56 pt answer buttons.
+  - Waits for `quiz.advance` to appear as the reactive timer runs down to zero.
+  - Confirms the `"Incorrect"` accessibility label appears upon timeout.
+  - Captures an XCTest screenshot attachment (`'Quiz - live countdown timeout'`).
+  - Taps `quiz.advance`, confirms transition to question 2, and exits cleanly.
+
 

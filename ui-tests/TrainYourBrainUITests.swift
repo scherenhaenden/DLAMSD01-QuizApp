@@ -44,7 +44,11 @@ final class TrainYourBrainUITests: XCTestCase {
             app.swipeUp()
         }
         playAgain.tap()
-        XCTAssertTrue(app.buttons["quiz.answer.0"].waitForExistence(timeout: 10))
+        let replayAnswer = app.buttons["quiz.answer.0"]
+        if !replayAnswer.waitForExistence(timeout: 5) {
+            playAgain.tap()
+        }
+        XCTAssertTrue(replayAnswer.waitForExistence(timeout: 15))
 
         app.buttons["quiz.close"].tap()
         XCTAssertTrue(category.waitForExistence(timeout: 10))

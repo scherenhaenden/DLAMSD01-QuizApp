@@ -336,4 +336,47 @@ final class Sprint4ReactiveTimerTests: XCTestCase {
         vm.tickTimer(delta: 0.08)
         XCTAssertEqual(vm.timeRemaining, 14.52, accuracy: 0.0001)
     }
+    
+    func testMonotonicClockNeutralizesClockRollbackTampering() {
+        let q = makeTestQuestion(difficulty: .medium) // 15.0s limit
+        let vm = makeViewModel(with: [q])
+        vm.startQuiz(category: .swiftAndApple)
+        XCTAssertEqual(vm.timeRemaining, 15.0)
+        
+        let t0 = Date()
+        let monoStart: TimeInterval = 1000.0
+        vm.handleScenePhaseChange(to: .background, currentDate: t0, monotonicTime: monoStart)
+        
+        // Attack scenario: User stays outside for 30s (monotonic clock advances by 30s),
+        // but rewinds device system clock by 29s, so wall clock only appears to advance 1.0s.
+        let wallDateWithRewind = t0.addingTimeInterval(1.0)
+        let monoEnd = monoStart + 30.0
+        
+        vm.handleScenePhaseChange(to: .active, currentDate: wallDateWithRewind, monotonicTime: monoEnd)
+        
+        XCTAssertEqual(vm.timeRemaining, 0.0, "Monotonic clock must enforce real physical 30s elapsed duration")
+        XCTAssertEqual(vm.selectedAnswerIndex, -1)
+        XCTAssertEqual(vm.streak, 0)
+        XCTAssertEqual(vm.viewState, .answered(selectedIndex: -1, isCorrect: false), "Clock rollback tampering is foiled by monotonic clock")
+    }
+    
+    func testMonotonicClockAllowsLegitimateResumeWithinLimit() {
+        let q = makeTestQuestion(difficulty: .medium) // 15.0s limit
+        let vm = makeViewModel(with: [q])
+        vm.startQuiz(category: .swiftAndApple)
+        XCTAssertEqual(vm.timeRemaining, 15.0)
+        
+        let t0 = Date()
+        let monoStart: TimeInterval = 500.0
+        vm.handleScenePhaseChange(to: .background, currentDate: t0, monotonicTime: monoStart)
+        
+        // Legitimate scenario: User minimizes for 5 seconds of physical time
+        let wallResume = t0.addingTimeInterval(5.0)
+        let monoResume = monoStart + 5.0
+        
+        vm.handleScenePhaseChange(to: .active, currentDate: wallResume, monotonicTime: monoResume)
+        
+        XCTAssertEqual(vm.viewState, .playing)
+        XCTAssertEqual(vm.timeRemaining, 10.0, accuracy: 0.001, "Remaining time accurately decrements by 5s")
+    }
 }

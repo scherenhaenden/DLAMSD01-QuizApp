@@ -172,7 +172,11 @@ public struct QuizSession: Equatable, Sendable {
     
     /// Advances the cursor to the subsequent question or finalizes the session if all questions are completed.
     /// Strictly guarded: only advances if the active question has been answered or timed out.
-    public mutating func advanceToNext(completedAt: Date = Date(), duration: TimeInterval? = nil) {
+    public mutating func advanceToNext(
+        completedAt: Date = Date(),
+        duration: TimeInterval? = nil,
+        totalResponseTime: TimeInterval? = nil
+    ) {
         guard case .questionAnswered = state else { return }
         
         if hasNextQuestion {
@@ -187,6 +191,7 @@ public struct QuizSession: Equatable, Sendable {
                 streakRecord: bestStreak,
                 category: category,
                 durationSeconds: elapsed,
+                totalResponseTime: totalResponseTime,
                 categoryBreakdown: categoryBreakdown,
                 completedAt: completedAt
             )

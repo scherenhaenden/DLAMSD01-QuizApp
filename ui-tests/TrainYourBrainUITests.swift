@@ -39,6 +39,14 @@ final class TrainYourBrainUITests: XCTestCase {
         let completedHeader = app.staticTexts["Round Completed!"]
         let effortHeader = app.staticTexts["Good Effort!"]
         XCTAssertTrue(completedHeader.waitForExistence(timeout: 10) || effortHeader.waitForExistence(timeout: 10))
+        
+        // Assert scorecard dashboard metrics & German academic evaluation
+        XCTAssertTrue(app.staticTexts["Score"].waitForExistence(timeout: 5), "Score metric tile must render")
+        XCTAssertTrue(app.staticTexts["Accuracy"].waitForExistence(timeout: 5), "Accuracy metric tile must render")
+        XCTAssertTrue(app.staticTexts["Streak"].waitForExistence(timeout: 5), "Streak metric tile must render")
+        XCTAssertTrue(app.staticTexts["Avg Speed"].waitForExistence(timeout: 5), "Avg Speed metric tile must render")
+        XCTAssertTrue(app.buttons["result.returnToMenu"].waitForExistence(timeout: 5), "Return to Menu CTA must render")
+        
         attachScreenshot(named: "Results - completed round")
         if !playAgain.isHittable {
             app.swipeUp()

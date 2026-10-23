@@ -96,6 +96,12 @@ public final class QuizViewModel: ObservableObject {
     /// Monotonic timestamp recording when the active round began.
     private var sessionStartMonotonic: TimeInterval?
     
+    /// Monotonic timestamp recording when the active question was presented to the user.
+    private var questionStartMonotonic: TimeInterval?
+    
+    /// Accumulated active response time across questions in seconds (excluding explanation reading time).
+    private var accumulatedResponseTime: TimeInterval = 0.0
+    
     /// Monotonic time provider closure returning seconds in continuous time.
     private let monotonicClock: () -> TimeInterval
     
@@ -172,6 +178,8 @@ public final class QuizViewModel: ObservableObject {
             self.currentScore = 0
             self.streak = 0
             self.sessionStartMonotonic = monotonicClock()
+            self.accumulatedResponseTime = 0.0
+            self.questionStartMonotonic = monotonicClock()
             self.hapticService.prepare()
             self.syncFromSession()
             self.startTimer()
@@ -197,6 +205,10 @@ public final class QuizViewModel: ObservableObject {
               question.options.indices.contains(index) else { return }
 
         stopTimer()
+        if let qStart = questionStartMonotonic {
+            accumulatedResponseTime += max(0.0, monotonicClock() - qStart)
+            questionStartMonotonic = nil
+        }
         backgroundTimestamp = nil
         backgroundMonotonicTimestamp = nil
         selectedAnswerIndex = index
@@ -221,9 +233,9 @@ public final class QuizViewModel: ObservableObject {
         
         if let startUptime = sessionStartMonotonic {
             let elapsedMono = max(0.0, monotonicClock() - startUptime)
-            currentSession.advanceToNext(duration: elapsedMono)
+            currentSession.advanceToNext(duration: elapsedMono, totalResponseTime: accumulatedResponseTime)
         } else {
-            currentSession.advanceToNext()
+            currentSession.advanceToNext(totalResponseTime: accumulatedResponseTime)
         }
         self.session = currentSession
         backgroundTimestamp = nil
@@ -231,11 +243,13 @@ public final class QuizViewModel: ObservableObject {
         
         if case .completed(let record) = currentSession.state {
             stopTimer()
+            self.questionStartMonotonic = nil
             self.viewState = .finished(record)
         } else {
             selectedAnswerIndex = nil
             syncFromSession()
             self.viewState = .playing
+            self.questionStartMonotonic = monotonicClock()
             startTimer()
         }
     }
@@ -246,6 +260,8 @@ public final class QuizViewModel: ObservableObject {
         backgroundTimestamp = nil
         backgroundMonotonicTimestamp = nil
         sessionStartMonotonic = nil
+        questionStartMonotonic = nil
+        accumulatedResponseTime = 0.0
         session = nil
         currentQuestion = nil
         questionIndex = 0
@@ -387,6 +403,10 @@ public final class QuizViewModel: ObservableObject {
     public func handleTimeout() {
         guard viewState == .playing, var currentSession = session else { return }
         stopTimer()
+        if let qStart = questionStartMonotonic {
+            accumulatedResponseTime += max(0.0, monotonicClock() - qStart)
+            questionStartMonotonic = nil
+        }
         backgroundTimestamp = nil
         backgroundMonotonicTimestamp = nil
         currentSession.recordTimeout()

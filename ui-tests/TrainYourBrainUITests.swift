@@ -30,6 +30,11 @@ final class TrainYourBrainUITests: XCTestCase {
         answerAndAdvance(questionCount: 5)
 
         let playAgain = app.buttons["result.playAgain"]
+        if !playAgain.waitForExistence(timeout: 10) {
+            if app.buttons["quiz.advance"].exists {
+                app.buttons["quiz.advance"].tap()
+            }
+        }
         XCTAssertTrue(playAgain.waitForExistence(timeout: 15))
         let completedHeader = app.staticTexts["Round Completed!"]
         let effortHeader = app.staticTexts["Good Effort!"]

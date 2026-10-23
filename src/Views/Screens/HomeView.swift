@@ -4,6 +4,7 @@ import SwiftUI
 public struct HomeView: View {
     @ObservedObject public var viewModel: QuizViewModel
     @AppStorage("app_theme") private var selectedTheme: String = AppTheme.system.rawValue
+    @State private var showLeaderboard: Bool = false
 
     public init(viewModel: QuizViewModel) {
         self.viewModel = viewModel
@@ -15,7 +16,7 @@ public struct HomeView: View {
                 Color.adaptiveBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 24) {
-                        themePicker
+                        headerActions
 
                         VStack(spacing: 8) {
                             Image(systemName: "brain.head.profile")
@@ -81,6 +82,9 @@ public struct HomeView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
+            .sheet(isPresented: $showLeaderboard) {
+                LeaderboardView(viewModel: LeaderboardViewModel(scoreStore: viewModel.scoreStore))
+            }
         }
         .task {
             viewModel.loadQuestionCatalog()
@@ -93,26 +97,45 @@ public struct HomeView: View {
         return "\(viewModel.availableQuestionCount) questions available"
     }
 
-    private var themePicker: some View {
+    private var headerActions: some View {
         HStack {
-            Spacer(minLength: 0)
-            Menu {
-                Picker("Appearance", selection: $selectedTheme) {
-                    ForEach(AppTheme.allCases) { theme in
-                        Label(theme.displayName, systemImage: theme.iconName).tag(theme.rawValue)
-                    }
-                }
+            Button {
+                showLeaderboard = true
             } label: {
-                Label(AppTheme(rawValue: selectedTheme)?.displayName ?? "Auto", systemImage: "circle.lefthalf.filled")
-                    .font(.subheadline)
-                    .fixedSize(horizontal: false, vertical: true)
+                Label("Scores", systemImage: "trophy.fill")
+                    .font(.subheadline.bold())
                     .padding(.horizontal, 12)
                     .frame(minHeight: 44)
                     .background(Color.adaptiveCardBackground)
+                    .foregroundColor(.accentColor)
                     .clipShape(Capsule())
             }
-            .accessibilityLabel("Appearance")
-            .accessibilityValue(AppTheme(rawValue: selectedTheme)?.displayName ?? "Auto")
+            .accessibilityLabel("View Leaderboard and High Scores")
+            .accessibilityIdentifier("home.scoresButton")
+
+            Spacer(minLength: 0)
+
+            themePicker
         }
+    }
+
+    private var themePicker: some View {
+        Menu {
+            Picker("Appearance", selection: $selectedTheme) {
+                ForEach(AppTheme.allCases) { theme in
+                    Label(theme.displayName, systemImage: theme.iconName).tag(theme.rawValue)
+                }
+            }
+        } label: {
+            Label(AppTheme(rawValue: selectedTheme)?.displayName ?? "Auto", systemImage: "circle.lefthalf.filled")
+                .font(.subheadline)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 12)
+                .frame(minHeight: 44)
+                .background(Color.adaptiveCardBackground)
+                .clipShape(Capsule())
+        }
+        .accessibilityLabel("Appearance")
+        .accessibilityValue(AppTheme(rawValue: selectedTheme)?.displayName ?? "Auto")
     }
 }

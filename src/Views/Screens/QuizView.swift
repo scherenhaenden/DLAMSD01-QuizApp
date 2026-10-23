@@ -123,6 +123,8 @@ public struct QuizView: View {
                                         .foregroundColor(.white)
                                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                                 }
+                                .buttonStyle(.plain)
+                                .contentShape(Rectangle())
                                 .accessibilityIdentifier("quiz.advance")
                                 .padding(.top, 8)
                             }

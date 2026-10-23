@@ -52,10 +52,8 @@ public final class UserDefaultsScoreStore: ScoreStoreProtocol, @unchecked Sendab
         // Prepend new record to maintain newest-first order
         records.insert(record, at: 0)
         
-        // Enforce max capacity cap
-        if records.count > maxCapacity {
-            records = Array(records.prefix(maxCapacity))
-        }
+        // Enforce capacity while strictly preserving all-time personal bests (US-13)
+        UserDefaultsScoreStore.pruneRecordsWithBestProtection(&records, maxCapacity: maxCapacity)
         
         do {
             let data = try encoder.encode(records)
@@ -73,18 +71,7 @@ public final class UserDefaultsScoreStore: ScoreStoreProtocol, @unchecked Sendab
     
     public func loadHighScores(limit: Int = 50) -> [ScoreRecord] {
         let all = loadRecords()
-        let sorted = all.sorted { lhs, rhs in
-            if lhs.score != rhs.score {
-                return lhs.score > rhs.score
-            }
-            if lhs.accuracyPercentage != rhs.accuracyPercentage {
-                return lhs.accuracyPercentage > rhs.accuracyPercentage
-            }
-            if lhs.streakRecord != rhs.streakRecord {
-                return lhs.streakRecord > rhs.streakRecord
-            }
-            return lhs.completedAt > rhs.completedAt
-        }
+        let sorted = all.sorted(by: >)
         return Array(sorted.prefix(max(0, limit)))
     }
     
@@ -96,12 +83,7 @@ public final class UserDefaultsScoreStore: ScoreStoreProtocol, @unchecked Sendab
             }
             return true
         }
-        return matching.max { lhs, rhs in
-            if lhs.score != rhs.score {
-                return lhs.score < rhs.score
-            }
-            return lhs.accuracyPercentage < rhs.accuracyPercentage
-        }
+        return matching.max()
     }
     
     public func clearAll() throws {
@@ -111,6 +93,36 @@ public final class UserDefaultsScoreStore: ScoreStoreProtocol, @unchecked Sendab
     }
     
     // MARK: - Private Helpers
+    
+    /// Prunes excess records beyond `maxCapacity`, guaranteeing that all-time personal bests
+    /// (overall and for each individual category) are strictly protected against eviction (US-13).
+    internal static func pruneRecordsWithBestProtection(_ records: inout [ScoreRecord], maxCapacity: Int) {
+        guard records.count > maxCapacity else { return }
+        
+        var protectedIDs = Set<UUID>()
+        if let globalBest = records.max() {
+            protectedIDs.insert(globalBest.id)
+        }
+        for cat in QuizCategory.allCases {
+            if let catBest = records.filter({ $0.category == cat }).max() {
+                protectedIDs.insert(catBest.id)
+            }
+        }
+        
+        // Prune from oldest (at the end), sparing protected records
+        var index = records.count - 1
+        while records.count > maxCapacity && index >= 0 {
+            if !protectedIDs.contains(records[index].id) {
+                records.remove(at: index)
+            }
+            index -= 1
+        }
+        
+        // Final boundary: if protected records alone exceed maxCapacity, retain top records
+        if records.count > maxCapacity {
+            records = Array(records.prefix(maxCapacity))
+        }
+    }
     
     private func internalLoadRecords() -> [ScoreRecord] {
         guard let data = userDefaults.data(forKey: storageKey) else {
@@ -144,9 +156,7 @@ public final class InMemoryScoreStore: ScoreStoreProtocol, @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         records.insert(record, at: 0)
-        if records.count > maxCapacity {
-            records = Array(records.prefix(maxCapacity))
-        }
+        UserDefaultsScoreStore.pruneRecordsWithBestProtection(&records, maxCapacity: maxCapacity)
     }
     
     public func loadRecords() -> [ScoreRecord] {
@@ -157,11 +167,7 @@ public final class InMemoryScoreStore: ScoreStoreProtocol, @unchecked Sendable {
     
     public func loadHighScores(limit: Int = 50) -> [ScoreRecord] {
         let all = loadRecords()
-        let sorted = all.sorted { lhs, rhs in
-            if lhs.score != rhs.score { return lhs.score > rhs.score }
-            if lhs.accuracyPercentage != rhs.accuracyPercentage { return lhs.accuracyPercentage > rhs.accuracyPercentage }
-            return lhs.completedAt > rhs.completedAt
-        }
+        let sorted = all.sorted(by: >)
         return Array(sorted.prefix(max(0, limit)))
     }
     
@@ -173,10 +179,7 @@ public final class InMemoryScoreStore: ScoreStoreProtocol, @unchecked Sendable {
             }
             return true
         }
-        return matching.max { lhs, rhs in
-            if lhs.score != rhs.score { return lhs.score < rhs.score }
-            return lhs.accuracyPercentage < rhs.accuracyPercentage
-        }
+        return matching.max()
     }
     
     public func clearAll() throws {

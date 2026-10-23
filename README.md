@@ -4,7 +4,7 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.4.1** (Build `20261023.134700`), Sprint 4 maintenance patch and defect resolution. High-frequency reactive timer (10 Hz), dynamic proportional urgency alerting in `TimerBar`, real-time drift compensation, and anti-cheat `ScenePhase` lifecycle management with backwards clock tampering protection are implemented and verified.
+Version **0.4.2** (Build `20261023.141500`), Sprint 4 maintenance release and monotonic clock anti-cheat integration. High-frequency reactive timer (10 Hz), dynamic proportional urgency alerting in `TimerBar`, real-time drift compensation, hardware monotonic clock lifecycle management (`systemUptime`), and native UI background/resume acceptance are implemented and verified.
 
 ### Implemented
 
@@ -14,7 +14,7 @@ Version **0.4.1** (Build `20261023.134700`), Sprint 4 maintenance patch and defe
 - High-frequency 10 Hz Combine reactive countdown timer (`0.1s` interval) on `@MainActor` with real-time delta compensation preventing RunLoop drift.
 - Deterministic time-stepping API (`tickTimer(delta:)`) allowing instant, deterministic unit testing without asynchronous delays.
 - Proportional chromatic shifts in `TimerBar` (`UrgencyPhase`: Normal $> 50\%$, Warning $20\%-50\%$, Critical $\le 20\%$) dynamically scaling across Easy (20s), Medium (15s), and Hard (12s) difficulty tiers.
-- Application scene lifecycle (`ScenePhase`) anti-cheat protection: background exit timestamp tracking, elapsed time deduction upon resume, and immediate timeout on expired duration or retroactive clock tampering ($> 500\text{ms}$ backwards clock jumps).
+- Application scene lifecycle (`ScenePhase`) anti-cheat protection: monotonic continuous clock (`systemUptime`) tracking across background transitions, elapsed time deduction upon resume, and immediate timeout on expired duration or device clock tampering.
 - Reusable `CategoryCard`, `QuestionCard`, and `AnswerButton` components with 56 pt minimum touch targets and `.buttonStyle(.plain)` to prevent `ScrollView` gesture stealing.
 - Programmatic answer-feedback VoiceOver announcements for correct, incorrect, and timeout states.
 - Appearance selection stored through `@AppStorage`. Round history and high scores belong to Sprint 7.
@@ -51,7 +51,9 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The package test suite executes 67 unit tests with 0 failures and measures 92.1% instrumented production line coverage on macOS via `llvm-cov`, excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, and live countdown timeout on iPad (9th generation).
+The package test suite executes 69 unit tests with 0 failures and measures **91.71%** instrumented production line coverage on macOS via `llvm-cov` (2,554 / 2,785 lines), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, and background-to-foreground lifecycle resumption on iPad (9th generation).
+
+Formal spectrophotometric WCAG 2.1 AA contrast auditing belongs to the dedicated accessibility milestone (Sprint 8); current states provide redundant chromatic cues alongside numeric countdown labels and VoiceOver announcements.
 
 See the [Sprint 4 technical report](docs/sprint4_reactive_timer_and_lifecycle_report.md) for architectural details, coverage breakdowns, and the technical incident retrospective.
 
@@ -64,7 +66,8 @@ See the [Sprint 4 technical report](docs/sprint4_reactive_timer_and_lifecycle_re
 | **0.2.1** | Sprint 2 bugfixes: Play Again state reset, ScrollView gesture fix *(Completed)* |
 | **0.3.0** | Modular UI components, iPad 9 acceptance, and tag release *(Completed)* |
 | **0.4.0** | Reactive 10 Hz timer, proportional urgency, and anti-cheat lifecycle *(Completed)* |
-| **0.4.1** | Sprint 4 maintenance patch: drift compensation, retrograde clock fix, UI timeout test *(Current)* |
+| **0.4.1** | Sprint 4 maintenance patch: drift compensation, retrograde clock fix, UI timeout test *(Completed)* |
+| **0.4.2** | Monotonic hardware clock anti-cheat, background/resume UI test, exact coverage reconciliation *(Current)* |
 | 0.5.0 | Feedback animations and optional haptics |
 | 0.6.0 | Extend and review the existing result screen and score calculations |
 | 0.7.0 | Local result history and personal bests |

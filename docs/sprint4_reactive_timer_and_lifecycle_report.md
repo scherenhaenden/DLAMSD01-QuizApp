@@ -2,9 +2,9 @@
 
 **Course:** DLAMSD01 Apple Mobile Solution Development I  
 **Maintainer:** `scherenhaenden`
-**Milestone Version:** 0.4.1  
-**Build Identifier:** 20261023.134700  
-**Branch:** `fix/sprint-4-timer-drift-and-clock-manipulation`  
+**Milestone Version:** 0.4.2  
+**Build Identifier:** 20261023.141500  
+**Branch:** `fix/sprint-4-monotonic-clock-and-ui-lifecycle`  
 
 ---
 
@@ -15,9 +15,10 @@ Sprint 4 focuses on reactive real-time timer mechanics, visual cognitive ergonom
 Key deliverables implemented:
 1. **High-Frequency Reactive Countdown:** Combine-driven `10 Hz` (`interval = 0.1s`) countdown timer managed on `@MainActor` within `QuizViewModel`.
 2. **Proportional Chromatic Urgency Shift:** Refactored `TimerBar` to dynamically compute urgency tiers (`UrgencyPhase.normal`, `.warning`, `.critical`) based on relative elapsed ratio rather than hardcoded absolute second thresholds, adapting seamlessly to 12s, 15s, and 20s question difficulty tiers.
-3. **Application Scene Lifecycle & Anti-Cheat Handling:** Hooked SwiftUI `ScenePhase` (`.active`, `.inactive`, `.background`) to accurately track background transitions ($\Delta t$), pausing the reactive timer in the background and deducting elapsed duration upon return (immediately triggering pedagogical timeout if elapsed time exceeds the remaining deadline).
+3. **Hardware Monotonic Clock & Anti-Cheat Lifecycle:** Hooked SwiftUI `ScenePhase` (`.active`, `.inactive`, `.background`) backed by a monotonic continuous hardware clock (`systemUptime`), accurately tracking elapsed duration across background transitions, pausing the reactive timer, and deducting elapsed physical time upon return (neutralizing device clock tampering).
 4. **Immediate Feedback & State Resilience:** Enforced immediate timeout handling (`handleTimeout()`) which zeroes streak, records a timeout failure in the domain `QuizSession`, sets `selectedAnswerIndex = -1`, transitions state to `.answered(selectedIndex: -1, isCorrect: false)`, and posts a VoiceOver announcement.
-5. **Deterministic TDD Unit & Integration Verification:** Created `Sprint4ReactiveTimerTests.swift` exercising 13 dedicated test methods, boosting overall codebase line coverage to **91.88%** (2,512 / 2,734 lines) across 64 unit tests.
+5. **Deterministic TDD Unit & Integration Verification:** Created `Sprint4ReactiveTimerTests.swift` exercising 18 dedicated test methods, reaching **91.71%** line coverage (2,554 / 2,785 lines) across 69 unit tests.
+6. **Native UI Acceptance Suite on iPad 9:** Automated 6 end-to-end UI tests covering category play, mixed round, feedback, Dynamic Type XXXL, natural live countdown timeout, and background-to-foreground lifecycle resumption.
 
 ---
 
@@ -69,9 +70,9 @@ To guarantee academic integrity and fair testing:
 
 ### 3.1 Automated Package Test Results
 Executing `swift test --enable-code-coverage`:
-* **Total Tests Executed:** 67 tests (51 baseline + 16 Sprint 4 additions & regression fixes)
+* **Total Tests Executed:** 69 tests (51 baseline + 18 Sprint 4 additions & regression fixes)
 * **Failures:** 0
-* **Execution Duration:** 0.263s
+* **Execution Duration:** 0.206s
 
 ### 3.2 Coverage Breakdown (`llvm-cov`)
 
@@ -85,7 +86,7 @@ Executing `swift test --enable-code-coverage`:
 | `src/Models/ScoreRecord.swift` | 6 / 6 | 35 / 36 | 97.22% |
 | `src/Services/LocalQuestionService.swift` | 6 / 6 | 58 / 61 | 95.08% |
 | `src/Services/QuestionServiceProtocol.swift` | 1 / 1 | 9 / 12 | 75.00% |
-| `src/ViewModels/QuizViewModel.swift` | 30 / 34 | 211 / 225 | **93.78%** |
+| `src/ViewModels/QuizViewModel.swift` | 34 / 39 | 236 / 254 | **92.91%** |
 | `src/Views/Components/AnswerButton.swift` | 17 / 18 | 225 / 241 | 93.36% |
 | `src/Views/Components/CategoryCard.swift` | 18 / 20 | 230 / 239 | 96.23% |
 | `src/Views/Components/Color+Adaptive.swift` | 5 / 7 | 15 / 21 | 71.43% |
@@ -94,23 +95,24 @@ Executing `swift test --enable-code-coverage`:
 | `src/Views/Screens/HomeView.swift` | 17 / 25 | 446 / 483 | 92.34% |
 | `src/Views/Screens/QuizView.swift` | 12 / 20 | 489 / 551 | 88.75% |
 | `src/Views/Screens/ResultView.swift` | 11 / 13 | 268 / 287 | 93.38% |
-| **TOTAL** | **181 / 216 (83.80%)** | **2,529 / 2,756** | **91.76%** |
+| **TOTAL** | **185 / 221 (83.71%)** | **2,554 / 2,785** | **91.71%** |
 
 ### 3.3 Native UI Acceptance Suite (iPad 9th Generation)
 Executing `xcodebuild test -destination 'platform=iOS Simulator,name=iPad (9th generation)'`:
 * `testCategoryRoundShowsFeedbackResultsAndCanReplay`: Passed (41.4s)
-* `testMixedRoundStartsAndReturnsToTopics`: Passed (11.2s)
+* `testMixedRoundStartsAndReturnsToTopics`: Passed (11.0s)
 * `testIncorrectAnswerMarksTheCorrectOption`: Passed (13.6s)
 * `testAccessibilityDynamicTypeKeepsCategoryStartAvailable`: Passed (12.6s)
 * `testLiveCountdownReachesTimeoutAndEnablesAdvance`: Passed (29.6s)
-* **Status:** `** TEST SUCCEEDED **` (5 / 5 passed, 0 failures, 109.7s total).
+* `testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay`: Passed (17.9s)
+* **Status:** `** TEST SUCCEEDED **` (6 / 6 passed, 0 failures, 136.4s total).
 
 ---
 
 ## 4. Academic Documentation & Standards Alignment
-* Conforms with the Hattie & Timperley pedagogical feedback model: feedback is immediate, explanations remain legible regardless of timeout, and users can advance autonomously.
-* Conforms to the German University grading metrics (IU International University of Applied Sciences).
-* Conforms to WCAG 2.1 Level AA color contrast requirements: chromatic shifts maintain accessible luminosity ratios against both light and dark backgrounds.
+* **Pedagogical Alignment:** Conforms with the Hattie & Timperley pedagogical feedback model: feedback is immediate, explanations remain legible regardless of timeout, and users can advance autonomously.
+* **Academic Standards:** Conforms to the German University grading metrics (IU International University of Applied Sciences).
+* **Accessibility Qualification:** A formal spectrophotometric contrast audit against WCAG 2.1 Level AA belongs to the dedicated accessibility milestone (Sprint 8). For Sprint 4, chromatic states provide redundant graphical cues alongside numeric countdown labels and VoiceOver announcements. Design tokens implement verified high-contrast feedback fills (`quizCorrectFeedback` ratio 8.5:1, `quizIncorrectFeedback` ratio 7.4:1 against pure white).
 
 ---
 
@@ -219,5 +221,25 @@ Throughout the Sprint 3 and Sprint 4 development cycles, multiple real-world eng
   - Confirms the `"Incorrect"` accessibility label appears upon timeout.
   - Captures an XCTest screenshot attachment (`'Quiz - live countdown timeout'`).
   - Taps `quiz.advance`, confirms transition to question 2, and exits cleanly.
+
+### 5.11 Monotonic Continuous Hardware Clock vs. Device Clock Tampering (Closing the 29-Second Loophole)
+* **Incident / Symptom:** If a user stayed outside the application for 30 seconds of physical time and manually delayed the device clock by 29 seconds in iOS Settings, the naive calculation `currentDate.timeIntervalSince(timestamp)` evaluated to $+1.0\text{s}$, which was positive ($> -0.5\text{s}$) and bypassed both the retrograde jump check and timeout threshold ($1.0\text{s} < 15.0\text{s}$).
+* **Root Cause:** Wall-clock `Date()` is dependent on user-configurable system time. A partial backwards shift preserves a positive delta while concealing the majority of background duration.
+* **Resolution:** Backed lifecycle time tracking by a monotonic continuous hardware clock (`ProcessInfo.processInfo.systemUptime` / `mach_continuous_time`). When returning to active state:
+  - The system computes both $\Delta t_{\text{mono}}$ (unaffected by device clock changes) and $\Delta t_{\text{wall}}$.
+  - If physical elapsed time exceeds wall-clock advance by $> 1.0\text{s}$, monotonic duration overrides wall-clock duration ($\Delta t_{\text{effective}} = \Delta t_{\text{mono}}$).
+  - An attack where the user is absent for 30s and rewinds 29s evaluates to $\Delta t_{\text{effective}} = 30.0\text{s} \ge 15.0\text{s}$, instantly triggering timeout.
+  - Regression unit tests `testMonotonicClockNeutralizesClockRollbackTampering` and `testMonotonicClockAllowsLegitimateResumeWithinLimit` verify this mathematical guarantee.
+
+### 5.12 Native UI Acceptance for Background and Foreground Scene Resumption on iPad (9th generation)
+* **Incident / Symptom:** Although background transitions were thoroughly tested in unit tests, the native XCUITest suite lacked an interactive scenario validating actual OS-level suspension and resumption on the iPad simulator.
+* **Root Cause:** XCUITest typically runs within a single foreground session unless explicit device actions are commanded.
+* **Resolution:** Authored `testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay()` in `TrainYourBrainUITests.swift`:
+  - Starts a quiz round and asserts active answer buttons.
+  - Simulates the iPad Home action via `XCUIDevice.shared.press(.home)`, transitioning the scene phase to `.background`.
+  - Pauses for 3 seconds of background duration.
+  - Re-activates the application via `app.activate()`, triggering `.active` scene phase.
+  - Verifies interactive gameplay is restored, captures attachment `'Quiz - resumed after background'`, taps an answer, and cleanly advances.
+
 
 

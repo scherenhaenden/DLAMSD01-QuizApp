@@ -66,7 +66,7 @@ Uses **Semantic Versioning** (`MAJOR.MINOR.PATCH`) to communicate functional mil
 | **`0.1.0`** | Sprint 1: Architecture Core & Ingestion | Base MVVM structure, `Codable` domain models, `questions.json` decoding (24 questions), and 23 XCTest unit tests. *(Completed)* |
 | **`0.2.0`** | Sprint 2: UI/UX Design System & Tokens | Design system in `design/`, semantic color tokens (Dark/Light), 4pt grid, 56pt touch targets, typography scale, and wireframes. *(Completed)* |
 | **`0.2.1`** | Sprint 2 Maintenance: Audit Fixes & TDD | Bugfix for "Play Again" state reset, in-place Fisher-Yates $O(1)$ tracking, ScrollView touch recognition, and strict 4 options invariant. *(Completed)* |
-| **`0.3.0`** | Sprint 3: Core Interactive UI Components | Production SwiftUI atomic components (`QuestionCard`, `AnswerButton`), Dynamic Type scaling, squircle borders, and category chips. |
+| **`0.3.0`** | Sprint 3: Core Interactive UI Components | Modular components, direct category actions, catalog-derived counts and adaptive text layouts. Implementation continues; device accessibility and interaction acceptance remain open. Baseline test metrics belong to commit `52a2e45`. *(In progress)* |
 | **`0.4.0`** | Sprint 4: Reactive Timer & State Machine | Combine 10 Hz countdown timer on `@MainActor`, dynamic `TimerBar` with chromatic shifts, pause/resume, and timeout penalty. |
 | **`0.5.0`** | Sprint 5: Sensory Feedback & Haptics | 1.0s pedagogical pause with inline explanation, visual check/cross icons, tactile haptics via `UINotificationFeedbackGenerator`. |
 | **`0.6.0`** | Sprint 6: Results Analytics & Scorecard | Post-game `ResultView`, mathematical accuracy percentage, German university grading scale translation, and category metrics. |

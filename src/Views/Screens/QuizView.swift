@@ -26,6 +26,7 @@ public struct QuizView: View {
                         .font(.title2)
                         .foregroundColor(.secondary)
                 }
+                .accessibilityIdentifier("quiz.close")
                 
                 Spacer()
                 
@@ -100,10 +101,10 @@ public struct QuizView: View {
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack {
                                     Image(systemName: isCorrect ? "checkmark.seal.fill" : "exclamationmark.circle.fill")
-                                        .foregroundColor(isCorrect ? .green : .red)
+                                        .foregroundColor(isCorrect ? .quizCorrectFeedback : .quizIncorrectFeedback)
                                     Text(isCorrect ? "Correct!" : "Incorrect")
                                         .font(.headline)
-                                        .foregroundColor(isCorrect ? .green : .red)
+                                        .foregroundColor(isCorrect ? .quizCorrectFeedback : .quizIncorrectFeedback)
                                 }
                                 
                                 Text(question.explanation)
@@ -122,6 +123,7 @@ public struct QuizView: View {
                                         .foregroundColor(.white)
                                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                                 }
+                                .accessibilityIdentifier("quiz.advance")
                                 .padding(.top, 8)
                             }
                             .padding(16)
@@ -138,5 +140,27 @@ public struct QuizView: View {
         }
         .padding(.vertical)
         .frame(maxWidth: 600) // Constrained max width for iPad 9th gen ergonomics
+        .onChange(of: viewModel.viewState) { _, newState in
+            guard case .answered = newState else { return }
+            announceAnswerFeedback(for: newState)
+        }
+    }
+
+    private func announceAnswerFeedback(for state: QuizViewModel.ViewState) {
+        #if os(iOS)
+        guard case let .answered(selectedIndex, isCorrect) = state,
+              let question = viewModel.currentQuestion else { return }
+
+        let message: String
+        if selectedIndex < 0 {
+            message = "Time is up. The correct answer is \(question.correctAnswerText). Your score is \(viewModel.currentScore) points."
+        } else if isCorrect {
+            message = "Correct. Your score is \(viewModel.currentScore) points."
+        } else {
+            message = "Incorrect. The correct answer is \(question.correctAnswerText). Your score is \(viewModel.currentScore) points."
+        }
+
+        AccessibilityNotification.Announcement(message).post()
+        #endif
     }
 }

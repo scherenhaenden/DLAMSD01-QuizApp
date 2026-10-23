@@ -17,14 +17,14 @@ The visual and interaction design of **Train-your-Brain** is guided by three cor
 
 ## 2. Color Palette & Semantic Design Tokens
 
-All colors are defined semantically to guarantee automatic contrast adjustment between Light and Dark modes.
+Colors are defined semantically where system adaptation is appropriate. Correct and incorrect answer fills use fixed, measured high-contrast values in both appearances.
 
 | Token Name | Light Mode (Hex / RGB) | Dark Mode (Hex / RGB) | Semantic Role & Context |
 | :--- | :--- | :--- | :--- |
 | **`brandPrimary`** | `#0066CC` `(0, 102, 204)` | `#2997FF` `(41, 151, 255)` | Primary navigation tint, active category highlights, and progress anchors. |
 | **`brandSecondary`** | `#5E5CE6` `(94, 92, 230)` | `#7D7AFF` `(125, 122, 255)` | Category chips, subtle gradient accents, and secondary button borders. |
-| **`stateCorrect`** | `#34C759` `(52, 199, 89)` | `#30D158` `(48, 209, 88)` | Immediate visual feedback for correct answer choice; passing grade badges. |
-| **`stateIncorrect`** | `#FF3B30` `(255, 59, 48)` | `#FF453A` `(255, 69, 58)` | Immediate visual feedback for incorrect answer choice; timeout penalty. |
+| **`stateCorrect`** | `#1B5E20` `(27, 94, 32)` | `#1B5E20` `(27, 94, 32)` | High-contrast feedback fill for a correct answer choice. |
+| **`stateIncorrect`** | `#B71C1C` `(183, 28, 28)` | `#B71C1C` `(183, 28, 28)` | High-contrast feedback fill for a wrong pick or timeout. |
 | **`stateWarning`** | `#FF9500` `(255, 149, 0)` | `#FF9F0A` `(255, 159, 10)` | Timer urgency state when less than 5 seconds remain on the countdown bar. |
 | **`bgBase`** | `#F2F2F7` (System Grouped) | `#000000` (Pure Black) | Canvas background across screens. |
 | **`bgCard`** | `#FFFFFF` (Card Surface) | `#1C1C1E` (Dark Elevated) | Question cards and answer option surfaces. |

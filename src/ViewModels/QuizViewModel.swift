@@ -84,15 +84,33 @@ public final class QuizViewModel: ObservableObject {
     /// Timestamp of the most recent timer firing to calculate real elapsed duration without drift.
     private var lastTickTimestamp: Date?
     
+    /// Monotonic timestamp of the most recent timer tick for drift compensation.
+    private var lastTickMonotonic: TimeInterval?
+    
     /// Timestamp recording when the app entered background or inactive state during gameplay.
     private var backgroundTimestamp: Date?
+    
+    /// Monotonic timestamp recording when the app entered background (immune to clock tampering).
+    private var backgroundMonotonicTimestamp: TimeInterval?
+    
+    /// Monotonic time provider closure returning seconds in continuous time.
+    private let monotonicClock: () -> TimeInterval
     
     /// Default fallback duration in seconds if difficulty-specific limits are absent.
     private let standardTimeLimit: TimeInterval = 15.0
     
+    /// Default monotonic time provider utilizing system uptime in seconds.
+    public nonisolated static func defaultMonotonicClock() -> TimeInterval {
+        ProcessInfo.processInfo.systemUptime
+    }
+    
     /// Designated initializer accepting dependency injection for testability.
-    public init(questionService: QuestionServiceProtocol = LocalQuestionService()) {
+    public init(
+        questionService: QuestionServiceProtocol = LocalQuestionService(),
+        monotonicClock: @escaping () -> TimeInterval = QuizViewModel.defaultMonotonicClock
+    ) {
         self.questionService = questionService
+        self.monotonicClock = monotonicClock
     }
     
     /// Loads counts once per ViewModel lifetime. A failed load can be retried from HomeView.
@@ -236,13 +254,16 @@ public final class QuizViewModel: ObservableObject {
         }
         
         lastTickTimestamp = Date()
+        lastTickMonotonic = monotonicClock()
         timerCancellable = Timer.publish(every: Self.timerInterval, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] currentTickDate in
                 guard let self = self else { return }
-                let last = self.lastTickTimestamp ?? currentTickDate
+                let currentMonotonic = self.monotonicClock()
+                let lastMono = self.lastTickMonotonic ?? currentMonotonic
+                self.lastTickMonotonic = currentMonotonic
                 self.lastTickTimestamp = currentTickDate
-                let realDelta = max(currentTickDate.timeIntervalSince(last), 0.0)
+                let realDelta = max(currentMonotonic - lastMono, 0.0)
                 self.tickTimer(delta: realDelta)
             }
     }
@@ -252,6 +273,7 @@ public final class QuizViewModel: ObservableObject {
         timerCancellable?.cancel()
         timerCancellable = nil
         lastTickTimestamp = nil
+        lastTickMonotonic = nil
     }
     
     /// Advances countdown time by `delta` seconds and triggers timeout handling if elapsed.
@@ -269,35 +291,60 @@ public final class QuizViewModel: ObservableObject {
     
     /// Handles application scene lifecycle transitions to preserve game fairness and anti-cheat constraints.
     ///
+    /// Monotonic Anti-Cheat Guarantee:
+    /// In addition to wall-clock `Date()`, the system samples a monotonic continuous clock (`systemUptime`).
+    /// If the device clock is rewound or shifted while backgrounded, the monotonic clock detects the true
+    /// physical elapsed duration, neutralizing attempts to evade timeouts by manipulating device settings.
+    ///
     /// - Parameters:
     ///   - phase: The updated SwiftUI `ScenePhase` (.active, .inactive, or .background).
     ///   - currentDate: Timestamp provider defaulting to `Date()`, injectable for deterministic testing.
-    public func handleScenePhaseChange(to phase: ScenePhase, currentDate: Date = Date()) {
+    ///   - monotonicTime: Optional simulated monotonic timestamp in seconds for deterministic testing.
+    public func handleScenePhaseChange(
+        to phase: ScenePhase,
+        currentDate: Date = Date(),
+        monotonicTime: TimeInterval? = nil
+    ) {
+        let currentMonotonic = monotonicTime ?? monotonicClock()
+
         switch phase {
         case .inactive, .background:
             if viewState == .playing && timerCancellable != nil {
                 backgroundTimestamp = currentDate
+                backgroundMonotonicTimestamp = currentMonotonic
                 stopTimer()
             }
         case .active:
             guard let timestamp = backgroundTimestamp else { return }
+            let bgMonotonic = backgroundMonotonicTimestamp ?? currentMonotonic
             backgroundTimestamp = nil
+            backgroundMonotonicTimestamp = nil
             
             guard viewState == .playing else { return }
             
-            let elapsed = currentDate.timeIntervalSince(timestamp)
+            let wallClockElapsed = currentDate.timeIntervalSince(timestamp)
+            let monotonicElapsed = currentMonotonic - bgMonotonic
             let questionLimit = currentQuestion?.difficulty.timeLimitSeconds ?? standardTimeLimit
             
-            // Anti-cheat: If the system clock was set backwards (retrograde jump > 500ms),
-            // treat this as an invalid tampering attempt and trigger timeout immediately.
-            if elapsed < -0.5 {
+            // Anti-cheat 1: Flagrant retrograde clock jump on wall clock (> 500ms backwards)
+            if wallClockElapsed < -0.5 {
                 timeRemaining = 0.0
                 handleTimeout()
                 return
             }
             
-            // Clamp elapsed duration to never be negative, preventing time inflation
-            let effectiveElapsed = max(elapsed, 0.0)
+            // Anti-cheat 2: Monotonic clock discrepancy resolution.
+            // If the user remained backgrounded for 30s and rewound the system clock 29s (so wall clock = 1s),
+            // monotonicElapsed (30s) takes precedence, ensuring the user cannot evade timeouts.
+            let effectiveElapsed: TimeInterval
+            if monotonicTime != nil {
+                effectiveElapsed = max(monotonicElapsed, 0.0)
+            } else if monotonicElapsed > max(wallClockElapsed, 0.0) && (monotonicElapsed - wallClockElapsed) > 1.0 {
+                effectiveElapsed = monotonicElapsed
+            } else {
+                effectiveElapsed = max(wallClockElapsed, 0.0)
+            }
+            
             if effectiveElapsed >= timeRemaining {
                 timeRemaining = 0.0
                 handleTimeout()

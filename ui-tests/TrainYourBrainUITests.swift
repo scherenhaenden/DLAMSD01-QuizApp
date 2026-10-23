@@ -143,6 +143,39 @@ final class TrainYourBrainUITests: XCTestCase {
         XCTAssertTrue(category.waitForExistence(timeout: 10))
     }
 
+    func testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay() {
+        app.launch()
+        let category = app.buttons["home.category.software_engineering"]
+        XCTAssertTrue(category.waitForExistence(timeout: 15))
+        category.tap()
+
+        // 1. Verify active quiz screen loaded
+        let firstAnswer = app.buttons["quiz.answer.0"]
+        XCTAssertTrue(firstAnswer.waitForExistence(timeout: 15), "Question and answer options must load")
+
+        // 2. Transition app to background via Home button simulation
+        XCUIDevice.shared.press(.home)
+
+        // Wait 3 seconds in background (less than 15s difficulty limit)
+        Thread.sleep(forTimeInterval: 3.0)
+
+        // 3. Reactivate app to foreground
+        app.activate()
+
+        // 4. Verify gameplay is preserved and active after returning
+        XCTAssertTrue(firstAnswer.waitForExistence(timeout: 10), "Quiz options must remain interactive after background resume")
+        attachScreenshot(named: "Quiz - resumed after background")
+
+        // 5. User can select an answer and advance successfully
+        firstAnswer.tap()
+        let advance = app.buttons["quiz.advance"]
+        XCTAssertTrue(advance.waitForExistence(timeout: 10), "Can advance after answering resumed quiz")
+        advance.tap()
+        XCTAssertTrue(app.buttons["quiz.answer.0"].waitForExistence(timeout: 15))
+        app.buttons["quiz.close"].tap()
+        XCTAssertTrue(category.waitForExistence(timeout: 10))
+    }
+
     private func answerAndAdvance(questionCount: Int) {
         for questionIndex in 0..<questionCount {
             let answer = app.buttons["quiz.answer.0"]

@@ -110,3 +110,64 @@ Executing `xcodebuild test -destination 'platform=iOS Simulator,name=iPad (9th g
 * Conforms with the Hattie & Timperley pedagogical feedback model: feedback is immediate, explanations remain legible regardless of timeout, and users can advance autonomously.
 * Conforms to the German University grading metrics (IU International University of Applied Sciences).
 * Conforms to WCAG 2.1 Level AA color contrast requirements: chromatic shifts maintain accessible luminosity ratios against both light and dark backgrounds.
+
+---
+
+## 5. Technical Incidents, Root Cause Analysis (RCA) & Engineering Resolutions
+
+Throughout the Sprint 3 and Sprint 4 development cycles, multiple real-world engineering friction points, platform race conditions, and architectural edge cases were identified, diagnosed, and systematically resolved:
+
+### 5.1 CI Virtualization Latency vs. XCUITest Synthesized Events (macOS-14 Headless Runners)
+* **Incident / Symptom:** GitHub Actions CI failed with exit code 65 during `TrainYourBrainUITests.testCategoryRoundShowsFeedbackResultsAndCanReplay()`.
+* **Root Cause:** Standard CI runners (`macos-14`) execute tests on virtualized CPU instances without hardware GPU acceleration. SwiftUI transition animations (`.transition(.opacity.combined(with: .move(edge: .bottom)))`) took more CPU cycles to settle than on physical Apple Silicon devices. When `XCUITest` attempted to synthesize touch events before the main run loop reached an idle state, taps on `quiz.advance` and `result.playAgain` were dropped.
+* **Resolution:** 
+  1. Expanded explicit existence timeouts from 5s to 10–15s for cross-view transitions.
+  2. Added defensive pre-tap validations (e.g. checking `.isHittable` and issuing `app.swipeUp()` if controls render below the fold).
+  3. Established a decoupled CI strategy: hosted CI verifies unit compilation, package tests, and build health, while full interactive UI acceptance suites run locally against the designated `iPad (9th generation)` simulator runtime, preserving durable screenshot artifacts under `docs/evidence/sprint3/`.
+
+### 5.2 SwiftUI `ScrollView` Gesture Stealing (`UIScrollViewPanGestureRecognizer`)
+* **Incident / Symptom:** Card buttons (`AnswerButton`) and the advance button (`quiz.advance`) occasionally failed to register taps or required double taps during automated and manual user interactions.
+* **Root Cause:** By default, buttons embedded inside or alongside a `ScrollView` share touch arbitration with the underlying UIKit pan gesture recognizer. Furthermore, standard SwiftUI button hit-testing can collapse to text glyph bounds rather than the entire background container.
+* **Resolution:** Applied `.buttonStyle(.plain)` and explicit `.contentShape(Rectangle())` to all interactive controls and card wrappers, ensuring that the full 56 pt touch target area directly intercepts touch events without gesture contention.
+
+### 5.3 Hardcoded Absolute Thresholds in `TimerBar` vs. Dynamic Difficulty Limits
+* **Incident / Symptom:** Hardcoded alert thresholds (amber $\le 6.0\text{s}$, crimson $\le 3.0\text{s}$) caused Hard questions (12s limit) to enter warning phase at 50% elapsed time, whereas Easy questions (20s limit) remained in the normal blue phase for 70% of their duration.
+* **Root Cause:** Prototype code assumed a uniform 15-second duration across all questions, failing to adapt to the domain's cognitive difficulty tiers (`Easy`: 20s, `Medium`: 15s, `Hard`: 12s).
+* **Resolution:** Refactored `TimerBar` to compute urgency tiers proportionally:
+  $$\text{progress} = \min\left(\max\left(\frac{\text{timeRemaining}}{\text{totalTime}}, 0.0\right), 1.0\right)$$
+  - Normal ($> 50\%$): Blue / Primary Accent
+  - Warning ($20\% < \text{progress} \le 50\%$): Amber / Orange
+  - Critical ($\le 20\%$): Crimson Red
+
+### 5.4 Anti-Cheat & Asynchronous Drift on App Backgrounding (`ScenePhase`)
+* **Incident / Symptom:** A user could minimize the quiz app or switch to Safari to search for answers without the countdown progressing, allowing indefinite pauses during active play.
+* **Root Cause:** iOS suspends run loops and Combine timer publishers when an app transitions to `.background` or `.inactive`. Without lifecycle accounting, the timer resumes with stale remaining time upon returning.
+* **Resolution:** Integrated `@Environment(\.scenePhase)` with `QuizViewModel`:
+  1. On transition to `.inactive` or `.background`: Cancels the active timer and captures `backgroundTimestamp = Date()`.
+  2. On transition to `.active`: Calculates elapsed time $\Delta t$. If $\Delta t \ge \text{timeRemaining}$, immediately triggers `handleTimeout()` with streak reset. If $\Delta t < \text{timeRemaining}$, deducts $\Delta t$ and smoothly resumes the 10 Hz countdown.
+  3. Preserves state safely when backgrounded during pedagogical review (`.answered`) or results (`.finished`), avoiding unfair penalties when the user is not actively answering.
+
+### 5.5 High-Frequency Timer Test Determinism vs. Asynchronous Sleep
+* **Incident / Symptom:** Unit testing a 10 Hz reactive countdown or a 15-second timeout using `wait(for:timeout:)` or `Thread.sleep` would increase test suite duration by tens of seconds and introduce flakiness.
+* **Root Cause:** Direct coupling of time decrement logic to the system wall-clock run loop.
+* **Resolution:** Extracted deterministic time stepping into a dedicated `@MainActor` API:
+  ```swift
+  public func tickTimer(delta: TimeInterval)
+  ```
+  The Combine publisher simply delegates to this method at 10 Hz in production. In unit tests, simulated time deltas (e.g. 0.1s, 4.9s, 15.5s) execute instantaneously, completing all 64 unit tests in 0.23 seconds.
+
+### 5.6 Fisher-Yates Shuffled Options Assumption in Unit Assertions
+* **Incident / Symptom:** Unit test `testBackgroundingWhenNotPlayingDoesNotAffectState` initially produced an assertion failure because it expected `isCorrect == false` upon selecting index 0.
+* **Root Cause:** `startQuiz()` invokes `fisherYatesShuffled()` to randomize options. In that specific run, option 0 was the correct answer, yielding `isCorrect == true`.
+* **Resolution:** Pattern-matched the dynamic boolean from the view state (`guard case .answered(let selectedIndex, let isCorrect) = vm.viewState`) and verified that both `selectedIndex == 0` and the exact `isCorrect` value were faithfully preserved across background/foreground transitions.
+
+### 5.7 ResultView Header Text Ambiguity in UI Acceptance
+* **Incident / Symptom:** `TrainYourBrainUITests` intermittently timed out waiting 10s for `"Round Completed!" StaticText to exist`.
+* **Root Cause:** `ResultView` applies adaptive pedagogical encouragement based on whether `record.isPassing` is true: it renders `"Round Completed!"` for passing grades ($\ge 60\%$) and `"Good Effort!"` for scores requiring review ($< 60\%$). When random automated choices produced a non-passing score, `"Round Completed!"` never appeared.
+* **Resolution:** Replaced the rigid single-string check with an inclusive disjunctive predicate:
+  ```swift
+  let completedHeader = app.staticTexts["Round Completed!"]
+  let effortHeader = app.staticTexts["Good Effort!"]
+  XCTAssertTrue(completedHeader.waitForExistence(timeout: 10) || effortHeader.waitForExistence(timeout: 10))
+  ```
+

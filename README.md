@@ -4,7 +4,7 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.3.0**, Sprint 3 in progress. The current branch contains modular UI components; final interaction and accessibility acceptance remains open. The academic Bericht is also a partial draft.
+Version **0.3.0**, Sprint 3 implementation merged to `master` by PR #8. The follow-up branch `test/sprint-3-ui-acceptance` adds native XCTest UI acceptance and CI coverage; it is not yet a release. There is no 0.3.x Git tag yet.
 
 ### Implemented
 
@@ -14,7 +14,7 @@ Version **0.3.0**, Sprint 3 in progress. The current branch contains modular UI 
 - A one-second Combine timer; the 10 Hz timer and lifecycle work belong to Sprint 4.
 - Reusable `CategoryCard`, `QuestionCard`, and `AnswerButton` components.
 - Category cards start their round with one action. Displayed counts come from the question service rather than fixed 24/6 labels.
-- Adaptive metadata layouts, multiline text, minimum 56 pt answer controls, and programmatic answer-feedback announcements. VoiceOver traversal and extreme Dynamic Type acceptance still require device checks.
+- Adaptive metadata layouts, multiline text, minimum 56 pt answer controls, and programmatic answer-feedback announcements. UI automation checks category and mixed flows, feedback, results, replay, 56 pt answer height, and Dynamic Type XXXL. VoiceOver traversal, timeout UI, broader device sizes, and Light/Dark review remain separate checks.
 - Appearance selection stored through `@AppStorage`. Round history and high scores are not persisted yet.
 
 Question content can be changed in `src/Resources/questions.json`. New categories also require updating `QuizCategory`. There is no question editor or import feature in the app.
@@ -28,7 +28,7 @@ xcodebuild -project TrainYourBrain.xcodeproj -scheme TrainYourBrain \
   -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 ```
 
-The separate Swift Package contains the core and presentation code; it excludes the app entry point. Existing package tests can be run explicitly with `swift test --enable-code-coverage`. They are not an Xcode UI test target.
+The separate Swift Package contains the core and presentation code; it excludes the app entry point. Package tests can be run with `swift test --enable-code-coverage`. Native UI acceptance tests are in `ui-tests/TrainYourBrainUITests.swift` and run through the shared `TrainYourBrain` scheme with `xcodebuild test`.
 
 ## Source layout
 
@@ -49,7 +49,7 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-Before this continuation, commit `52a2e45` passed 45 tests in nine XCTest classes and an iOS Simulator build. Its macOS Swift Package coverage was 2,741/3,014 instrumented production lines (90.94%), excluding tests and the app entry point. Those figures do not measure real touch handling, VoiceOver navigation or layout clipping, and do not describe the subsequent untested edits.
+The 0.3.0 package baseline passed 50 Swift Package tests. The follow-up branch adds one accessibility-state regression; its package suite passes 51 tests and measures 2,385/2,619 instrumented production lines (91.07%) on macOS, excluding tests and the app entry point. The four-test iPad 9 UI run passed and captured XCTest attachments. CI for that follow-up and its merge are still pending. These measurements do not prove spoken VoiceOver traversal, timeout presentation, or every device/layout combination.
 
 See [the Sprint 3 report](docs/sprint3_interactive_ui_components_report.md) for the implementation and pending checks. Accessibility targets and coverage percentages are project choices, not additional requirements imposed by the IU quiz assignment.
 
@@ -57,7 +57,7 @@ See [the Sprint 3 report](docs/sprint3_interactive_ui_components_report.md) for 
 
 | Milestone | Planned work |
 | --- | --- |
-| 0.3.0 | Complete component interaction and layout acceptance |
+| 0.3.0 | Sprint 3 implementation merged; close with UI acceptance, CI, and release traceability |
 | 0.4.0 | 10 Hz timer, timeout and lifecycle handling |
 | 0.5.0 | Feedback and optional haptics |
 | 0.6.0 | Extend and review the existing result screen and score calculations |

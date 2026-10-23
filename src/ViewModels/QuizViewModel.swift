@@ -47,6 +47,19 @@ public final class QuizViewModel: ObservableObject {
     /// Index of the option selected by the user for the current question (or nil if awaiting input).
     @Published public private(set) var selectedAnswerIndex: Int?
     
+    /// Catalog metadata for the home screen, independent of the active round.
+    @Published public private(set) var availableQuestionCounts: [QuizCategory: Int] = [:]
+    @Published public private(set) var isCatalogLoaded = false
+    @Published public private(set) var catalogError: String?
+
+    public var availableQuestionCount: Int {
+        availableQuestionCounts.values.reduce(0, +)
+    }
+
+    public func questionCount(for category: QuizCategory) -> Int {
+        availableQuestionCounts[category, default: 0]
+    }
+
     // MARK: - Dependencies & Private State
     
     /// Injected question loading service.
@@ -54,6 +67,9 @@ public final class QuizViewModel: ObservableObject {
     
     /// Underlying aggregate root managing pure domain progression.
     private var session: QuizSession?
+
+    /// Category requested for the most recent round, retained so the error screen can retry it.
+    private var lastRequestedCategory: QuizCategory?
     
     /// Combine cancellable handle for the active 1-second interval timer.
     private var timerCancellable: AnyCancellable?
@@ -66,6 +82,22 @@ public final class QuizViewModel: ObservableObject {
         self.questionService = questionService
     }
     
+    /// Loads counts once per ViewModel lifetime. A failed load can be retried from HomeView.
+    /// Catalog errors leave navigation idle so that recovery stays on the home screen.
+    public func loadQuestionCatalog() {
+        guard !isCatalogLoaded else { return }
+        do {
+            let questions = try questionService.loadAllQuestions()
+            guard !questions.isEmpty else { throw QuestionServiceError.emptyQuestionSet }
+            availableQuestionCounts = Dictionary(grouping: questions, by: \.category).mapValues { $0.count }
+            catalogError = nil
+            isCatalogLoaded = true
+        } catch {
+            availableQuestionCounts = [:]
+            catalogError = error.localizedDescription
+        }
+    }
+
     // MARK: - Game Lifecycle Actions
     
     /// Initiates a fresh quiz round, optionally filtered by a specific category domain.
@@ -73,6 +105,7 @@ public final class QuizViewModel: ObservableObject {
     /// Loads questions from the service, shuffles question order and answer options,
     /// instantiates a new `QuizSession`, synchronizes published properties, and begins the timer.
     public func startQuiz(category: QuizCategory? = nil) {
+        lastRequestedCategory = category
         viewState = .loading
         stopTimer()
         
@@ -106,14 +139,22 @@ public final class QuizViewModel: ObservableObject {
             self.viewState = .error(error.localizedDescription)
         }
     }
+
+    /// Repeats the last round request after a recoverable question-loading error.
+    public func retryLastQuiz() {
+        startQuiz(category: lastRequestedCategory)
+    }
     
     /// Invoked when the user selects a multiple-choice option.
     ///
     /// Stops the timer, records the selection in the domain session, updates running score,
     /// and transitions to `.answered` to display immediate pedagogical feedback.
     public func selectAnswer(at index: Int) {
-        guard viewState == .playing, var currentSession = session else { return }
-        
+        guard viewState == .playing,
+              var currentSession = session,
+              let question = currentSession.currentQuestion,
+              question.options.indices.contains(index) else { return }
+
         stopTimer()
         selectedAnswerIndex = index
         let isCorrect = currentSession.submitAnswer(optionIndex: index)
@@ -153,6 +194,7 @@ public final class QuizViewModel: ObservableObject {
         streak = 0
         timeRemaining = standardTimeLimit
         selectedAnswerIndex = nil
+        lastRequestedCategory = nil
         viewState = .idle
     }
     

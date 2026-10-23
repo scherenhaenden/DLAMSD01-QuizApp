@@ -37,7 +37,7 @@ On iPhone devices, all primary interactive components (answer options and CTA bu
   - OLED Canvas (`#000000`) with Primary Text (`#FFFFFF`): **21:1** (Exceeds WCAG AAA).
   - Elevated Dark Card (`#1C1C1E`) with Primary Text (`#FFFFFF`): **16.2:1** (Exceeds WCAG AAA).
   - Light Mode Canvas (`#F2F2F7`) with Primary Text (`#000000`): **18.7:1** (Exceeds WCAG AAA).
-  - Feedback states: Because standard pastel green (`#34C759`) and red (`#FF3B30`) do not achieve 4.5:1 against pure white (approx. 2.22:1 and 3.55:1 respectively), text within feedback elements is rendered on deepened surface fills (e.g. `#1B5E20` yielding 6.1:1 and `#B71C1C` yielding 7.4:1), and paired with mandatory redundant icons.
+- Feedback states: Correct answers use `#1B5E20` and incorrect answers use `#B71C1C`, with white text and redundant icons. Calculated WCAG contrast against white is 7.87:1 and 6.57:1 respectively; these solid fills are the same in Light and Dark appearance.
 
 ### 4.2. Redundant Cues (Non-Color Dependent Feedback)
 To support users with color vision deficiencies (such as Deuteranopia or Protanopia), feedback never relies solely on color:

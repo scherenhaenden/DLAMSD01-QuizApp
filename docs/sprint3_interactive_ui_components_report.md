@@ -1,176 +1,88 @@
-# Sprint 3 Technical Report: Core Interactive UI Components (`v0.3.0`)
+# Sprint 3 component implementation and remaining acceptance
 
-> **Academic Technical Deliverable for DLAMSD01 (Apple Mobile Solution Development I)**  
-> **Course:** DLAMSD01 – IU International University of Applied Sciences  
-> **Author:** Edward Sergio José Flores Mogollón (`scherenhaenden <scherenhaenden@gmail.com>`)  
-> **Version Target:** `v0.3.0` | **Build Number:** `20261022.162811`  
-> **Test Target:** iPad (9th generation, 10.2" Retina, iPadOS 27.0 Simulator `B1B833A3-BB12-4930-AFC2-E0F33B450C43`)
+Course: DLAMSD01 Apple Mobile Solution Development I
+Author: Edward Sergio José Flores Mogollón
+Working version: 0.3.0
+Status: in progress; this report records implementation, not final acceptance.
 
----
+## Handoff and baseline
 
-## 1. Executive Summary & Sprint Objectives
+Development continued on `feat/sprint-3-interactive-ui-components` after commit `52a2e45`. The existing report had treated component construction tests as proof of layout and accessibility compliance. Those claims have been narrowed to the evidence actually available. The academic Bericht remains a draft through the current development stage.
 
-The primary objective of **Sprint 3 (`v0.3.0`)** was to extract, modularize, and harden the core interactive presentation layer of the *Train-your-Brain* application in SwiftUI. While Sprint 1 focused on domain models and ingestion logic (`v0.1.0`), and Sprint 2 established the design system tokens and theme switching (`v0.2.0` / `v0.2.1`), Sprint 3 delivers production-grade atomic UI components with strict adherence to Apple's Human Interface Guidelines (HIG) and WCAG 2.1 AA accessibility standards.
+The baseline contains `QuestionCard`, `AnswerButton` and the extracted `CategoryCard`. The existing package has 45 XCTest methods in nine classes. A saved macOS run of the baseline passed all 45 methods and reported 2,741/3,014 instrumented production lines covered (90.94%). A separate baseline iOS Simulator build succeeded. These historical values are not measurements of the continuation changes.
 
-### User Stories Addressed
-* **US-05 (Ergonomic Touch Targets):**  
-  *As a quiz player on both iPhone and iPad, I want large, unambiguous answer buttons ($\ge 56\,\text{pt}$ touch height) with continuous squircle corners and responsive visual feedback so that I can tap accurately even under time pressure.*
-* **US-06 (Dynamic Type & Multiline Scaling):**  
-  *As a user with enlarged system text sizes or Accessibility Dynamic Type enabled, I want answer choices and question prompts to wrap seamlessly across multiple lines without truncation (`...`), text overlap, or clipping.*
+## Continuation changes
 
----
+### Direct category actions and catalog metadata
 
-## 2. Component Engineering & Architectural Refactoring
+`HomeView` now starts a category or mixed round with one action. There is no select-then-tap-again behavior. The Start pill belongs to one card button, avoiding nested controls. Its accessibility hint describes the same action.
 
-### 2.1. `AnswerButton.swift` (Atomic Component)
-* **Location:** `src/Views/Components/AnswerButton.swift`
-* **Coverage:** **92.8%** (193 / 208 lines)
-* **Key Capabilities:**
-  1. **Visual State Machine (`VisualState` enum):**
-     * `.idle`: Standard unselected card with subtle border (`Color.borderNeutral`), primary text, and circular badge (`A`, `B`, `C`, `D`).
-     * `.selected`: Accent blue stroke (`Color.accentBlue`) with 10% translucent background tint and emphasized badge.
-     * `.correct`: Accessible green (`Color.feedbackCorrect`) fill and stroke, accompanied by a checkmark icon.
-     * `.wrong`: Accessible red (`Color.feedbackWrong`) fill and stroke, accompanied by an X-mark icon.
-     * `.dimmed`: Reduced opacity ($0.45$) for non-selected options during answer evaluation, focusing cognitive attention on the resolution.
-  2. **Ergonomic Touch Geometry:**
-     * Implements `.frame(minHeight: 56)` to exceed the Apple HIG baseline of 44 pt and satisfy the 56 pt target established in `design/ui_guidelines_and_tokens.md`.
-     * Styled with continuous squircle geometry: `RoundedRectangle(cornerRadius: 14, style: .continuous)`.
-  3. **Zero Text Clipping / Multiline Resilience:**
-     * Configured with `.fixedSize(horizontal: false, vertical: true)` and `.lineLimit(nil)`, allowing multiline prompts to expand vertically without bounds compression.
-  4. **Hit-Testing Shielding:**
-     * Decorator borders and overlays use `.allowsHitTesting(false)`, preventing gesture capture issues previously diagnosed in Sprint 2.
-  5. **VoiceOver Accessibility:**
-     * Consolidated element: `.accessibilityElement(children: .combine)`.
-     * Explicit accessibility label: `"Option \(letter): \(text)"`.
-     * Contextual hint indicating current state and interaction outcome.
+The duplicate mixed-round action was removed; the `All Topics (Mixed)` card is the single mixed-round entry point. Empty category cards show “No questions available” and remain disabled.
 
-### 2.2. `QuestionCard.swift` (Atomic Component)
-* **Location:** `src/Views/Components/QuestionCard.swift`
-* **Coverage:** **99.4%** (154 / 155 lines)
-* **Key Capabilities:**
-  1. **Difficulty Indicators & Time Badges:**
-     * Chromatic difficulty pills (`Easy` in green, `Medium` in yellow/orange, `Hard` in purple/red) combined with active round countdown limits (`12s`, `15s`, `20s`).
-  2. **Category Chips:**
-     * Contextual SF Symbols mapped to each domain:
-       * Software Engineering: `gearshape.2.fill`
-       * Swift & Apple Platform: `swift`
-       * Data Structures & Algorithms: `network`
-       * Testing & Quality Assurance: `checkmark.shield.fill`
-  3. **Typography & Readability:**
-     * Question prompt formatted in `.title3.weight(.bold)` with dynamic line spacing (`4pt`) on elevated background canvas (`Color.cardBackground`).
-     * Integrated screen-reader accessibility description combining category, difficulty, and prompt text.
+`QuizViewModel.loadQuestionCatalog()` loads catalog counts separately from the active session. The home screen uses the total and per-category counts, so a valid content change no longer requires editing hardcoded 24/6 labels. Catalog load errors provide a reload action. Loading metadata does not start a round or its timer. A failed round load can retry the same category, or return to topics explicitly.
 
-### 2.3. `CategoryCard.swift` (New Standalone Component)
-* **Location:** `src/Views/Components/CategoryCard.swift`
-* **Coverage:** **100.0%** (202 / 202 lines)
-* **Key Capabilities:**
-  1. **Modular Extraction:** Decoupled card presentation from `HomeView.swift` to facilitate reuse across home, settings, and category review screens.
-  2. **Dual-Mode Construction:**
-     * Domain-specific mode: Initialized with a `QuizCategory` instance, displaying localized domain title, description, question count badge (`6 Questions`), and domain icon.
-     * Mixed-play mode: Initialized with `.allTopics`, featuring high-contrast blue boundary highlight and aggregate count badge (`24 Questions (6 per Domain)`).
-  3. **Decoupled CTA Interaction:**
-     * Integrated `[Start ▶]` capsule button with min-width constraint ($72\,\text{pt}$) and `.buttonStyle(.plain)` to prevent tap conflict inside parent `ScrollView`.
+### Components and text layout
 
-### 2.4. `HomeView.swift` (Screen Refactoring)
-* **Location:** `src/Views/Screens/HomeView.swift`
-* **Coverage:** **90.2%** (899 / 997 lines)
-* **Improvements:**
-  * Clean declarative layout utilizing the extracted `CategoryCard` components.
-  * Removal of legacy helper functions and obsolete gesture styles.
-  * Preserved full adaptive layout for both compact (iPhone) and regular (iPad) size classes.
+`CategoryCard` no longer truncates its description after two lines. The count and Start label move to separate rows for accessibility text sizes. Appearance selection uses a labelled menu rather than three horizontally competing controls.
 
----
+`QuestionCard` falls back from a horizontal metadata row to stacked badges when space is insufficient, and always stacks at accessibility text sizes. Its single accessibility label includes category, difficulty, time limit, question number and prompt.
 
-## 3. Test-Driven Development (TDD) Evidence
+`AnswerButton` retains the five visual states and minimum 56 pt height. The option badge scales with text. Correct and incorrect answers use deep solid feedback fills with white text and check/X indicators; the selected state keeps a subtle accent tint. Text is not shrunk to make enlarged content fit. Negative or out-of-range public option indices use a fallback badge rather than indexing the letter array. The question, answer, and metadata styles now follow the typography tokens.
 
-A new dedicated test suite [`src/Tests/Sprint3InteractiveUITests.swift`](file:///Users/edwardflores/Projects/Development/DLAMSD01-QuizApp/src/Tests/Sprint3InteractiveUITests.swift) was authored prior to completing component integration, following the strict Red $\to$ Green $\to$ Refactor cycle.
+When an answer is evaluated, `QuizView` posts a SwiftUI accessibility announcement with correctness, the correct answer when needed, and the updated score. Timeout announcements also identify the correct answer.
 
-### New Test Cases in `Sprint3InteractiveUITests`
+### Answer action boundary
 
-| Test Method | Target Component | Verifications & Assertions |
-| :--- | :--- | :--- |
-| `testAnswerButtonStateResolution` | `AnswerButton` | Verifies correct visual state resolution (`idle`, `selected`, `correct`, `wrong`, `dimmed`) for all index combinations. |
-| `testAnswerButtonErgonomicTouchTargetHeight` | `AnswerButton` | Asserts that minimum button height is strictly $\ge 56\,\text{pt}$ conforming to HIG / Sprint 2 specifications. |
-| `testAnswerButtonAccessibilityStrings` | `AnswerButton` | Asserts that `accessibilityLabel` contains option letter and text, and `accessibilityHint` reflects evaluation states. |
-| `testAnswerButtonRenderingWithLongText` | `AnswerButton` | Renders a multi-paragraph technical prompt to assert multiline wrapping without text clipping or exception. |
-| `testQuestionCardMetadataAndDifficultyBadges` | `QuestionCard` | Verifies badge labels (`Easy`, `Medium`, `Hard`), category chip SF symbols, and accessibility label composition. |
-| `testCategoryCardRenderingAndProperties` | `CategoryCard` | Validates title, subtitle, question count badge, and domain icon rendering for all 4 academic categories. |
-| `testMixedDomainCardRendering` | `CategoryCard` | Asserts rendering of the mixed domain card, 24 questions badge, and selection boundary highlight. |
+`QuizViewModel.selectAnswer(at:)` rejects an invalid option index before stopping the timer or changing presentation state. A malformed action therefore leaves the current question active rather than showing feedback for an answer the session rejected.
 
-### Overall Test Suite Execution Metrics
-* **Total Executed Tests:** **45 tests** across 6 test suites.
-* **Failures:** **0 failures** (0 unexpected).
-* **Execution Time:** **0.252 seconds**.
-* **Framework:** Swift Package Manager / XCTest (`swift test --enable-code-coverage`).
+## Acceptance status
 
----
+| Criterion | Current evidence | Remaining work |
+| --- | --- | --- |
+| Standalone components | Source implementation present | Review the installed continuation build |
+| One-action category start | Home and card actions aligned in source | Operate each card on iPhone and iPad |
+| Counts reflect data | Metadata read through the injected service | Check an altered catalog and load error recovery |
+| 56 pt answer target | Minimum-height constraint present | Device hit testing and enlarged text review |
+| Large text | Stacked metadata and multiline layout implemented | Small-screen and accessibility-size screenshots |
+| Screen reader descriptions | Explicit labels and hints present | VoiceOver traversal and announcement review |
+| Feedback readability | White on `#1B5E20` computes to 7.87:1; white on `#B71C1C` to 6.57:1 | Review rendered states in Light and Dark appearance |
+| Screen reader feedback | Correct/incorrect/timeout announcements are implemented in source | VoiceOver traversal, focus order and announcement review |
+| Automated checks | The current package tree was tested on 23 October 2026: 48 tests passed, including three new ViewModel regressions | Runtime interaction, accessibility and layout checks remain open |
+| Release | Working version stays 0.3.0 | No final acceptance, merge or release tag yet |
 
-## 4. Code Coverage Analysis
+## Scope boundaries
 
-Code coverage was measured via LLVM coverage tools (`TrainYourBrain.json` generated from `swift test --enable-code-coverage`):
+The timer still ticks once per second. Lifecycle handling and a 10 Hz timer remain Sprint 4 work. Haptics, saved result history and final result analytics are outside this component continuation. No universal WCAG compliance, proven learning gain, full TDD history, or final project completion is claimed.
 
-```text
-=============================================================================
-File                                | Covered / Total Lines  | Percentage
-=============================================================================
-AppTheme.swift                      | Lines:   22 /   22     | 100.0%
-Difficulty.swift                    | Lines:   31 /   31     | 100.0%
-QuizCategory.swift                  | Lines:   37 /   37     | 100.0%
-CategoryCard.swift                  | Lines:  202 /  202     | 100.0%
-Color+Adaptive.swift                | Lines:   15 /   15     | 100.0%
-QuestionCard.swift                  | Lines:  154 /  155     |  99.4%
-ScoreRecord.swift                   | Lines:   35 /   36     |  97.2%
-LocalQuestionService.swift          | Lines:   58 /   61     |  95.1%
-QuizSession.swift                   | Lines:   85 /   91     |  93.4%
-ResultView.swift                    | Lines:  250 /  269     |  92.9%
-AnswerButton.swift                  | Lines:  193 /  208     |  92.8%
-HomeView.swift                      | Lines:  899 /  997     |  90.2%
-QuizView.swift                      | Lines:  467 /  523     |  89.3%
-QuizViewModel.swift                 | Lines:  112 /  132     |  84.8%
-Question.swift                      | Lines:  104 /  128     |  81.2%
-QuestionServiceProtocol.swift       | Lines:    9 /   12     |  75.0%
-TimerBar.swift                      | Lines:   68 /   95     |  71.6%
-=============================================================================
-TOTAL PRODUCTION CODE COVERAGE      | Lines: 2741 / 3014     |  90.94%
-=============================================================================
-```
+The build identifier is updated only for an actual new build. Detailed continuation build output is recorded separately after compilation.
 
-> **Target Exceeded:** Total production line coverage stands at **90.94%**, exceeding the academic requirement of $\ge 85\%$ and the stretch goal of $\ge 90\%$.
+## Technical references
 
----
+- [Apple ViewThatFits](https://developer.apple.com/documentation/swiftui/viewthatfits) describes choosing a layout that fits the available axes.
+- [Apple DynamicTypeSize isAccessibilitySize](https://developer.apple.com/documentation/swiftui/dynamictypesize/isaccessibilitysize) identifies accessibility text sizes for the stacked layout.
+- [Apple AccessibilityNotification.Announcement](https://developer.apple.com/documentation/accessibility/accessibilitynotification/announcement) documents posting assistive-technology announcements.
 
-## 5. Visual Simulator Verification on Target Hardware
+## Continuation build evidence on 22 October 2026
 
-The updated application package (`TrainYourBrain.app`) was compiled with `xcodebuild` and deployed to the primary hardware target: **Apple iPad (9th generation)** simulator (OS 27.0, Device ID: `B1B833A3-BB12-4930-AFC2-E0F33B450C43`).
+- Marketing version: `0.3.0`.
+- Earlier build: `20261022.180310` completed and launched on an iPad (9th generation), iPadOS 27.0 simulator. Its captured Home screen showed 24 questions and six questions for visible topics.
+- Interactive review build: `20261022.202425` was installed on the iPad 9 simulator. Category and mixed rounds both started; correct and incorrect answers displayed their explanation and next action. The visual review showed SwiftUI dimming the disabled feedback buttons, so the final source adds a custom button style to retain the specified contrast.
+- Latest build: `20261022.202656` (Europe/Berlin), built with Xcode 27 against the iOS 27.1 Simulator SDK.
+- Command: `xcodebuild -quiet -project TrainYourBrain.xcodeproj -scheme TrainYourBrain -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dlamsd01-sprint3-final/DerivedData CURRENT_PROJECT_VERSION=20261022.202656 CODE_SIGNING_ALLOWED=NO build`.
+- Result: exit code `0` (successful build). Xcode emitted a supported-destination warning because this scheme has no declared supported platform, and a metadata-extraction warning because the app does not depend on AppIntents.framework.
+- Build `20261022.202656` has not been installed or launched after the continuation edits. Full-round interaction, accessibility font-size matrix, rendered feedback review and VoiceOver traversal remain pending.
+- Changes remain local on the existing Sprint 3 branch; no merge or release tag was created.
 
-### 5.1. Light Mode Verification
-* **Screenshot File:** `ipad_sprint3_home_light.png`
-* **Observations:**
-  * Clean, off-white background with distinct white cards.
-  * Squircles render with crisp borders (`#D1D5DB`).
-  * High-contrast primary action button (`Start Mixed Quiz`) and domain category cards.
-  * Category chips render with appropriate SF symbols.
+## Verification of the continuation tree on 23 October 2026
 
-### 5.2. Dark Mode Verification
-* **Screenshot File:** `ipad_sprint3_home_dark.png`
-* **Observations:**
-  * True OLED black canvas (`#000000`) with elevated dark gray cards (`#1E222B`).
-  * Category card text exhibits high contrast (white on dark), fully compliant with WCAG 2.1 AA (contrast ratio $\ge 7.0:1$).
-  * Selection borders and primary button blue (`#0A84FF`) maintain vivid accessibility without glare.
+The checkout was tested after adding three targeted regressions to `QuizViewModelTests`:
 
----
+- Catalog counts are derived from the loaded questions, a successful catalog is cached for the ViewModel lifetime, and catalog loading does not start a round.
+- A failed catalog load can be retried and clears its error after successful recovery.
+- Negative and out-of-range answer indices leave the active round, answer selection and timer value unchanged.
 
-## 6. Definition of Done (DoD) Checklist for Sprint 3
+Command: `swift test --scratch-path /private/tmp/dlamsd01-audit-20261023/spm2 --cache-path /private/tmp/dlamsd01-audit-20261023/cache2 --disable-sandbox` (with Clang and Swift module caches redirected under `/private/tmp`). Result: **48 tests passed, 0 failures**, across the package test target. SwiftPM warned that user-level configuration/security caches were inaccessible and disabled those cache features. Existing SwiftUI component tests also warn when reading `Environment` values from an unmounted view; those tests pass but do not constitute rendered-layout or device-interaction verification.
 
-| DoD Requirement | Status | Verification Evidence |
-| :--- | :---: | :--- |
-| Modular `QuestionCard` component | ✅ Done | Implemented in `src/Views/Components/QuestionCard.swift`, 99.4% coverage. |
-| Modular `AnswerButton` component with $\ge 56\,\text{pt}$ touch target | ✅ Done | Implemented in `src/Views/Components/AnswerButton.swift`, 56pt constraint verified. |
-| Modular `CategoryCard` component | ✅ Done | Implemented in `src/Views/Components/CategoryCard.swift`, 100.0% coverage. |
-| Multiline Dynamic Type wrapping | ✅ Done | Configured with `.fixedSize(horizontal: false, vertical: true)` and tested in unit tests. |
-| Screen reader / VoiceOver integration | ✅ Done | `.accessibilityElement(children: .combine)` and contextual labels tested. |
-| Automated XCTest suite expansion | ✅ Done | 45 tests passing in 0.252 seconds with zero failures. |
-| Code coverage $\ge 90\%$ | ✅ Done | Total coverage measured at **90.94%** (2,741 / 3,014 lines). |
-| Native Xcode Project Integration | ✅ Done | `TrainYourBrain.xcodeproj` builds cleanly with `** BUILD SUCCEEDED **`. |
-| Simulator verification on iPad (9th gen) | ✅ Done | Deployed and verified in both Light and Dark mode with screenshots. |
-| Clean Git commit and tagging | ✅ Done | Ready for merge to `master` and tag `v0.3.0`. |
+The native simulator target was built separately on 23 October 2026 with `xcodebuild` into `/private/tmp/dlamsd01-audit-20261023/DerivedData`; the command exited 0 and produced an `.app` whose metadata reports marketing version `0.3.0`, build `20261022.202656`, minimum iOS `17.0` and SDK `iphonesimulator27.1`. Xcode reported that Simulator services were unavailable in this environment. The build was not installed or launched, and its existing build number was not advanced. This build occurred before the three test-only additions above.
+
+The continuation remains **in progress**. The current test run does not prove the card tap flow, Dynamic Type rendering, the 56 pt target in runtime, appearance-specific feedback, VoiceOver navigation or a complete round on a device. A coverage-enabled run on 23 October 2026 passed all 48 tests and measured 2,350 of 2,587 instrumented production lines (90.84%) in the macOS Swift Package. This excludes tests and the app entry point and is not UI/runtime coverage. The 90.94% figure above remains the separate baseline measurement for commit `52a2e45`.

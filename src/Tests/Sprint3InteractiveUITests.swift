@@ -2,8 +2,8 @@ import XCTest
 import SwiftUI
 @testable import TrainYourBrainCore
 
-/// TDD Suite for Sprint 3: Modular & Interactive Presentation Components (v0.3.0).
-/// Exercises button state machines, accessibility traits, dynamic text wrap, and metadata presentation.
+/// Regression checks for Sprint 3: Modular & Interactive Presentation Components (v0.3.0).
+/// Exercises button state resolution, accessibility strings, touch-target constants, and metadata.
 @MainActor
 final class Sprint3InteractiveUITests: XCTestCase {
     

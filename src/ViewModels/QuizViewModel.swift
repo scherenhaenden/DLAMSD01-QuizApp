@@ -104,13 +104,18 @@ public final class QuizViewModel: ObservableObject {
         ProcessInfo.processInfo.systemUptime
     }
     
+    /// Haptic feedback provider delivering tactile sensory response upon user answers.
+    private let hapticService: HapticFeedbackServiceProtocol
+    
     /// Designated initializer accepting dependency injection for testability.
     public init(
         questionService: QuestionServiceProtocol = LocalQuestionService(),
-        monotonicClock: @escaping () -> TimeInterval = QuizViewModel.defaultMonotonicClock
+        monotonicClock: @escaping () -> TimeInterval = QuizViewModel.defaultMonotonicClock,
+        hapticService: HapticFeedbackServiceProtocol = SystemHapticFeedbackService.shared
     ) {
         self.questionService = questionService
         self.monotonicClock = monotonicClock
+        self.hapticService = hapticService
     }
     
     /// Loads counts once per ViewModel lifetime. A failed load can be retried from HomeView.
@@ -163,6 +168,7 @@ public final class QuizViewModel: ObservableObject {
             self.questionIndex = 0
             self.currentScore = 0
             self.streak = 0
+            self.hapticService.prepare()
             self.syncFromSession()
             self.startTimer()
             self.viewState = .playing
@@ -188,11 +194,19 @@ public final class QuizViewModel: ObservableObject {
 
         stopTimer()
         backgroundTimestamp = nil
+        backgroundMonotonicTimestamp = nil
         selectedAnswerIndex = index
         let isCorrect = currentSession.submitAnswer(optionIndex: index)
         self.session = currentSession
         self.currentScore = currentSession.score
         self.streak = currentSession.currentStreak
+        
+        // Sensory feedback: tactile haptics based on answer accuracy
+        if isCorrect {
+            hapticService.playSuccess()
+        } else {
+            hapticService.playError()
+        }
         
         self.viewState = .answered(selectedIndex: index, isCorrect: isCorrect)
     }
@@ -204,6 +218,7 @@ public final class QuizViewModel: ObservableObject {
         currentSession.advanceToNext()
         self.session = currentSession
         backgroundTimestamp = nil
+        backgroundMonotonicTimestamp = nil
         
         if case .completed(let record) = currentSession.state {
             stopTimer()
@@ -220,6 +235,7 @@ public final class QuizViewModel: ObservableObject {
     public func resetToMenu() {
         stopTimer()
         backgroundTimestamp = nil
+        backgroundMonotonicTimestamp = nil
         session = nil
         currentQuestion = nil
         questionIndex = 0
@@ -362,10 +378,12 @@ public final class QuizViewModel: ObservableObject {
         guard viewState == .playing, var currentSession = session else { return }
         stopTimer()
         backgroundTimestamp = nil
+        backgroundMonotonicTimestamp = nil
         currentSession.recordTimeout()
         self.session = currentSession
         self.streak = currentSession.currentStreak
         self.selectedAnswerIndex = -1
+        hapticService.playWarning()
         self.viewState = .answered(selectedIndex: -1, isCorrect: false)
     }
     

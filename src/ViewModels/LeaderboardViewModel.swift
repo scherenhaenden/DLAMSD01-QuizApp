@@ -87,29 +87,13 @@ public final class LeaderboardViewModel: ObservableObject {
         let totalAccuracySum = matchingRecords.reduce(0) { $0 + $1.accuracyPercentage }
         self.averageAccuracy = totalAccuracySum / matchingRecords.count
         
-        // Compute personal best (highest score, highest accuracy)
-        self.personalBest = matchingRecords.max { lhs, rhs in
-            if lhs.score != rhs.score {
-                return lhs.score < rhs.score
-            }
-            return lhs.accuracyPercentage < rhs.accuracyPercentage
-        }
+        // Compute personal best (canonical ScoreRecord.Comparable ordering)
+        self.personalBest = matchingRecords.max()
         
         // Sort according to active tab
         switch selectedTab {
         case .highScores:
-            self.displayedRecords = matchingRecords.sorted { lhs, rhs in
-                if lhs.score != rhs.score {
-                    return lhs.score > rhs.score
-                }
-                if lhs.accuracyPercentage != rhs.accuracyPercentage {
-                    return lhs.accuracyPercentage > rhs.accuracyPercentage
-                }
-                if lhs.streakRecord != rhs.streakRecord {
-                    return lhs.streakRecord > rhs.streakRecord
-                }
-                return lhs.completedAt > rhs.completedAt
-            }
+            self.displayedRecords = matchingRecords.sorted(by: >)
         case .history:
             self.displayedRecords = matchingRecords.sorted {
                 $0.completedAt > $1.completedAt

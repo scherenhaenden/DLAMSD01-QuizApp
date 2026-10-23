@@ -4,13 +4,14 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.5.1** (Build `20261023.155500`), Sprint 5 maintenance release: Retained haptic generator lifecycle persistence, empirical coverage reconciliation (91.45%), touch debouncing, spring view transitions, and full iPad 9 UI acceptance.
+Version **0.6.0** (Build `20261023.163000`), Sprint 6 release: Results analytics, scorecard dashboard, official German academic grading scale (1.0–5.0), continuous monotonic timing (duration & speed), category performance breakdown, and full iPad 9 UI acceptance.
 
 ### Implemented
 
 - Local JSON catalog with 24 German questions in four categories; the interface is currently English.
 - Validated question model, Fisher-Yates shuffled question and option order, and a separate quiz session state machine.
 - Category and mixed rounds, immediate pedagogical answer explanation, manual next action, and result analytics.
+- Results analytics and academic scorecard: Post-game `ResultView` with official German university grading scale (`1.0` Sehr Gut to `5.0` Nicht Bestanden) matching standard IU examination regulations (`Prüfungsordnung`), accuracy percentage, 4-metric grid (Score, Accuracy, Streak, Average Speed), category performance breakdown with mini progress bars, and continuous monotonic elapsed duration tracking (`durationSeconds`).
 - Multisensory feedback coordination: emerald green (`quizCorrectFeedback`) with `checkmark.circle.fill` and `.success` haptic for correct answers; crimson red (`quizIncorrectFeedback`) with `xmark.circle.fill` and `.error` haptic for errors; amber/crimson with `.warning` haptic on countdown timeout.
 - Decoupled haptic architecture (`HapticFeedbackServiceProtocol`) retaining a thread-safe `UINotificationFeedbackGenerator` instance across calls (`prepare()` and `trigger()`), ensuring the Taptic Engine retains its prepared state without premature deallocation.
 - Immediate touch debouncing and locking (`.disabled(isAnswerRevealed)` and `guard viewState == .playing`) preventing race conditions from rapid successive taps.
@@ -55,13 +56,13 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The package test suite executes 79 unit tests with 0 failures and measures **91.45%** instrumented production line coverage on macOS via `llvm-cov` (2,599 / 2,842 lines across the 18 production files, or 91.42% including SPM's intermediate bundle accessor [2,631 / 2,878 lines]), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, and background-to-foreground lifecycle resumption on iPad (9th generation).
+The package test suite executes 86 unit tests with 0 failures and measures **90.28%** instrumented production line coverage on macOS via `llvm-cov` (3,048 / 3,376 lines across the 18 production files, or 90.27% including SPM's intermediate bundle accessor [3,080 / 3,412 lines]), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, and background-to-foreground lifecycle resumption on iPad (9th generation).
 
 Hardware qualification: While the software protocol and conditional compilation are 100% verified via automated tests, physical tactile vibration requires a physical iPhone device equipped with a Taptic Engine.
 
 Formal spectrophotometric WCAG 2.1 AA contrast auditing belongs to the dedicated accessibility milestone (Sprint 8); current states provide redundant chromatic cues alongside numeric countdown labels and VoiceOver announcements.
 
-See the [Sprint 5 technical report](docs/sprint5_sensory_feedback_and_haptics_report.md) for architectural details, coverage breakdowns, and the technical incident retrospective.
+See the [Sprint 6 technical report](docs/sprint6_results_analytics_report.md) for architectural details, coverage breakdowns, and the German academic grading matrix.
 
 ## Remaining roadmap
 
@@ -75,8 +76,8 @@ See the [Sprint 5 technical report](docs/sprint5_sensory_feedback_and_haptics_re
 | **0.4.1** | Sprint 4 maintenance patch: drift compensation, retrograde clock fix, UI timeout test *(Completed)* |
 | **0.4.2** | Monotonic hardware clock anti-cheat, background/resume UI test, exact coverage reconciliation *(Completed)* |
 | **0.5.0** | Multisensory feedback: visual cues, touch debouncing, and decoupled haptics *(Completed)* |
-| **0.5.1** | Retained haptic generator lifecycle persistence, exact coverage reconciliation (91.45%), documentation alignment *(Current)* |
-| 0.6.0 | Extend and review the existing result screen and score calculations |
+| **0.5.1** | Retained haptic generator lifecycle persistence, exact coverage reconciliation (91.45%), documentation alignment *(Completed)* |
+| **0.6.0** | Results analytics, scorecard dashboard, German academic grading scale (1.0–5.0), continuous monotonic timing, category performance breakdown *(Current)* |
 | 0.7.0 | Local result history and personal bests |
 | 0.8.0 | iPhone/iPad accessibility and orientation checks |
 | 0.9.0 | Verification and CI hardening |

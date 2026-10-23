@@ -94,6 +94,31 @@ public struct QuizSession: Equatable, Sendable {
         return count
     }
     
+    /// Aggregated performance metrics broken down by category across all answered questions.
+    public var categoryBreakdown: [CategoryPerformance] {
+        var tallies: [String: (title: String, total: Int, correct: Int)] = [:]
+        for (idx, question) in questions.enumerated() {
+            let catId = question.category.rawValue
+            let catTitle = question.category.displayName
+            let isCorrect = (userSelections.indices.contains(idx) && userSelections[idx] == question.correctAnswerIndex)
+            var current = tallies[catId] ?? (title: catTitle, total: 0, correct: 0)
+            current.total += 1
+            if isCorrect {
+                current.correct += 1
+            }
+            tallies[catId] = current
+        }
+        
+        return tallies.map { (catId, tally) in
+            CategoryPerformance(
+                categoryId: catId,
+                categoryTitle: tally.title,
+                correctCount: tally.correct,
+                totalCount: tally.total
+            )
+        }.sorted { $0.categoryTitle < $1.categoryTitle }
+    }
+    
     // MARK: - Mutating Domain Operations
     
     /// Transitions the session from `idle` to `inProgress`.
@@ -147,20 +172,23 @@ public struct QuizSession: Equatable, Sendable {
     
     /// Advances the cursor to the subsequent question or finalizes the session if all questions are completed.
     /// Strictly guarded: only advances if the active question has been answered or timed out.
-    public mutating func advanceToNext() {
+    public mutating func advanceToNext(completedAt: Date = Date(), duration: TimeInterval? = nil) {
         guard case .questionAnswered = state else { return }
         
         if hasNextQuestion {
             currentIndex += 1
             state = .inProgress
         } else {
+            let elapsed = duration ?? max(0.0, completedAt.timeIntervalSince(startedAt))
             let finalRecord = ScoreRecord(
                 score: score,
                 totalQuestions: totalQuestions,
                 correctAnswers: correctAnswersCount,
                 streakRecord: bestStreak,
                 category: category,
-                completedAt: Date()
+                durationSeconds: elapsed,
+                categoryBreakdown: categoryBreakdown,
+                completedAt: completedAt
             )
             state = .completed(finalRecord)
         }

@@ -56,6 +56,28 @@ The timer still ticks once per second. Lifecycle handling and a 10 Hz timer rema
 
 The build identifier is updated only for an actual new build. Detailed continuation build output is recorded separately after compilation.
 
+## Follow-up acceptance status after PR #8 merge (23 October 2026)
+
+PR #8 was merged to `master` at `4cf65ae52eeed5422a281cb2aebc216b36d9727f`. The statements above that describe the PR as open, interactions as untested, or the merge as pending are historical handoff notes and are superseded by this section. The merged implementation remains version 0.3.0; there is no release tag yet.
+
+A follow-up branch, `test/sprint-3-ui-acceptance`, adds a shared Xcode UI test target and a CI step. On an isolated iPad 9 simulator (iOS 27.0 runtime, Xcode 27.1 SDK), the first run passed three UI tests: a six-question category round through feedback, results, Play Again and return to topics; entry and return from the 24-question mixed round; and starting a category at Accessibility XXXL Dynamic Type. The category test measures the answer button's runtime frame and requires at least 56 pt. XCTest screenshot attachments cover category counts, answer feedback, completed results, the mixed-round card, and the XXXL home screen. They were exported to `/private/tmp/dlamsd01-ui-evidence-20261023` and are temporary technical evidence, not academic deliverables.
+
+The expanded run also adds an incorrect-answer assertion: the selected answer must produce `Incorrect`, and the correct option must expose an accessibility value of `Correct answer`. XCTest does not expose SwiftUI's accessibility hint as a queryable attribute in this environment, so `AnswerButton` now exposes the answer state as an explicit accessibility value as well as its existing hint. The focused test passed, and the complete UI suite passed **4 tests, 0 failures**. CI and merge of this follow-up remain required before the increment can be called closed.
+
+The Dynamic Type check establishes that the category start action remains visible and usable at XXXL. The screenshot shows a scrollable home screen; it does not establish that all cards fit in one viewport. UI automation does not test spoken VoiceOver behavior. Timeout presentation, VoiceOver traversal/focus, wider device-size coverage, and appearance review in Light and Dark remain outside the executed checks. Package figures remain separate: 51/51 Swift Package tests on macOS, with 2,385/2,619 instrumented production lines covered (91.07%). The denominator excludes tests, generated resource accessors, and the app entry point. Neither package tests nor line coverage measure installed UI behavior.
+
+The six screenshots exported from the successful iPad 9 run are preserved in `docs/evidence/sprint3/` for technical traceability. They document category counts, correct and incorrect feedback, results, the mixed card, and Dynamic Type XXXL. The accessibility-size screenshot visibly shows the Home screen scrolling, so this evidence supports availability of the first card's Start action rather than a claim that all cards fit in one viewport.
+
+## Final local acceptance run (23 October 2026)
+
+- Simulator: `TrainYourBrain 0.3 Acceptance iPad 9`, iPad (9th generation), iOS 27.0, device `FFF58F26-BF65-4CDB-9DAA-441B4474240E`.
+- Command: `xcodebuild -project TrainYourBrain.xcodeproj -scheme TrainYourBrain -destination 'platform=iOS Simulator,id=FFF58F26-BF65-4CDB-9DAA-441B4474240E' -derivedDataPath /private/tmp/dlamsd01-ui-tests -resultBundlePath /private/tmp/dlamsd01-ui-full-20261023.xcresult -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test`.
+- Result bundle: `/private/tmp/dlamsd01-ui-full-20261023.xcresult`; 4 passed, 0 failed. It includes six kept screenshot attachments. Xcode logged simulator/runtime metadata warnings, but the test result bundle reports `Passed` with no runtime warnings or failures.
+- The separate Swift Package run passed 51 tests, 0 failures. This includes a regression test for the new accessibility-value mapping.
+- Coverage command: `swift test --enable-code-coverage --scratch-path /private/tmp/dlamsd01-0.3x-final/coverage --cache-path /private/tmp/dlamsd01-0.3x-final/cache-coverage --disable-sandbox`; `xcrun llvm-cov report` filtered tests, the app entry point, and generated `resource_bundle_accessor.swift`. Result: 2,385/2,619 instrumented production lines (91.07%).
+- `docs/evidence/sprint3/` contains persistent image attachments from the exact passing UI run. These are technical evidence for future author use, not a university report or final deliverable.
+- CI has not yet run for this branch, and the follow-up has not yet been merged. The implementation branch therefore remains in progress until the hosted workflow passes and the follow-up is integrated.
+
 ## Technical references
 
 - [Apple ViewThatFits](https://developer.apple.com/documentation/swiftui/viewthatfits) describes choosing a layout that fits the available axes.

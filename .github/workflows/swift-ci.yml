@@ -35,3 +35,11 @@ jobs:
             -destination "generic/platform=iOS Simulator" \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+      - name: Run iOS UI acceptance tests
+        run: |
+          xcodebuild -project TrainYourBrain.xcodeproj \
+            -scheme TrainYourBrain \
+            -destination "platform=iOS Simulator,name=iPhone 15" \
+            CODE_SIGNING_ALLOWED=NO \
+            test

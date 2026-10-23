@@ -70,6 +70,14 @@ final class Sprint3InteractiveUITests: XCTestCase {
         let label = AnswerButton.formattedAccessibilityLabel(letter: "A", text: optionText)
         XCTAssertEqual(label, "Option A: \(optionText)")
     }
+
+    func testAnswerButtonAccessibilityValuesDescribeRevealedState() {
+        XCTAssertEqual(AnswerButton.accessibilityValueText(for: .correct), "Correct answer")
+        XCTAssertEqual(AnswerButton.accessibilityValueText(for: .wrong), "Incorrect answer")
+        XCTAssertEqual(AnswerButton.accessibilityValueText(for: .dimmed), "Not selected")
+        XCTAssertEqual(AnswerButton.accessibilityValueText(for: .selected), "Selected")
+        XCTAssertEqual(AnswerButton.accessibilityValueText(for: .idle), "")
+    }
     
     func testAnswerButtonErgonomicTouchTargetHeight() {
         // Apple HIG specifies 44 pt minimum. Sprint 3 requires >= 56 pt for mobile ergonomic usage.

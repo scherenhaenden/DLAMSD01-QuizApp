@@ -146,6 +146,21 @@ public struct AnswerButton: View {
             return "Unselected incorrect option."
         }
     }
+
+    public static func accessibilityValueText(for state: VisualState) -> String {
+        switch state {
+        case .correct:
+            return "Correct answer"
+        case .wrong:
+            return "Incorrect answer"
+        case .dimmed:
+            return "Not selected"
+        case .selected:
+            return "Selected"
+        case .idle:
+            return ""
+        }
+    }
     
     // MARK: - Body
     
@@ -199,11 +214,12 @@ public struct AnswerButton: View {
             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .foregroundColor(feedbackForegroundColor)
         }
-        .buttonStyle(EvaluationButtonStyle())
+        .buttonStyle(.plain)
         .disabled(isAnswerRevealed) // Prevent double-tap race conditions after selection
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Self.formattedAccessibilityLabel(letter: optionLetter, text: optionText))
         .accessibilityHint(Self.accessibilityHintText(for: visualState))
+        .accessibilityValue(Self.accessibilityValueText(for: visualState))
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])
         .accessibilityIdentifier("quiz.answer.\(index)")
     }

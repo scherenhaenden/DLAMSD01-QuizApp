@@ -4,18 +4,20 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.3.0**, Sprint 3 implementation merged to `master` by PR #10. Native XCTest UI acceptance and CI coverage are being completed on the existing `test/sprint-3-ui-acceptance` branch; they are not yet a release. There is no 0.3.x Git tag yet.
+Version **0.4.1** (Build `20261023.134700`), Sprint 4 maintenance patch and defect resolution. High-frequency reactive timer (10 Hz), dynamic proportional urgency alerting in `TimerBar`, real-time drift compensation, and anti-cheat `ScenePhase` lifecycle management with backwards clock tampering protection are implemented and verified.
 
 ### Implemented
 
 - Local JSON catalog with 24 German questions in four categories; the interface is currently English.
-- Validated question model, shuffled question and option order, and a separate quiz session state machine.
-- Category and mixed rounds, immediate answer explanation, manual next action, and a basic result screen.
-- A one-second Combine timer; the 10 Hz timer and lifecycle work belong to Sprint 4.
-- Reusable `CategoryCard`, `QuestionCard`, and `AnswerButton` components.
-- Category cards start their round with one action. Displayed counts come from the question service rather than fixed 24/6 labels.
-- Adaptive metadata layouts, multiline text, minimum 56 pt answer controls, and programmatic answer-feedback announcements. UI automation checks category and mixed flows, feedback, results, replay, 56 pt answer height, and Dynamic Type XXXL. VoiceOver traversal, timeout UI, broader device sizes, and Light/Dark review remain separate checks.
-- Appearance selection stored through `@AppStorage`. Round history and high scores are not persisted yet.
+- Validated question model, Fisher-Yates shuffled question and option order, and a separate quiz session state machine.
+- Category and mixed rounds, immediate pedagogical answer explanation, manual next action, and result analytics.
+- High-frequency 10 Hz Combine reactive countdown timer (`0.1s` interval) on `@MainActor` with real-time delta compensation preventing RunLoop drift.
+- Deterministic time-stepping API (`tickTimer(delta:)`) allowing instant, deterministic unit testing without asynchronous delays.
+- Proportional chromatic shifts in `TimerBar` (`UrgencyPhase`: Normal $> 50\%$, Warning $20\%-50\%$, Critical $\le 20\%$) dynamically scaling across Easy (20s), Medium (15s), and Hard (12s) difficulty tiers.
+- Application scene lifecycle (`ScenePhase`) anti-cheat protection: background exit timestamp tracking, elapsed time deduction upon resume, and immediate timeout on expired duration or retroactive clock tampering ($> 500\text{ms}$ backwards clock jumps).
+- Reusable `CategoryCard`, `QuestionCard`, and `AnswerButton` components with 56 pt minimum touch targets and `.buttonStyle(.plain)` to prevent `ScrollView` gesture stealing.
+- Programmatic answer-feedback VoiceOver announcements for correct, incorrect, and timeout states.
+- Appearance selection stored through `@AppStorage`. Round history and high scores belong to Sprint 7.
 
 Question content can be changed in `src/Resources/questions.json`. New categories also require updating `QuizCategory`. There is no question editor or import feature in the app.
 
@@ -49,17 +51,21 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The 0.3.0 package baseline passed 50 Swift Package tests. The current branch adds one accessibility-state regression; its package suite passes 51 tests and measures 2,385/2,619 instrumented production lines (91.07%) on macOS, excluding tests and the app entry point. The four-test iPad 9 UI run passed and captured XCTest attachments. Hosted CI and merge of the follow-up are still pending. These measurements do not prove spoken VoiceOver traversal, timeout presentation, or every device/layout combination.
+The package test suite executes 67 unit tests with 0 failures and measures 92.1% instrumented production line coverage on macOS via `llvm-cov`, excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, and live countdown timeout on iPad (9th generation).
 
-See [the Sprint 3 report](docs/sprint3_interactive_ui_components_report.md) for the implementation and pending checks. Accessibility targets and coverage percentages are project choices, not additional requirements imposed by the IU quiz assignment.
+See the [Sprint 4 technical report](docs/sprint4_reactive_timer_and_lifecycle_report.md) for architectural details, coverage breakdowns, and the technical incident retrospective.
 
 ## Remaining roadmap
 
 | Milestone | Planned work |
 | --- | --- |
-| 0.3.0 | Sprint 3 implementation merged; close with UI acceptance, CI, and release traceability |
-| 0.4.0 | 10 Hz timer, timeout and lifecycle handling |
-| 0.5.0 | Feedback and optional haptics |
+| **0.1.0** | Domain core, Codable models, bundled question service *(Completed)* |
+| **0.2.0** | UI design system, color tokens, typography, 4pt grid *(Completed)* |
+| **0.2.1** | Sprint 2 bugfixes: Play Again state reset, ScrollView gesture fix *(Completed)* |
+| **0.3.0** | Modular UI components, iPad 9 acceptance, and tag release *(Completed)* |
+| **0.4.0** | Reactive 10 Hz timer, proportional urgency, and anti-cheat lifecycle *(Completed)* |
+| **0.4.1** | Sprint 4 maintenance patch: drift compensation, retrograde clock fix, UI timeout test *(Current)* |
+| 0.5.0 | Feedback animations and optional haptics |
 | 0.6.0 | Extend and review the existing result screen and score calculations |
 | 0.7.0 | Local result history and personal bests |
 | 0.8.0 | iPhone/iPad accessibility and orientation checks |

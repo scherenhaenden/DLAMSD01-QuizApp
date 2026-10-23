@@ -6,6 +6,11 @@ final class TrainYourBrainUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
+        XCUIDevice.shared.orientation = .portrait
+    }
+
+    override func tearDownWithError() throws {
+        XCUIDevice.shared.orientation = .portrait
     }
 
     func testCategoryRoundShowsFeedbackResultsAndCanReplay() {
@@ -203,6 +208,40 @@ final class TrainYourBrainUITests: XCTestCase {
         doneButton.tap()
 
         XCTAssertTrue(scoresButton.waitForExistence(timeout: 10), "Home screen must return after dismissing leaderboard")
+    }
+
+    func testIPadLandscapeAndPortraitErgonomicAdaptation() {
+        app.launch()
+        
+        // 1. Verify portrait orientation baseline
+        let category = app.buttons["home.category.software_engineering"]
+        XCTAssertTrue(category.waitForExistence(timeout: 15))
+        
+        // 2. Rotate to Landscape orientation (iPad 10.2" regular size class)
+        XCUIDevice.shared.orientation = .landscapeLeft
+        Thread.sleep(forTimeInterval: 2.0) // Allow rotation and layout animation to settle
+        attachScreenshot(named: "Home - iPad Landscape Layout")
+        
+        // Verify touch targets remain available in landscape
+        let scoresButton = app.buttons["home.scoresButton"]
+        XCTAssertTrue(scoresButton.waitForExistence(timeout: 10))
+        XCTAssertTrue(category.waitForExistence(timeout: 10))
+        XCTAssertTrue(category.isEnabled)
+        
+        // Open Leaderboard modal in landscape
+        scoresButton.tap()
+        let leaderboardTitle = app.staticTexts["Leaderboard & History"]
+        XCTAssertTrue(leaderboardTitle.waitForExistence(timeout: 10))
+        attachScreenshot(named: "Leaderboard - iPad Landscape Layout")
+        
+        let doneButton = app.buttons["leaderboard.dismiss"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 5))
+        doneButton.tap()
+        
+        // 3. Restore Portrait orientation
+        XCUIDevice.shared.orientation = .portrait
+        Thread.sleep(forTimeInterval: 1.5)
+        XCTAssertTrue(category.waitForExistence(timeout: 10))
     }
 
     private func answerAndAdvance(questionCount: Int) {

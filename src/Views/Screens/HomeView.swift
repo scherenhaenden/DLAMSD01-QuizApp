@@ -75,7 +75,7 @@ public struct HomeView: View {
                     }
                     .padding(16)
                     .padding(.bottom, 16)
-                    .frame(maxWidth: 550)
+                    .frame(maxWidth: 640)
                     .frame(maxWidth: .infinity)
                 }
             }

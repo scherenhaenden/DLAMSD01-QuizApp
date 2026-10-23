@@ -40,6 +40,6 @@ jobs:
         run: |
           xcodebuild -project TrainYourBrain.xcodeproj \
             -scheme TrainYourBrain \
-            -destination "platform=iOS Simulator,name=iPad (9th generation)" \
+            -destination "platform=iOS Simulator,name=iPad (10th generation)" \
             CODE_SIGNING_ALLOWED=NO \
             test

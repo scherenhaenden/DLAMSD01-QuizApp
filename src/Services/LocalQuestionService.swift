@@ -173,6 +173,11 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
         lock.lock()
         defer { lock.unlock() }
         
+        let bundled = try loadBundledQuestionsUnchecked()
+        if bundled.contains(where: { $0.id == question.id }) {
+            throw QuestionServiceError.systemQuestionDeletionNotAllowed(question.id.uuidString)
+        }
+        
         try executeAtomicMutation {
             if self.customPayload?.questions.contains(where: { $0.id == question.id }) == true {
                 throw QuestionServiceError.duplicateQuestionId(question.id)
@@ -296,12 +301,33 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
         }
         importedCategories = uniqueImportedCategories
         
+        let bundledQuestionIDs = Set((try? loadBundledQuestionsUnchecked().map { $0.id }) ?? [])
+        
         var uniqueImportedQuestions: [Question] = []
         var seenQuestionIds = Set<UUID>()
         for q in importedQuestions {
-            if !seenQuestionIds.contains(q.id) {
-                seenQuestionIds.insert(q.id)
-                uniqueImportedQuestions.append(q)
+            // Policy: If an imported question shares a UUID with an existing immutable bundled curriculum question,
+            // re-assign a fresh unique UUID to the imported custom instance.
+            // This prevents duplicate keys in the combined catalog and ensures the imported custom question
+            // remains fully manageable (editable and deletable) without triggering systemQuestionDeletionNotAllowed.
+            let effectiveQuestion: Question
+            if bundledQuestionIDs.contains(q.id) {
+                effectiveQuestion = (try? Question(
+                    id: UUID(),
+                    prompt: q.prompt,
+                    options: q.options,
+                    correctAnswerIndex: q.correctAnswerIndex,
+                    explanation: q.explanation,
+                    category: q.category,
+                    difficulty: q.difficulty
+                )) ?? q
+            } else {
+                effectiveQuestion = q
+            }
+            
+            if !seenQuestionIds.contains(effectiveQuestion.id) {
+                seenQuestionIds.insert(effectiveQuestion.id)
+                uniqueImportedQuestions.append(effectiveQuestion)
             }
         }
         importedQuestions = uniqueImportedQuestions

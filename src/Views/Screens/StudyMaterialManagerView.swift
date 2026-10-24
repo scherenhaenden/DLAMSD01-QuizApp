@@ -103,6 +103,12 @@ public struct StudyMaterialManagerView: View {
             ) { result in
                 handleFileImport(result: result)
             }
+            .onAppear {
+                if let warning = viewModel.lastLoadWarning, statusMessage == nil {
+                    self.statusMessage = warning
+                    self.isStatusError = warning.contains("CRITICAL")
+                }
+            }
         }
     }
     
@@ -559,6 +565,7 @@ struct AddCategorySheet: View {
             Form {
                 Section(header: Text("Subject Details")) {
                     TextField("Subject Name (e.g. Cloud Computing)", text: $name)
+                        .accessibilityIdentifier("studyMaterial.newSubjectNameField")
                         .frame(minHeight: 44)
                     TextField("Description (e.g. AWS, GCP, Azure fundamentals)", text: $description)
                         .frame(minHeight: 44)
@@ -608,6 +615,7 @@ struct AddCategorySheet: View {
                     Button("Save") { saveCategory() }
                         .font(.body.bold())
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .accessibilityIdentifier("studyMaterial.saveNewSubjectButton")
                         .frame(minHeight: 44)
                 }
             }
@@ -670,6 +678,7 @@ struct EditCategorySheet: View {
             Form {
                 Section(header: Text("Subject Details")) {
                     TextField("Subject Name", text: $name)
+                        .accessibilityIdentifier("studyMaterial.editSubjectNameField")
                         .frame(minHeight: 44)
                     TextField("Description", text: $description)
                         .frame(minHeight: 44)
@@ -713,12 +722,13 @@ struct EditCategorySheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                         .frame(minHeight: 44)
-                        .accessibilityIdentifier("studyMaterial.cancelSubjectButton")
+                        .accessibilityIdentifier("studyMaterial.cancelEditSubjectButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { saveCategory() }
                         .font(.body.bold())
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .accessibilityIdentifier("studyMaterial.saveEditSubjectButton")
                         .frame(minHeight: 44)
                 }
             }

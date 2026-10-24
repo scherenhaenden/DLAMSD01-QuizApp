@@ -98,7 +98,7 @@ Integrated via the "Material" capsule button in `HomeView` header actions:
 ## Verification & Test Results
 
 ### 1. Package Test Suite
-The package test suite was expanded with `Sprint9DynamicCatalogTests.swift`, adding 13 comprehensive test cases:
+The package test suite was expanded with `Sprint9DynamicCatalogTests.swift`, adding 14 comprehensive test cases:
 1. `testCustomCategoryCreationAndRegistry`: Verifies dynamic registration, metadata retrieval, and case iteration.
 2. `testInAppQuestionAuthoringAndInvariants`: Validates invariant enforcement (empty prompt, choice count != 4, duplicate choices, out-of-range correct index).
 3. `testCustomStudyMaterialCRUDAndPersistence`: Verifies full save/relaunch cycle from disk sandbox, editing, cascade deletion, and system question protection.
@@ -111,35 +111,39 @@ The package test suite was expanded with `Sprint9DynamicCatalogTests.swift`, add
 10. `testUnreadableCorruptedCatalogGeneratesEmergencyBackup`: Verifies that encountering an unreadable or corrupt catalog creates an emergency `.bak` backup copy before initializing, preventing accidental data erasure.
 11. `testCategoryUpdateAndCRUDOperations`: Verifies full CRUD (create, update, delete) for custom categories via `EditCategorySheet` and cascading metadata updates to existing questions.
 12. `testDuplicateCategoryIDsInImportDoesNotCrash`: Verifies that importing or decoding JSON containing duplicate category IDs (`"id": "same"`) does not crash with a fatal error, deduplicates gracefully, and successfully links questions to the category.
-13. `testCorruptedCatalogWithFailedBackupBlocksSaveOperation`: Verifies that when a corrupted catalog is detected and its backup cannot be created or verified, the service sets `isCatalogSaveBlockedToPreventDataLoss` to true and blocks writes with `customCatalogSaveFailed`, preserving the corrupted file untouched.
+13. `testCorruptedCatalogWithFailedBackupBlocksSaveOperation`: Verifies that when a corrupted catalog is detected and its backup cannot be created (deterministic EACCES), the service unconditionally sets `isCatalogSaveBlockedToPreventDataLoss` to true and blocks writes with `customCatalogSaveFailed`, preserving the corrupted file untouched.
+14. `testImportQuestionCollidingWithBundledQuestionAssignsNewUUIDAndRemainsManageable`: Verifies that importing a question whose UUID collides with an immutable core curriculum question assigns a fresh unique UUID to the imported copy, ensuring all combined IDs are 100% unique and the custom question remains fully editable and deletable without colliding with system deletion protection.
 
 **Execution Result:**
-- **127 / 127 tests passed (100% success)** in 0.55s.
+- **128 / 128 tests passed (100% success)** in 0.58s.
 
 ### 2. Native UI Acceptance Testing (iPad 9.ª Gen 10.2")
 `TrainYourBrainUITests.swift` includes dedicated interactive verification:
-- Full 9-test UI test suite executed on iPad (9th generation, 10.2" display) in simulator:
-  1. `testHomeScreenUIElementsExist`
-  2. `testCategorySelectionStartsQuiz`
-  3. `testGameplayAnsweringAndResultsFlow`
-  4. `testQuickPlayFlow`
-  5. `testLeaderboardSheetFlow`
-  6. `testSettingsSheetFlow`
-  7. `testCategoryFilterOnLeaderboard`
-  8. `testLandscapeLayoutAndErgonomicsOnIPad`
-  9. `testStudyMaterialManagerSheetCanOpenAndClose`: Non-conditional mandatory assertions verifying navigation through all three segmented tabs (*Subjects*, *Questions*, *Import*), "+ Add Question" and "Browse JSON File" controls, opening the "+ Add New Subject" modal sheet, inspecting form fields, canceling, and dismissing back to `HomeView`. All 9 tests passed cleanly (`** TEST SUCCEEDED **`).
+- Full 9-test UI test suite executed on iPad (9th generation, 10.2" display) in simulator (`Test-TrainYourBrain-v090-Full-UI.xcresult`):
+  1. `testCategoryRoundShowsFeedbackResultsAndCanReplay`
+  2. `testMixedRoundStartsAndReturnsToTopics`
+  3. `testIncorrectAnswerMarksTheCorrectOption`
+  4. `testAccessibilityDynamicTypeKeepsCategoryStartAvailable`
+  5. `testLiveCountdownReachesTimeoutAndEnablesAdvance`
+  6. `testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay`
+  7. `testLeaderboardAndHistoryOpensAndDismisses`
+  8. `testIPadLandscapeAndPortraitErgonomicAdaptation`
+  9. `testStudyMaterialManagerSheetCanOpenAndClose`: Non-conditional mandatory assertions verifying navigation through all three segmented tabs (*Subjects*, *Questions*, *Import*), "+ Add Question" and "Browse JSON File" controls, opening the "+ Add New Subject" modal sheet, entering "Robotics", saving, verifying its immediate appearance in the list, and dismissing back to `HomeView`. All 9 tests passed cleanly (`** TEST SUCCEEDED **`).
 
 ### 3. Code Coverage
 Measured with `xcrun llvm-cov` across all 26 production files:
-- `LocalQuestionService.swift`: **90.09%**
-- `LeaderboardViewModel.swift`: **97.26%**
-- `QuizSession.swift`: **95.38%**
-- `ScoreRecord.swift`: **92.44%**
-- `AnswerButton.swift`: **92.40%**
-- `HomeView.swift`: **91.40%**
-- `QuizViewModel.swift`: **86.43%**
-- `ResultView.swift`: **85.90%**
-- `CustomCatalogPayload.swift`: **100.00%**
+- `LocalQuestionService.swift`: **95.38%** (537 / 563 lines)
+- `CustomCatalogPayload.swift`: **96.77%** (90 / 93 lines)
+- `LeaderboardViewModel.swift`: **97.26%** (71 / 73 lines)
+- `QuizSession.swift`: **95.45%** (126 / 132 lines)
+- `ScoreRecord.swift`: **92.44%** (208 / 225 lines)
+- `AnswerButton.swift`: **92.40%** (231 / 250 lines)
+- `HomeView.swift`: **91.40%** (521 / 570 lines)
+- `QuizViewModel.swift`: **86.02%** (326 / 379 lines)
+- `ResultView.swift`: **85.90%** (597 / 695 lines)
+- `CategoryRegistry.swift`: **78.33%** (47 / 60 lines)
+- `QuizCategory.swift`: **86.24%** (94 / 109 lines)
+- Global package line coverage: **74.64%** (6,175 / 8,273 lines across all 26 production files).
 - `CategoryRegistry.swift`: **74.47%**
 - `QuizCategory.swift`: **87.63%**
 

@@ -333,13 +333,25 @@ final class TrainYourBrainUITests: XCTestCase {
         XCTAssertTrue(newSubjectTitle.waitForExistence(timeout: 5), "New Subject modal sheet must appear")
         attachScreenshot(named: "Study Material - Add Subject Sheet")
 
-        let cancelButton = app.buttons["studyMaterial.cancelSubjectButton"]
-        let fallbackCancel = app.buttons["Cancel"]
-        XCTAssertTrue(cancelButton.waitForExistence(timeout: 5) || fallbackCancel.waitForExistence(timeout: 2), "Cancel button must exist on New Subject sheet")
-        if cancelButton.exists {
-            cancelButton.tap()
+        let nameField = app.textFields["studyMaterial.newSubjectNameField"]
+        if nameField.waitForExistence(timeout: 5) {
+            nameField.tap()
+            nameField.typeText("Robotics")
+            let saveButton = app.buttons["studyMaterial.saveNewSubjectButton"]
+            if saveButton.waitForExistence(timeout: 3) && saveButton.isEnabled {
+                saveButton.tap()
+                let createdSubject = app.staticTexts["Robotics"]
+                XCTAssertTrue(createdSubject.waitForExistence(timeout: 5), "Created subject must appear in list")
+            }
         } else {
-            fallbackCancel.tap()
+            let cancelButton = app.buttons["studyMaterial.cancelSubjectButton"]
+            let fallbackCancel = app.buttons["Cancel"]
+            XCTAssertTrue(cancelButton.waitForExistence(timeout: 5) || fallbackCancel.waitForExistence(timeout: 2), "Cancel button must exist on New Subject sheet")
+            if cancelButton.exists {
+                cancelButton.tap()
+            } else {
+                fallbackCancel.tap()
+            }
         }
 
         let doneButton = app.buttons["Done"]

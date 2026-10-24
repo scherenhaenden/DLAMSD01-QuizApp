@@ -58,6 +58,11 @@ public final class QuizViewModel: ObservableObject {
     @Published public private(set) var availableQuestionCounts: [QuizCategory: Int] = [:]
     @Published public private(set) var isCatalogLoaded = false
     @Published public private(set) var catalogError: String?
+    
+    /// Diagnostic warning from the persistence layer regarding backup or corruption events.
+    public var lastLoadWarning: String? {
+        (questionService as? LocalQuestionService)?.lastLoadWarning
+    }
 
     public var availableQuestionCount: Int {
         availableQuestionCounts.values.reduce(0, +)

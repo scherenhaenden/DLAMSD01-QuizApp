@@ -741,20 +741,11 @@ final class Sprint9DynamicCatalogTests: XCTestCase {
         let corruptedData = "NOT_A_VALID_JSON_CORRUPTED_PAYLOAD".data(using: .utf8)!
         try corruptedData.write(to: testCatalogURL)
         
-        // Create an un-copyable scenario by placing a non-deletable directory at the backup target
-        // or by simulating unreadable backup target
-        let timestamp = Int(Date().timeIntervalSince1970)
-        let backupURL = testCatalogURL.deletingPathExtension().appendingPathExtension("corrupted.\(timestamp).bak")
-        
-        // Create a directory at the backup path to prevent copyItem from completing
-        try FileManager.default.createDirectory(at: backupURL, withIntermediateDirectories: true)
-        // Make the directory non-writable
-        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: backupURL.path)
-        
+        // Guarantee backup failure by making the parent directory read-only (0o555).
+        // This causes copyItem to throw Permission Denied (EACCES) deterministically.
+        try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: tempDirectoryURL.path)
         defer {
-            // Restore permissions for cleanup
-            try? FileManager.default.setAttributes([.posixPermissions: 0o777], ofItemAtPath: backupURL.path)
-            try? FileManager.default.removeItem(at: backupURL)
+            try? FileManager.default.setAttributes([.posixPermissions: 0o777], ofItemAtPath: tempDirectoryURL.path)
         }
         
         let service = LocalQuestionService(
@@ -764,22 +755,120 @@ final class Sprint9DynamicCatalogTests: XCTestCase {
         
         _ = try service.loadCustomQuestions()
         
-        // If backup failed, isCatalogSaveBlockedToPreventDataLoss must be true
-        if service.isCatalogSaveBlockedToPreventDataLoss {
-            XCTAssertTrue(service.lastLoadWarning?.contains("CRITICAL") ?? false)
-            
-            // Any attempt to write must fail and protect the original corrupted file
-            XCTAssertThrowsError(try service.addCategory(QuizCategory(rawValue: "new_cat"))) { error in
-                guard case QuestionServiceError.customCatalogSaveFailed(let msg) = error else {
-                    XCTFail("Expected customCatalogSaveFailed error, got: \(error)")
-                    return
-                }
-                XCTAssertTrue(msg.contains("blocked"), "Must indicate write operation was blocked")
+        // Mandatory non-conditional assertions:
+        XCTAssertTrue(service.isCatalogSaveBlockedToPreventDataLoss, "Service must unconditionally activate isCatalogSaveBlockedToPreventDataLoss when backup creation fails")
+        XCTAssertTrue(service.lastLoadWarning?.contains("CRITICAL") ?? false, "Warning must include CRITICAL diagnostic message")
+        
+        // Any attempt to write must fail and protect the original corrupted file
+        XCTAssertThrowsError(try service.addCategory(QuizCategory(rawValue: "new_cat"))) { error in
+            guard case QuestionServiceError.customCatalogSaveFailed(let msg) = error else {
+                XCTFail("Expected customCatalogSaveFailed error, got: \(error)")
+                return
             }
-            
-            // Confirm the original corrupted file content was NOT overwritten
-            let existingData = try Data(contentsOf: testCatalogURL)
-            XCTAssertEqual(existingData, corruptedData, "Corrupted file must be preserved intact")
+            XCTAssertTrue(msg.contains("blocked"), "Must indicate write operation was blocked")
         }
+        
+        // Confirm the original corrupted file content was NOT overwritten
+        let existingData = try Data(contentsOf: testCatalogURL)
+        XCTAssertEqual(existingData, corruptedData, "Corrupted file must be preserved intact")
+    }
+    
+    // MARK: - Test 14: Collision with Bundled Question UUID Reassigns New ID and Preserves Manageability
+    
+    func testImportQuestionCollidingWithBundledQuestionAssignsNewUUIDAndRemainsManageable() throws {
+        let seed = makeSeedQuestions()
+        guard let collidingBundledQuestion = seed.first else {
+            XCTFail("Seed questions must not be empty")
+            return
+        }
+        let collidingId = collidingBundledQuestion.id
+        
+        let service = LocalQuestionService(
+            mockData: try! JSONEncoder().encode(seed),
+            customCatalogURL: testCatalogURL
+        )
+        
+        // 1. Verify direct addQuestion with colliding bundled UUID is strictly rejected
+        let directQuestion = try Question(
+            id: collidingId,
+            prompt: "Direct add colliding prompt",
+            options: ["A", "B", "C", "D"],
+            correctAnswerIndex: 0,
+            explanation: "Direct add test.",
+            category: QuizCategory(rawValue: "custom_subject"),
+            difficulty: .easy
+        )
+        XCTAssertThrowsError(try service.addQuestion(directQuestion)) { error in
+            guard case QuestionServiceError.systemQuestionDeletionNotAllowed = error else {
+                XCTFail("Expected systemQuestionDeletionNotAllowed on direct add collision, got: \(error)")
+                return
+            }
+        }
+        
+        // 2. Prepare imported payload where an imported question has the exact same UUID as the bundled question
+        let importedCollidingJSON = """
+        {
+            "categories": [
+                {
+                    "id": "quantum_physics",
+                    "displayName": "Quantum Physics",
+                    "iconName": "atom",
+                    "description": "Subatomic particles"
+                }
+            ],
+            "questions": [
+                {
+                    "id": "\(collidingId.uuidString)",
+                    "prompt": "What is quantum superposition?",
+                    "options": ["A state of multiple possibilities", "Only zero", "Only one", "Gravity"],
+                    "correctAnswerIndex": 0,
+                    "explanation": "Linear combination of quantum states.",
+                    "category": "quantum_physics",
+                    "difficulty": "hard"
+                }
+            ]
+        }
+        """.data(using: .utf8)!
+        
+        let importResult = try service.importCatalog(from: importedCollidingJSON)
+        XCTAssertEqual(importResult.categoriesCount, 1)
+        XCTAssertEqual(importResult.questionsCount, 1)
+        
+        // 3. Verify custom questions loaded: exactly 1 question, but with a FRESH unique UUID
+        let customQuestions = try service.loadCustomQuestions()
+        XCTAssertEqual(customQuestions.count, 1)
+        guard let importedCustom = customQuestions.first else {
+            XCTFail("Imported question must be present")
+            return
+        }
+        XCTAssertNotEqual(importedCustom.id, collidingId, "Imported custom question must be assigned a new unique UUID to prevent collision")
+        XCTAssertEqual(importedCustom.prompt, "What is quantum superposition?")
+        
+        // 4. Verify combined catalog has 100% unique IDs across all items
+        let allQuestions = try service.loadAllQuestions()
+        let uniqueAllIDs = Set(allQuestions.map { $0.id })
+        XCTAssertEqual(allQuestions.count, uniqueAllIDs.count, "Combined questions must have zero duplicate IDs")
+        XCTAssertEqual(allQuestions.count, seed.count + 1)
+        
+        // 5. Verify the imported custom question can be edited and deleted normally without hitting system protection
+        let updatedQuestion = try Question(
+            id: importedCustom.id,
+            prompt: "What is quantum entanglement?",
+            options: ["Spooky action at a distance", "Classical spin", "Static charge", "Thermal noise"],
+            correctAnswerIndex: 0,
+            explanation: "Entangled particles share states.",
+            category: importedCustom.category,
+            difficulty: .hard
+        )
+        XCTAssertNoThrow(try service.updateQuestion(updatedQuestion), "Custom question with reassigned ID must be editable")
+        
+        XCTAssertNoThrow(try service.deleteQuestion(id: importedCustom.id), "Custom question with reassigned ID must be deletable")
+        let finalCustom = try service.loadCustomQuestions()
+        XCTAssertEqual(finalCustom.count, 0, "Custom question should be deleted")
+        
+        // 6. Verify bundled question remains completely unharmed
+        let finalAll = try service.loadAllQuestions()
+        XCTAssertEqual(finalAll.count, seed.count, "Bundled questions must remain intact")
+        XCTAssertTrue(finalAll.contains(where: { $0.id == collidingId }))
     }
 }

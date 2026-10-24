@@ -32,6 +32,10 @@
 		700000024B208FFD2CCA0002 /* UserDefaultsScoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000014B208FFD2CCA0002 /* UserDefaultsScoreStore.swift */; };
 		700000024B208FFD2CCA0003 /* LeaderboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000014B208FFD2CCA0003 /* LeaderboardViewModel.swift */; };
 		700000024B208FFD2CCA0004 /* LeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000014B208FFD2CCA0004 /* LeaderboardView.swift */; };
+		900000024B208FFD2CCA0001 /* CategoryRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900000014B208FFD2CCA0001 /* CategoryRegistry.swift */; };
+		900000024B208FFD2CCA0002 /* CustomCatalogPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900000014B208FFD2CCA0002 /* CustomCatalogPayload.swift */; };
+		900000024B208FFD2CCA0003 /* NetworkCatalogImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900000014B208FFD2CCA0003 /* NetworkCatalogImporter.swift */; };
+		900000024B208FFD2CCA0004 /* StudyMaterialManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900000014B208FFD2CCA0004 /* StudyMaterialManagerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +77,10 @@
 		700000014B208FFD2CCA0002 /* UserDefaultsScoreStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Services/UserDefaultsScoreStore.swift; sourceTree = "<group>"; };
 		700000014B208FFD2CCA0003 /* LeaderboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/ViewModels/LeaderboardViewModel.swift; sourceTree = "<group>"; };
 		700000014B208FFD2CCA0004 /* LeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Views/Screens/LeaderboardView.swift; sourceTree = "<group>"; };
+		900000014B208FFD2CCA0001 /* CategoryRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Models/CategoryRegistry.swift; sourceTree = "<group>"; };
+		900000014B208FFD2CCA0002 /* CustomCatalogPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Models/CustomCatalogPayload.swift; sourceTree = "<group>"; };
+		900000014B208FFD2CCA0003 /* NetworkCatalogImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Services/NetworkCatalogImporter.swift; sourceTree = "<group>"; };
+		900000014B208FFD2CCA0004 /* StudyMaterialManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = src/Views/Screens/StudyMaterialManagerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +146,10 @@
 				700000014B208FFD2CCA0002 /* UserDefaultsScoreStore.swift */,
 				700000014B208FFD2CCA0003 /* LeaderboardViewModel.swift */,
 				700000014B208FFD2CCA0004 /* LeaderboardView.swift */,
+				900000014B208FFD2CCA0001 /* CategoryRegistry.swift */,
+				900000014B208FFD2CCA0002 /* CustomCatalogPayload.swift */,
+				900000014B208FFD2CCA0003 /* NetworkCatalogImporter.swift */,
+				900000014B208FFD2CCA0004 /* StudyMaterialManagerView.swift */,
 				673927D53A4643E4B706C4A5 /* questions.json */,
 				CFC1EA61B0CD491A940461F1 /* Products */,
 				F7DCFF2BC121D63FC13798E2 /* Frameworks */,
@@ -274,6 +286,10 @@
 				700000024B208FFD2CCA0002 /* UserDefaultsScoreStore.swift in Sources */,
 				700000024B208FFD2CCA0003 /* LeaderboardViewModel.swift in Sources */,
 				700000024B208FFD2CCA0004 /* LeaderboardView.swift in Sources */,
+				900000024B208FFD2CCA0001 /* CategoryRegistry.swift in Sources */,
+				900000024B208FFD2CCA0002 /* CustomCatalogPayload.swift in Sources */,
+				900000024B208FFD2CCA0003 /* NetworkCatalogImporter.swift in Sources */,
+				900000024B208FFD2CCA0004 /* StudyMaterialManagerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -302,7 +318,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20261024.143500;
+				CURRENT_PROJECT_VERSION = 20261024.150000;
 				DEVELOPMENT_ASSET_PATHS = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -313,7 +329,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.8.4;
+				MARKETING_VERSION = 0.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.scherenhaenden.TrainYourBrain;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -382,7 +398,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20261024.143500;
+				CURRENT_PROJECT_VERSION = 20261024.150000;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -394,7 +410,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.8.4;
+				MARKETING_VERSION = 0.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.scherenhaenden.TrainYourBrain;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

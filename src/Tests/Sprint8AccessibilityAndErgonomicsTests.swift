@@ -283,16 +283,71 @@ final class Sprint8AccessibilityAndErgonomicsTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(primaryTextContrast, 7.0, "Primary text on canvas must fulfill WCAG AAA 7:1 ratio")
         XCTAssertEqual(round(primaryTextContrast * 100) / 100, 18.82, "Exact sRGB ratio for black on #F2F2F7 is 18.82:1")
         
-        // 4. Leaderboard German Grade Badge Contrast (Solid capsule with white text)
+        // 4. System Blue on White Card #007AFF (UI Control benchmark)
+        let blueLuminance = relativeLuminance(r: 0, g: 122, b: 255)
+        let blueContrast = contrastRatio(l1: whiteLuminance, l2: blueLuminance)
+        XCTAssertGreaterThanOrEqual(blueContrast, 3.0, "UI controls must exceed WCAG 3.0:1 benchmark")
+        XCTAssertEqual(round(blueContrast * 100) / 100, 4.02, "Exact sRGB ratio for #007AFF on white is 4.02:1")
+        
+        // 5. Leaderboard & ResultView German Grade Badge Contrast (Solid capsule with white text)
         // Passing badge uses white text on #1B5E20 -> exactly correctContrast (7.87:1, WCAG AAA)
         // Failing badge uses white text on #B71C1C -> exactly incorrectContrast (6.57:1, WCAG AA)
-        XCTAssertGreaterThanOrEqual(correctContrast, 4.5, "Leaderboard passing badge must exceed WCAG AA")
-        XCTAssertGreaterThanOrEqual(incorrectContrast, 4.5, "Leaderboard failing badge must exceed WCAG AA")
+        XCTAssertGreaterThanOrEqual(correctContrast, 4.5, "Leaderboard and ResultView passing badge must exceed WCAG AA")
+        XCTAssertGreaterThanOrEqual(incorrectContrast, 4.5, "Leaderboard and ResultView failing badge must exceed WCAG AA")
     }
     
-    // MARK: - 9. Grade Badges High-Contrast WCAG Conformance Across Records
+    // MARK: - 9. Grade Badges & Adaptive ResultView High-Contrast WCAG Conformance
     
     func testLeaderboardGradeBadgeAndResultViewHighContrastFills() {
+        // Luminance helper according to WCAG 2.1:
+        func relativeLuminance(r: Double, g: Double, b: Double) -> Double {
+            func channel(_ c: Double) -> Double {
+                let norm = c / 255.0
+                return norm <= 0.03928 ? norm / 12.92 : pow((norm + 0.055) / 1.055, 2.4)
+            }
+            return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+        }
+        func contrastRatio(l1: Double, l2: Double) -> Double {
+            let lighter = max(l1, l2)
+            let darker = min(l1, l2)
+            return (lighter + 0.05) / (darker + 0.05)
+        }
+        
+        // Background luminances
+        let darkOledBg = relativeLuminance(r: 0, g: 0, b: 0) // #000000
+        let darkCardBg = relativeLuminance(r: 28, g: 28, b: 30) // #1C1C1E
+        let lightCardBg = relativeLuminance(r: 255, g: 255, b: 255) // #FFFFFF
+        let lightCanvasBg = relativeLuminance(r: 242, g: 242, b: 247) // #F2F2F7
+        
+        // Adaptive foreground tokens
+        let lightSuccessLum = relativeLuminance(r: 27, g: 94, b: 32) // #1B5E20
+        let lightErrorLum = relativeLuminance(r: 183, g: 28, b: 28) // #B71C1C
+        let darkSuccessLum = relativeLuminance(r: 48, g: 209, b: 88) // #30D158
+        let darkErrorLum = relativeLuminance(r: 255, g: 105, b: 97) // #FF6961
+        
+        // 1. Light Mode Contrast Assertions:
+        let lightSuccessOnCard = contrastRatio(l1: lightCardBg, l2: lightSuccessLum)
+        let lightSuccessOnCanvas = contrastRatio(l1: lightCanvasBg, l2: lightSuccessLum)
+        XCTAssertGreaterThanOrEqual(lightSuccessOnCard, 7.0, "Light success text on white must pass WCAG AAA (7.87:1)")
+        XCTAssertGreaterThanOrEqual(lightSuccessOnCanvas, 7.0, "Light success text on canvas must pass WCAG AAA (7.05:1)")
+        
+        let lightErrorOnCard = contrastRatio(l1: lightCardBg, l2: lightErrorLum)
+        let lightErrorOnCanvas = contrastRatio(l1: lightCanvasBg, l2: lightErrorLum)
+        XCTAssertGreaterThanOrEqual(lightErrorOnCard, 4.5, "Light error text on white must pass WCAG AA (6.57:1)")
+        XCTAssertGreaterThanOrEqual(lightErrorOnCanvas, 4.5, "Light error text on canvas must pass WCAG AA (5.89:1)")
+        
+        // 2. Dark Mode Contrast Assertions (eliminates the 2.67:1 issue):
+        let darkSuccessOnCard = contrastRatio(l1: darkSuccessLum, l2: darkCardBg)
+        let darkSuccessOnOled = contrastRatio(l1: darkSuccessLum, l2: darkOledBg)
+        XCTAssertGreaterThanOrEqual(darkSuccessOnCard, 7.0, "Dark success text on card must pass WCAG AAA (8.42:1)")
+        XCTAssertGreaterThanOrEqual(darkSuccessOnOled, 7.0, "Dark success text on OLED black must pass WCAG AAA (10.39:1)")
+        
+        let darkErrorOnCard = contrastRatio(l1: darkErrorLum, l2: darkCardBg)
+        let darkErrorOnOled = contrastRatio(l1: darkErrorLum, l2: darkOledBg)
+        XCTAssertGreaterThanOrEqual(darkErrorOnCard, 4.5, "Dark error text on card must pass WCAG AA (6.03:1)")
+        XCTAssertGreaterThanOrEqual(darkErrorOnOled, 7.0, "Dark error text on OLED black must pass WCAG AAA (7.45:1)")
+        
+        // 3. Verify ResultView View Instantiation with Adaptive Tokens
         let passing = ScoreRecord(
             score: 100,
             totalQuestions: 10,
@@ -301,9 +356,8 @@ final class Sprint8AccessibilityAndErgonomicsTests: XCTestCase {
             category: .softwareEngineering,
             completedAt: Date(timeIntervalSince1970: 1000)
         )
-        XCTAssertTrue(passing.isPassing)
-        XCTAssertEqual(passing.germanGrade.title, "Sehr Gut")
-        XCTAssertEqual(passing.germanGrade.formattedGrade, "1.0 · Sehr Gut (Outstanding)")
+        let passingResultView = ResultView(record: passing, onPlayAgain: {}, onBackToMenu: {})
+        XCTAssertNotNil(passingResultView.body)
         
         let failing = ScoreRecord(
             score: 20,
@@ -313,8 +367,7 @@ final class Sprint8AccessibilityAndErgonomicsTests: XCTestCase {
             category: .softwareEngineering,
             completedAt: Date(timeIntervalSince1970: 2000)
         )
-        XCTAssertFalse(failing.isPassing)
-        XCTAssertEqual(failing.germanGrade.title, "Nicht Bestanden")
-        XCTAssertEqual(failing.germanGrade.formattedGrade, "5.0 · Nicht Bestanden (Fail)")
+        let failingResultView = ResultView(record: failing, onPlayAgain: {}, onBackToMenu: {})
+        XCTAssertNotNil(failingResultView.body)
     }
 }

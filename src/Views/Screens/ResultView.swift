@@ -23,9 +23,9 @@ public struct ResultView: View {
         self.onBackToMenu = onBackToMenu
     }
     
-    /// Chromatic tone reflecting whether the user passed (high-contrast emerald green) or requires review (crimson red).
+    /// Chromatic tone reflecting whether the user passed (adaptive emerald green) or requires review (adaptive crimson red).
     private var gradeColor: Color {
-        return record.isPassing ? Color.quizCorrectFeedback : Color.quizIncorrectFeedback
+        return record.isPassing ? Color.adaptiveSuccessText : Color.adaptiveErrorText
     }
     
     public var body: some View {
@@ -37,13 +37,20 @@ public struct ResultView: View {
                         .font(.system(size: 60))
                         .foregroundColor(gradeColor)
                     
-                    VStack(spacing: 6) {
+                    VStack(spacing: 8) {
                         Text(record.isPassing ? "Round Completed!" : "Good Effort!")
                             .font(.title2.bold())
                         
+                        // Academic grade badge: solid high-contrast capsule ensuring >= 6.5:1 contrast across appearances
                         Text(record.germanGrade.formattedGrade)
-                            .font(.headline)
-                            .foregroundColor(gradeColor)
+                            .font(.headline.bold())
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(record.isPassing ? Color.quizCorrectFeedback : Color.quizIncorrectFeedback)
+                            )
+                            .foregroundColor(.white)
                     }
                 }
                 .accessibilityElement(children: .combine)

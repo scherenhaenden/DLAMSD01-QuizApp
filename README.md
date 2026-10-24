@@ -4,13 +4,14 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.8.1** (Build `20261024.125000`), Sprint 8: Multi-Device Optimization (iPad 9.ª Gen 10.2"), 640pt ergonomic layout container, VoiceOver accessibility, WCAG 2.1 AA contrast compliance, high-contrast grade badges, and storage capacity boundary hardening.
+Version **0.8.2** (Build `20261024.134000`), Sprint 8: Multi-Device Optimization (iPad 9.ª Gen 10.2"), 640pt ergonomic layout container, VoiceOver accessibility, WCAG 2.1 AA/AAA contrast compliance, solid high-contrast grade badges, adaptive Dark Mode color tokens, and storage capacity boundary hardening.
 
 ### Implemented
 
 - Multi-device ergonomic layout: 640 pt centered container across all primary screens (`HomeView`, `QuizView`, `ResultView`, `LeaderboardView`), ensuring optimal reading line length (50-75 characters) and thumb-reach comfort on iPad (9th generation, 10.2" display) in both Portrait and Landscape orientations (US-15).
 - Deep VoiceOver accessibility: semantic labels, hints, and traits on `AnswerButton`, `CategoryCard`, `QuestionCard`, `TimerBar` (with `.updatesFrequently` trait), `ResultView`, and `LeaderboardView`, supplemented by live speech feedback announcements for evaluations and timeouts (US-16).
-- Mathematical WCAG 2.1 AA contrast audit: Emerald green feedback fill and passing badge (`#1B5E20`) achieve 7.87:1 contrast on white (exceeding WCAG AAA 7:1), Crimson red feedback fill and failing badge (`#B71C1C`) achieve 6.57:1 (WCAG AA 4.5:1), and text labels strictly surpass accessibility thresholds.
+- Mathematical WCAG 2.1 AA contrast audit: Emerald green feedback fill and passing badge (`#1B5E20`) achieve 7.87:1 contrast on white (exceeding WCAG AAA 7:1), Crimson red feedback fill and failing badge (`#B71C1C`) achieve 6.57:1 (WCAG AA 4.5:1).
+- Solid High-Contrast Grade Badges & Adaptive Color Tokens: Academic grades in `LeaderboardView` and `ResultView` use solid pill capsules with white text (7.87:1 passing, 6.57:1 failing). Text and icon indicators dynamically adapt via `Color.adaptiveSuccessText` and `Color.adaptiveErrorText` (Light mode: `#1B5E20` / `#B71C1C`; Dark mode: bright mint `#30D158` yielding 10.39:1 on OLED black / 8.42:1 on dark card, and bright coral red `#FF6961` yielding 7.45:1 on OLED black / 6.03:1 on dark card).
 - Storage capacity boundary hardening: `pruneRecordsWithBestProtection` sorts protected records by canonical `Comparable` ordering (`records.sorted(by: >).prefix(maxCapacity)`), ensuring all-time personal bests strictly survive even under extreme edge-case configurations (`maxCapacity: 1`).
 - Local JSON catalog with 24 German questions in four categories; the interface is currently English.
 - Validated question model, Fisher-Yates shuffled question and option order, and a separate quiz session state machine.
@@ -64,7 +65,7 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The package test suite executes 113 unit tests with 0 failures and measures **91.22%** instrumented production line coverage on macOS via `llvm-cov` (4,064 / 4,455 lines across all 22 production files), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, background-to-foreground lifecycle resumption, scorecard dashboard metrics, Leaderboard modal presentation/dismissal, and iPad 10.2" landscape/portrait ergonomic rotation with touch target bounds.
+The package test suite executes 113 unit tests with 0 failures and measures **91.12%** instrumented production line coverage on macOS via `llvm-cov` (4,113 / 4,514 lines across all 22 production files), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, background-to-foreground lifecycle resumption, scorecard dashboard metrics, Leaderboard modal presentation/dismissal, and iPad 10.2" landscape/portrait ergonomic rotation with touch target bounds.
 
 Hardware qualification: While the software protocol and conditional compilation are 100% verified via automated tests, physical tactile vibration requires a physical iPhone device equipped with a Taptic Engine.
 
@@ -87,8 +88,11 @@ See the [Sprint 8 technical report](docs/sprint8_ipad_ergonomics_and_accessibili
 | **0.5.1** | Retained haptic generator lifecycle persistence, exact coverage reconciliation (91.45%), documentation alignment *(Completed)* |
 | **0.6.0** | Results analytics, scorecard dashboard, German academic grading scale (1.0–5.0), continuous monotonic timing, category performance breakdown *(Completed)* |
 | **0.6.1** | Sprint 6 maintenance patch: unified grade badge, active response speed decoupling, decoder invariants, and UI dashboard assertions *(Completed)* |
-| **0.7.0** | Local persistence layer (`UserDefaultsScoreStore`), game history logging, high score ranking, and accessible Leaderboard modal view *(Current)* |
-| 0.8.0 | iPhone/iPad accessibility and orientation checks |
+| **0.7.0** | Local persistence layer (`UserDefaultsScoreStore`), game history logging, high score ranking, and accessible Leaderboard modal view *(Completed)* |
+| **0.7.1** | Sprint 7 maintenance patch: personal best retention protection, centralized 4-tier tie breaking *(Completed)* |
+| **0.8.0** | Multi-device iPad layout, 640pt container, VoiceOver semantics *(Completed)* |
+| **0.8.1** | Solid high-contrast grade badges, TimerBar trait, contrast formulas *(Completed)* |
+| **0.8.2** | Dark Mode contrast fix, adaptive color tokens, 640pt landscape UI gameplay verification *(Current)* |
 | 0.9.0 | Verification and CI hardening |
 | 1.0.0 | Final app release and completed academic deliverables |
 

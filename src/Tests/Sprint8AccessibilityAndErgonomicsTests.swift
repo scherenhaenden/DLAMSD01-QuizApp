@@ -262,16 +262,59 @@ final class Sprint8AccessibilityAndErgonomicsTests: XCTestCase {
         }
         
         let whiteLuminance = relativeLuminance(r: 255, g: 255, b: 255) // 1.0
+        let blackLuminance = relativeLuminance(r: 0, g: 0, b: 0)       // 0.0
+        let backgroundLuminance = relativeLuminance(r: 242, g: 242, b: 247) // Light mode grouped canvas
         
         // 1. Correct Feedback Color: RGB(27, 94, 32)
         let correctLuminance = relativeLuminance(r: 27, g: 94, b: 32)
         let correctContrast = contrastRatio(l1: whiteLuminance, l2: correctLuminance)
         XCTAssertGreaterThanOrEqual(correctContrast, 4.5, "quizCorrectFeedback must exceed WCAG AA 4.5:1 ratio")
         XCTAssertGreaterThanOrEqual(correctContrast, 7.0, "quizCorrectFeedback also fulfills WCAG AAA 7:1 ratio")
+        XCTAssertEqual(round(correctContrast * 100) / 100, 7.87, "Exact sRGB ratio for white on #1B5E20 is 7.87:1")
         
         // 2. Incorrect Feedback Color: RGB(183, 28, 28)
         let incorrectLuminance = relativeLuminance(r: 183, g: 28, b: 28)
         let incorrectContrast = contrastRatio(l1: whiteLuminance, l2: incorrectLuminance)
         XCTAssertGreaterThanOrEqual(incorrectContrast, 4.5, "quizIncorrectFeedback must exceed WCAG AA 4.5:1 ratio")
+        XCTAssertEqual(round(incorrectContrast * 100) / 100, 6.57, "Exact sRGB ratio for white on #B71C1C is 6.57:1")
+        
+        // 3. Black text on Light Grouped Canvas #F2F2F7
+        let primaryTextContrast = contrastRatio(l1: backgroundLuminance, l2: blackLuminance)
+        XCTAssertGreaterThanOrEqual(primaryTextContrast, 7.0, "Primary text on canvas must fulfill WCAG AAA 7:1 ratio")
+        XCTAssertEqual(round(primaryTextContrast * 100) / 100, 18.82, "Exact sRGB ratio for black on #F2F2F7 is 18.82:1")
+        
+        // 4. Leaderboard German Grade Badge Contrast (Solid capsule with white text)
+        // Passing badge uses white text on #1B5E20 -> exactly correctContrast (7.87:1, WCAG AAA)
+        // Failing badge uses white text on #B71C1C -> exactly incorrectContrast (6.57:1, WCAG AA)
+        XCTAssertGreaterThanOrEqual(correctContrast, 4.5, "Leaderboard passing badge must exceed WCAG AA")
+        XCTAssertGreaterThanOrEqual(incorrectContrast, 4.5, "Leaderboard failing badge must exceed WCAG AA")
+    }
+    
+    // MARK: - 9. Grade Badges High-Contrast WCAG Conformance Across Records
+    
+    func testLeaderboardGradeBadgeAndResultViewHighContrastFills() {
+        let passing = ScoreRecord(
+            score: 100,
+            totalQuestions: 10,
+            correctAnswers: 10,
+            streakRecord: 10,
+            category: .softwareEngineering,
+            completedAt: Date(timeIntervalSince1970: 1000)
+        )
+        XCTAssertTrue(passing.isPassing)
+        XCTAssertEqual(passing.germanGrade.title, "Sehr Gut")
+        XCTAssertEqual(passing.germanGrade.formattedGrade, "1.0 · Sehr Gut (Outstanding)")
+        
+        let failing = ScoreRecord(
+            score: 20,
+            totalQuestions: 10,
+            correctAnswers: 2,
+            streakRecord: 1,
+            category: .softwareEngineering,
+            completedAt: Date(timeIntervalSince1970: 2000)
+        )
+        XCTAssertFalse(failing.isPassing)
+        XCTAssertEqual(failing.germanGrade.title, "Nicht Bestanden")
+        XCTAssertEqual(failing.germanGrade.formattedGrade, "5.0 · Nicht Bestanden (Fail)")
     }
 }

@@ -60,13 +60,13 @@ public struct ResultView: View {
                 // Key metrics dashboard card
                 VStack(spacing: 16) {
                     HStack(spacing: 8) {
-                        MetricTile(title: "Score", value: "\(record.score)", icon: "star.fill", tint: .yellow)
+                        MetricTile(title: "Score", value: "\(record.score)", icon: "star.fill", tint: Color.adaptiveScoreIcon)
                         Divider().frame(height: 36)
                         MetricTile(title: "Accuracy", value: record.accuracyDescription, icon: "percent", tint: gradeColor)
                         Divider().frame(height: 36)
-                        MetricTile(title: "Streak", value: "\(record.streakRecord)", icon: "flame.fill", tint: .orange)
+                        MetricTile(title: "Streak", value: "\(record.streakRecord)", icon: "flame.fill", tint: Color.adaptiveStreakIcon)
                         Divider().frame(height: 36)
-                        MetricTile(title: "Avg Speed", value: record.formattedAverageSpeed, icon: "timer", tint: .blue)
+                        MetricTile(title: "Avg Speed", value: record.formattedAverageSpeed, icon: "timer", tint: Color.adaptiveSpeedIcon)
                     }
                     .padding(.vertical, 8)
                     

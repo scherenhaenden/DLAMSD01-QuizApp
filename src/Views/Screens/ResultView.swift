@@ -109,7 +109,7 @@ public struct ResultView: View {
                                     Spacer()
                                     Text("\(item.correctCount)/\(item.totalCount) (\(item.accuracyDescription))")
                                         .font(.footnote.bold().monospacedDigit())
-                                        .foregroundColor(item.accuracyRate >= 0.5 ? .green : .orange)
+                                        .foregroundColor(item.accuracyRate >= 0.5 ? Color.adaptiveSuccessText : Color.adaptiveErrorText)
                                 }
                                 
                                 GeometryReader { geo in
@@ -118,7 +118,7 @@ public struct ResultView: View {
                                             .fill(Color.secondary.opacity(0.15))
                                             .frame(height: 6)
                                         Capsule()
-                                            .fill(item.accuracyRate >= 0.5 ? Color.green : Color.orange)
+                                            .fill(item.accuracyRate >= 0.5 ? Color.adaptiveSuccessText : Color.adaptiveErrorText)
                                             .frame(width: max(6, geo.size.width * item.accuracyRate), height: 6)
                                     }
                                 }

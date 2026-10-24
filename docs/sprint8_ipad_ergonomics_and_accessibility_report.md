@@ -1,8 +1,8 @@
-# Sprint 8 Technical Report: Multi-Device iPad Ergonomics & VoiceOver Accessibility (`v0.8.0` / `v0.8.1`)
+# Sprint 8 Technical Report: Multi-Device iPad Ergonomics & VoiceOver Accessibility (`v0.8.0` / `v0.8.1` / `v0.8.2`)
 
 **Author:** Edward Sergio José Flores Mogollón · B.Sc. Softwareentwicklung · IU International University of Applied Sciences  
 **Project:** DLAMSD01 – Apple Mobile Solution Development I (Train-your-Brain iOS)  
-**Target Release:** `v0.8.1` (Build `20261024.125000`)  
+**Target Release:** `v0.8.2` (Build `20261024.134000`)  
 **Curriculum Stages:** Stage 63 (Adaptive Layout), Stage 64 (VoiceOver & Accessibility)  
 **Architecture Reference:** [ADR-10: Multi-Device-Optimierung und Barrierefreiheit](file:///Users/edwardflores/Documents/Studium/Uni/Plan/Semestern/Semester%206/Apple%20Mobile%20Solution%20Development%20(DLAMSD)/Apple%20Mobile%20Solution%20Development%20I%20(DLAMSD01)/06_Architekturentscheidungen_und_Variantenvergleich_ADR.md)
 
@@ -15,7 +15,12 @@ Sprint 8 delivers comprehensive multi-device ergonomic adaptation for iPad (spec
 * **US-15 (iPad Ergonomic Adaptation):** *As an iPad user, I want the quiz interface to adapt seamlessly between portrait and landscape orientations with centered, readable layouts so that content does not stretch excessively across large screens.*
 * **US-16 (VoiceOver Accessibility & WCAG Compliance):** *As a user with visual impairments, I want VoiceOver to clearly announce each category, question, timer urgency phase, answer state, and performance metric, backed by rigorous WCAG 2.1 AA contrast compliance.*
 * **Residual Storage Hardening:** Fixed capacity pruning in `UserDefaultsScoreStore` and `InMemoryScoreStore` (`records.sorted(by: >).prefix(maxCapacity)`) to guarantee that all-time personal bests survive even under extreme edge-case configurations (e.g. `maxCapacity: 1`).
-* **Maintenance & Refinement (`v0.8.1`):** High-contrast solid grade badges in `LeaderboardView` and `ResultView` (7.87:1 for passing, 6.57:1 for failing), explicit `.updatesFrequently` trait in `TimerBar`, strict sRGB mathematical contrast formulas, and expanded landscape UI acceptance tests verifying touch targets across gameplay.
+* **Maintenance & Refinement (`v0.8.1`):** High-contrast solid grade badges in `LeaderboardView` (7.87:1 for passing, 6.57:1 for failing), explicit `.updatesFrequently` trait in `TimerBar`, strict sRGB mathematical contrast formulas, and landscape UI acceptance test skeleton.
+* **Dark Mode Contrast Hardening & Landscape Ergonomics Verification (`v0.8.2`):**
+  - **ResultView Solid Badge Capsule:** Encapsulated academic grade in a solid pill capsule with pure white text (`.white`) on `Color.quizCorrectFeedback` (`#1B5E20`) / `Color.quizIncorrectFeedback` (`#B71C1C`), guaranteeing invariant **7.87:1** (AAA) and **6.57:1** (AA) contrast in all color appearances.
+  - **Dynamic Adaptive Text Tokens:** Introduced `Color.adaptiveSuccessText` and `Color.adaptiveErrorText` in `Color+Adaptive.swift` using dynamic UIKit/AppKit providers. In Light Mode, resolves to `#1B5E20` ($CR = 7.87:1$ on white, $7.05:1$ on canvas) and `#B71C1C` ($CR = 6.57:1$ on white, $5.89:1$ on canvas). In Dark Mode, resolves to bright mint `#30D158` ($CR = 10.39:1$ on OLED black `#000000`, $8.42:1$ on card `#1C1C1E`) and bright coral red `#FF6961` ($CR = 7.45:1$ on OLED black, $6.03:1$ on card), completely eliminating the previous 2.67:1 / 2.16:1 Dark Mode contrast deficiency.
+  - **UI Control Contrast Benchmark:** Corrected `#007AFF` on white card to exact sRGB contrast of **4.02 : 1** (exceeding the WCAG 3.0:1 benchmark for graphical UI controls).
+  - **Complete Landscape UI Flow & 640pt Constraint Verification:** Expanded `testIPadLandscapeAndPortraitErgonomicAdaptation` to assert `category.frame.width <= 640.0` on iPad 10.2" landscape, complete an entire 6-question quiz round in landscape, verify the landscape `ResultView` header and action buttons, assert $\ge 44 \times 44$ pt touch targets, and return smoothly to the home menu.
 
 ---
 
@@ -90,10 +95,19 @@ L &= 0.2126 \cdot R_{\text{linear}} + 0.7152 \cdot G_{\text{linear}} + 0.0722 \c
 | Correct Answer Button / Passing Badge | Pure White (`#FFFFFF`) | Emerald Green `RGB(27, 94, 32)` | **7.87 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
 | Incorrect Answer Button / Failing Badge | Pure White (`#FFFFFF`) | Crimson Red `RGB(183, 28, 28)` | **6.57 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
 | Primary Text (Light Mode) | Black (`#000000`) | Grouped Background (`#F2F2F7`) | **18.82 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
-| Timer Bar Normal | System Blue (`#007AFF`) | Card Background (`#FFFFFF`) | **4.52 : 1** | $\ge 3.0 : 1$ (UI Controls) | **PASS (AA)** |
+| Timer Bar Normal / UI Controls | System Blue (`#007AFF`) | Card Background (`#FFFFFF`) | **4.02 : 1** | $\ge 3.0 : 1$ (UI Controls) | **PASS (AA)** |
+| Adaptive Passing Text (Light Card) | Emerald Green (`#1B5E20`) | Card Background (`#FFFFFF`) | **7.87 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
+| Adaptive Passing Text (Light Canvas) | Emerald Green (`#1B5E20`) | Canvas Background (`#F2F2F7`) | **7.05 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
+| Adaptive Failing Text (Light Card) | Crimson Red (`#B71C1C`) | Card Background (`#FFFFFF`) | **6.57 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
+| Adaptive Passing Text (Dark Card) | Bright Mint (`#30D158`) | Dark Card (`#1C1C1E`) | **8.42 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
+| Adaptive Passing Text (Dark OLED) | Bright Mint (`#30D158`) | Pure Black (`#000000`) | **10.39 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
+| Adaptive Failing Text (Dark Card) | Bright Coral Red (`#FF6961`) | Dark Card (`#1C1C1E`) | **6.03 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
+| Adaptive Failing Text (Dark OLED) | Bright Coral Red (`#FF6961`) | Pure Black (`#000000`) | **7.45 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
+| ResultView & Leaderboard Grade Badge | Pure White (`#FFFFFF`) | Solid Feedback Capsule | **7.87 : 1** / **6.57 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AAA / AA)** |
 
 > [!NOTE]
-> In `LeaderboardView`, the academic grade badge (`germanGrade.formattedGrade`) utilizes a solid pill capsule filled with `Color.quizCorrectFeedback` (`#1B5E20`) for passing grades and `Color.quizIncorrectFeedback` (`#B71C1C`) for failing grades, paired with crisp white text (`.white`). This guarantees invariant, spectrophotometrically proven contrast ratios of **7.87 : 1** (AAA) and **6.57 : 1** (AA) across both Light and Dark appearances.
+> In both `LeaderboardView` and `ResultView`, the academic grade badge (`germanGrade.formattedGrade`) utilizes a solid pill capsule filled with `Color.quizCorrectFeedback` (`#1B5E20`) for passing grades and `Color.quizIncorrectFeedback` (`#B71C1C`) for failing grades, paired with crisp white text (`.white`). This guarantees invariant, spectrophotometrically proven contrast ratios of **7.87 : 1** (AAA) and **6.57 : 1** (AA) across both Light and Dark appearances.
+> Furthermore, textual indicators that adapt dynamically (e.g., accuracy percentage and scorecard icons) utilize `Color.adaptiveSuccessText` and `Color.adaptiveErrorText`, guaranteeing $\ge 6.03 : 1$ contrast in Dark Mode and completely eliminating the prior 2.67:1 / 2.16:1 Dark Mode deficiency.
 > Secondary text in SwiftUI uses dynamic UIKit/SwiftUI vibrancy (`UIColor.secondaryLabel`), which adapts per interface style; fixed body and semantic labels consistently rely on high-contrast semantic tokens.
 
 ---
@@ -111,7 +125,7 @@ The test suite contains 9 dedicated tests in `Sprint8AccessibilityAndErgonomicsT
 6. `testResultViewAndScoreRecordAccessibilityData`
 7. `testLeaderboardAccessibilitySubviews`
 8. `testMathematicalWCAGContrastRatios`
-9. `testLeaderboardGradeBadgeAndResultViewHighContrastFills` *(New in v0.8.1)*
+9. `testLeaderboardGradeBadgeAndResultViewHighContrastFills` *(Expanded in v0.8.2 with full Light & Dark mode mathematical luminance assertions)*
 
 **Execution Result:**
 * **Total Package Tests:** **113 executed, 0 failures (100% success)**.
@@ -126,7 +140,7 @@ Executed via `xcodebuild test` on the native iPad (9th generation) simulator:
 * `testLiveCountdownReachesTimeoutAndEnablesAdvance`
 * `testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay`
 * `testLeaderboardAndHistoryOpensAndDismisses`
-* `testIPadLandscapeAndPortraitErgonomicAdaptation` *(Expanded in v0.8.1 to verify $\ge 44 \times 44$ pt touch targets across Home, Leaderboard, and active Quiz gameplay)*
+* `testIPadLandscapeAndPortraitErgonomicAdaptation` *(Expanded in v0.8.2 to verify $\le 640$ pt ergonomic width constraint on iPad landscape, full 6-question gameplay into ResultView, $\ge 44 \times 44$ pt touch targets for Play Again and Return to Menu, and safe return to Home)*
 
 ---
 
@@ -151,11 +165,11 @@ Production line coverage measured across all 22 production source files:
 | `ViewModels/QuizViewModel.swift` | 292 | 20 | **93.15%** | 35 / 40 (87.5%) |
 | `Views/Components/AnswerButton.swift` | 250 | 19 | **92.40%** | 17 / 18 (94.4%) |
 | `Views/Components/CategoryCard.swift` | 239 | 9 | **96.23%** | 18 / 20 (90.0%) |
-| `Views/Components/Color+Adaptive.swift` | 21 | 3 | **85.71%** | 6 / 7 (85.7%) |
+| `Views/Components/Color+Adaptive.swift` | 45 | 13 | **71.11%** | 8 / 11 (72.7%) |
 | `Views/Components/QuestionCard.swift` | 141 | 1 | **99.29%** | 13 / 13 (100.0%) |
 | `Views/Components/TimerBar.swift` | 116 | 22 | **81.03%** | 9 / 11 (81.8%) |
 | `Views/Screens/HomeView.swift` | 521 | 43 | **91.75%** | 19 / 29 (65.5%) |
 | `Views/Screens/LeaderboardView.swift` | 704 | 26 | **96.31%** | 38 / 46 (82.6%) |
 | `Views/Screens/QuizView.swift` | 584 | 74 | **87.33%** | 12 / 22 (54.5%) |
-| `Views/Screens/ResultView.swift` | 660 | 98 | **85.15%** | 14 / 21 (66.7%) |
-| **TOTAL (All 22 Production Files)** | **4,455** | **391** | **91.22%** | **312 / 369 (84.6%)** |
+| `Views/Screens/ResultView.swift` | 695 | 98 | **85.90%** | 14 / 21 (66.7%) |
+| **TOTAL (All 22 Production Files)** | **4,514** | **401** | **91.12%** | **314 / 373 (84.2%)** |

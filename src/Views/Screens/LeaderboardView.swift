@@ -226,16 +226,16 @@ public struct LeaderboardView: View {
                 
                 Spacer()
                 
-                // German academic grade badge
+                // German academic grade badge (high-contrast WCAG AAA/AA compliant solid capsule)
                 Text(record.germanGrade.formattedGrade)
                     .font(.caption.bold())
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(
                         Capsule()
-                            .fill(record.germanGrade.isPassing ? Color.green.opacity(0.18) : Color.red.opacity(0.18))
+                            .fill(record.germanGrade.isPassing ? Color.quizCorrectFeedback : Color.quizIncorrectFeedback)
                     )
-                    .foregroundColor(record.germanGrade.isPassing ? .green : .red)
+                    .foregroundColor(.white)
             }
             
             Divider()

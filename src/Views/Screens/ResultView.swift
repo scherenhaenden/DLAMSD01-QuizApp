@@ -23,9 +23,9 @@ public struct ResultView: View {
         self.onBackToMenu = onBackToMenu
     }
     
-    /// Chromatic tone reflecting whether the user passed (green) or requires review (orange).
+    /// Chromatic tone reflecting whether the user passed (high-contrast emerald green) or requires review (crimson red).
     private var gradeColor: Color {
-        return record.isPassing ? .green : .orange
+        return record.isPassing ? Color.quizCorrectFeedback : Color.quizIncorrectFeedback
     }
     
     public var body: some View {

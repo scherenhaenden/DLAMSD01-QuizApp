@@ -4,14 +4,14 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.8.2** (Build `20261024.134000`), Sprint 8: Multi-Device Optimization (iPad 9.ª Gen 10.2"), 640pt ergonomic layout container, VoiceOver accessibility, WCAG 2.1 AA/AAA contrast compliance, solid high-contrast grade badges, adaptive Dark Mode color tokens, and storage capacity boundary hardening.
+Version **0.8.3** (Build `20261024.140000`), Sprint 8: Multi-Device Optimization (iPad 9.ª Gen 10.2"), 640pt ergonomic layout container, VoiceOver accessibility, WCAG 2.1 AA/AAA contrast compliance, solid high-contrast grade badges, adaptive Dark Mode color tokens, category breakdown contrast hardening, and storage capacity boundary hardening.
 
 ### Implemented
 
 - Multi-device ergonomic layout: 640 pt centered container across all primary screens (`HomeView`, `QuizView`, `ResultView`, `LeaderboardView`), ensuring optimal reading line length (50-75 characters) and thumb-reach comfort on iPad (9th generation, 10.2" display) in both Portrait and Landscape orientations (US-15).
 - Deep VoiceOver accessibility: semantic labels, hints, and traits on `AnswerButton`, `CategoryCard`, `QuestionCard`, `TimerBar` (with `.updatesFrequently` trait), `ResultView`, and `LeaderboardView`, supplemented by live speech feedback announcements for evaluations and timeouts (US-16).
 - Mathematical WCAG 2.1 AA contrast audit: Emerald green feedback fill and passing badge (`#1B5E20`) achieve 7.87:1 contrast on white (exceeding WCAG AAA 7:1), Crimson red feedback fill and failing badge (`#B71C1C`) achieve 6.57:1 (WCAG AA 4.5:1).
-- Solid High-Contrast Grade Badges & Adaptive Color Tokens: Academic grades in `LeaderboardView` and `ResultView` use solid pill capsules with white text (7.87:1 passing, 6.57:1 failing). Text and icon indicators dynamically adapt via `Color.adaptiveSuccessText` and `Color.adaptiveErrorText` (Light mode: `#1B5E20` / `#B71C1C`; Dark mode: bright mint `#30D158` yielding 10.39:1 on OLED black / 8.42:1 on dark card, and bright coral red `#FF6961` yielding 7.45:1 on OLED black / 6.03:1 on dark card).
+- Solid High-Contrast Grade Badges & Adaptive Color Tokens: Academic grades in `LeaderboardView` and `ResultView` use solid pill capsules with white text (7.87:1 passing, 6.57:1 failing). Text, category breakdown tallies, and progress indicators dynamically adapt via `Color.adaptiveSuccessText` and `Color.adaptiveErrorText` (Light mode: `#1B5E20` / `#B71C1C`; Dark mode: bright mint `#30D158` yielding 10.39:1 on OLED black / 8.42:1 on dark card, and bright coral red `#FF6961` yielding 7.45:1 on OLED black / 6.03:1 on dark card).
 - Storage capacity boundary hardening: `pruneRecordsWithBestProtection` sorts protected records by canonical `Comparable` ordering (`records.sorted(by: >).prefix(maxCapacity)`), ensuring all-time personal bests strictly survive even under extreme edge-case configurations (`maxCapacity: 1`).
 - Local JSON catalog with 24 German questions in four categories; the interface is currently English.
 - Validated question model, Fisher-Yates shuffled question and option order, and a separate quiz session state machine.
@@ -92,7 +92,8 @@ See the [Sprint 8 technical report](docs/sprint8_ipad_ergonomics_and_accessibili
 | **0.7.1** | Sprint 7 maintenance patch: personal best retention protection, centralized 4-tier tie breaking *(Completed)* |
 | **0.8.0** | Multi-device iPad layout, 640pt container, VoiceOver semantics *(Completed)* |
 | **0.8.1** | Solid high-contrast grade badges, TimerBar trait, contrast formulas *(Completed)* |
-| **0.8.2** | Dark Mode contrast fix, adaptive color tokens, 640pt landscape UI gameplay verification *(Current)* |
+| **0.8.2** | Dark Mode contrast fix, adaptive color tokens, 640pt landscape UI gameplay verification *(Completed)* |
+| **0.8.3** | Category breakdown contrast hardening, adaptive progress pills, and VoiceOver protocol alignment *(Current)* |
 | 0.9.0 | Verification and CI hardening |
 | 1.0.0 | Final app release and completed academic deliverables |
 

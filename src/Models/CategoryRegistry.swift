@@ -58,6 +58,23 @@ public final class CategoryRegistry: @unchecked Sendable {
         return Array(customCategories.values)
     }
     
+    /// Captures a thread-safe snapshot of all registered custom categories for transactional rollback.
+    public func snapshot() -> [QuizCategory] {
+        lock.lock()
+        defer { lock.unlock() }
+        return Array(customCategories.values)
+    }
+    
+    /// Restores the registry's custom categories to a specified snapshot (used for transactional rollback).
+    public func resetTo(_ categories: [QuizCategory]) {
+        lock.lock()
+        defer { lock.unlock() }
+        customCategories.removeAll()
+        for cat in categories where cat.isCustom {
+            customCategories[cat.rawValue] = cat
+        }
+    }
+    
     /// Resets the registry, clearing all custom categories while preserving system defaults.
     public func resetToDefaults() {
         lock.lock()

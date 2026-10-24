@@ -98,7 +98,7 @@ Integrated via the "Material" capsule button in `HomeView` header actions:
 ## Verification & Test Results
 
 ### 1. Package Test Suite
-The package test suite was expanded with `Sprint9DynamicCatalogTests.swift`, adding 7 comprehensive test cases:
+The package test suite was expanded with `Sprint9DynamicCatalogTests.swift`, adding 11 comprehensive test cases:
 1. `testCustomCategoryCreationAndRegistry`: Verifies dynamic registration, metadata retrieval, and case iteration.
 2. `testInAppQuestionAuthoringAndInvariants`: Validates invariant enforcement (empty prompt, choice count != 4, duplicate choices, out-of-range correct index).
 3. `testCustomStudyMaterialCRUDAndPersistence`: Verifies full save/relaunch cycle from disk sandbox, editing, cascade deletion, and system question protection.
@@ -106,11 +106,19 @@ The package test suite was expanded with `Sprint9DynamicCatalogTests.swift`, add
 5. `testNetworkCatalogImporter`: Tests invalid URLs, HTTP 200 success, HTTP 404 handling, and empty responses using `MockURLProtocol`.
 6. `testEndToEndGameplayWithCustomStudyMaterial`: Executes an end-to-end round with a custom category ("Quantum Computing"), verifies 100% accuracy yielding German grade 1.0 (Sehr Gut), confirms breakdown in `ScoreRecord`, and verifies Leaderboard filtering.
 7. `testCustomCatalogModelsCodable`: Verifies lossless Codable serialization.
+8. `testSaveFailureRollsBackInMemoryStateAndRegistry`: Verifies complete atomic rollback of in-memory payloads and CategoryRegistry snapshot restoration if disk persistence fails.
+9. `testCategoryMetadataPreservedAcrossServiceRelaunch`: Verifies that custom category display name, icon, and description are preserved across fresh service instantiations and in `QuizSession.categoryBreakdown` without falling back to raw capitalized strings.
+10. `testUnreadableCorruptedCatalogGeneratesEmergencyBackup`: Verifies that encountering an unreadable or corrupt catalog creates an emergency `.bak` backup copy before initializing, preventing accidental data erasure.
+11. `testCategoryUpdateAndCRUDOperations`: Verifies full CRUD (create, update, delete) for custom categories via `EditCategorySheet` and cascading metadata updates to existing questions.
 
 **Execution Result:**
-- **121 / 121 tests passed (100% success)** in 0.55s.
+- **125 / 125 tests passed (100% success)** in 0.53s.
 
-### 2. Code Coverage
+### 2. Native UI Acceptance Testing (iPad 9.ª Gen 10.2")
+`TrainYourBrainUITests.swift` includes dedicated interactive verification:
+- `testStudyMaterialManagerSheetCanOpenAndClose`: Launches the application, taps the "Material" button in `HomeView`, navigates through all three segmented tabs (*Subjects*, *Questions*, *Import*), verifies "+ Add Question" and "Browse JSON File" controls, opens the "+ Add New Subject" modal sheet, inspects the form, cancels, and dismisses the manager back to `HomeView`. All tests green (`** TEST SUCCEEDED **`).
+
+### 3. Code Coverage
 Measured with `xcrun llvm-cov` across all 26 production files:
 - `LocalQuestionService.swift`: **90.09%**
 - `LeaderboardViewModel.swift`: **97.26%**

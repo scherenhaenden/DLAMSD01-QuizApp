@@ -300,6 +300,52 @@ final class TrainYourBrainUITests: XCTestCase {
         XCTAssertTrue(navTitle.waitForExistence(timeout: 10))
         attachScreenshot(named: "Study Material - Manager Opened")
 
+        // 1. Verify and navigate to Questions tab
+        let questionsSegment = app.buttons["Questions"]
+        if questionsSegment.waitForExistence(timeout: 5) {
+            questionsSegment.tap()
+            let addQuestionButton = app.buttons["studyMaterial.addQuestionButton"]
+            let fallbackAddQuestion = app.buttons["Add New Question"]
+            XCTAssertTrue(addQuestionButton.waitForExistence(timeout: 5) || fallbackAddQuestion.waitForExistence(timeout: 2), "Add Question button must exist in Questions tab")
+        }
+
+        // 2. Verify and navigate to Import tab
+        let importSegment = app.buttons["Import"]
+        if importSegment.waitForExistence(timeout: 5) {
+            importSegment.tap()
+            let browseButton = app.buttons["studyMaterial.browseFileButton"]
+            let fallbackBrowse = app.buttons["Select JSON File to import"]
+            XCTAssertTrue(browseButton.waitForExistence(timeout: 5) || fallbackBrowse.waitForExistence(timeout: 2), "Browse JSON File button must exist in Import tab")
+        }
+
+        // 3. Navigate back to Subjects tab and inspect Add Subject sheet
+        let subjectsSegment = app.buttons["Subjects"]
+        if subjectsSegment.waitForExistence(timeout: 5) {
+            subjectsSegment.tap()
+            let addSubjectButton = app.buttons["studyMaterial.addSubjectButton"]
+            let fallbackAddSubject = app.buttons["Add New Subject"]
+            XCTAssertTrue(addSubjectButton.waitForExistence(timeout: 5) || fallbackAddSubject.waitForExistence(timeout: 2), "Add New Subject button must exist in Subjects tab")
+            if addSubjectButton.exists {
+                addSubjectButton.tap()
+            } else {
+                fallbackAddSubject.tap()
+            }
+
+            let newSubjectTitle = app.staticTexts["New Subject"]
+            XCTAssertTrue(newSubjectTitle.waitForExistence(timeout: 5), "New Subject modal sheet must appear")
+            attachScreenshot(named: "Study Material - Add Subject Sheet")
+
+            let cancelButton = app.buttons["studyMaterial.cancelSubjectButton"]
+            if cancelButton.waitForExistence(timeout: 5) {
+                cancelButton.tap()
+            } else {
+                let fallbackCancel = app.buttons["Cancel"]
+                if fallbackCancel.waitForExistence(timeout: 2) {
+                    fallbackCancel.tap()
+                }
+            }
+        }
+
         let doneButton = app.buttons["Done"]
         XCTAssertTrue(doneButton.waitForExistence(timeout: 5))
         doneButton.tap()

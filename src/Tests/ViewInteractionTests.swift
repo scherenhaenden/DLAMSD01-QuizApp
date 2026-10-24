@@ -148,6 +148,10 @@ final class ViewInteractionTests: XCTestCase {
         let addSheet = AddCategorySheet(viewModel: vm) { _, _ in }
         XCTAssertNotNil(addSheet.body)
         
+        // Edit Category Sheet rendering
+        let editSheet = EditCategorySheet(viewModel: vm, category: QuizCategory(id: "test", displayName: "Test")) { _, _ in }
+        XCTAssertNotNil(editSheet.body)
+        
         // Question Editor Sheet rendering
         let questionSheet = QuestionEditorSheet(viewModel: vm, editingQuestion: nil) { _, _ in }
         XCTAssertNotNil(questionSheet.body)

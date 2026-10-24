@@ -8,8 +8,10 @@ public enum QuestionServiceError: LocalizedError, Equatable {
     case emptyQuestionSet
     case customCatalogSaveFailed(String)
     case systemCategoryDeletionNotAllowed(String)
+    case systemCategoryModificationNotAllowed(String)
     case systemQuestionDeletionNotAllowed(String)
     case questionNotFound(UUID)
+    case categoryNotFound(String)
     case invalidCatalogPayload(String)
     case duplicateQuestionId(UUID)
     
@@ -27,10 +29,14 @@ public enum QuestionServiceError: LocalizedError, Equatable {
             return "Failed to persist custom study catalog: \(details)"
         case .systemCategoryDeletionNotAllowed(let id):
             return "System category '\(id)' is part of the core B.Sc. curriculum and cannot be deleted."
+        case .systemCategoryModificationNotAllowed(let id):
+            return "System category '\(id)' is part of the core B.Sc. curriculum and cannot be modified."
         case .systemQuestionDeletionNotAllowed(let id):
             return "Bundled curriculum question '\(id)' is read-only and cannot be modified or deleted."
         case .questionNotFound(let id):
             return "Question with ID '\(id)' was not found in the custom catalog."
+        case .categoryNotFound(let id):
+            return "Category with ID '\(id)' was not found in the custom catalog."
         case .invalidCatalogPayload(let details):
             return "Invalid catalog format or corrupt question data: \(details)"
         case .duplicateQuestionId(let id):
@@ -58,6 +64,9 @@ public protocol QuestionServiceProtocol: Sendable {
     /// Adds a user-defined custom category and persists it.
     func addCategory(_ category: QuizCategory) throws
     
+    /// Updates an existing user-defined custom category and persists it.
+    func updateCategory(_ category: QuizCategory) throws
+    
     /// Removes a custom category and its associated questions from persistent storage.
     func deleteCategory(id: String) throws
     
@@ -79,6 +88,7 @@ public protocol QuestionServiceProtocol: Sendable {
 public extension QuestionServiceProtocol {
     func loadCustomQuestions() throws -> [Question] { [] }
     func addCategory(_ category: QuizCategory) throws {}
+    func updateCategory(_ category: QuizCategory) throws {}
     func deleteCategory(id: String) throws {}
     func addQuestion(_ question: Question) throws {}
     func updateQuestion(_ question: Question) throws {}

@@ -440,7 +440,11 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
                     if let backupSize = backupAttrs[.size] as? Int64,
                        let origSize = origAttrs[.size] as? Int64,
                        backupSize == origSize {
-                        backupVerified = true
+                        let origData = try Data(contentsOf: url)
+                        let backupData = try Data(contentsOf: backupURL)
+                        if origData == backupData {
+                            backupVerified = true
+                        }
                     }
                 }
             } catch {

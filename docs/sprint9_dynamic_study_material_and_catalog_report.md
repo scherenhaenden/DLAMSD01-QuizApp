@@ -108,7 +108,7 @@ The package test suite was expanded with `Sprint9DynamicCatalogTests.swift`, add
 7. `testCustomCatalogModelsCodable`: Verifies lossless Codable serialization.
 8. `testSaveFailureRollsBackInMemoryStateAndRegistry`: Verifies complete atomic rollback of in-memory payloads and CategoryRegistry snapshot restoration if disk persistence fails.
 9. `testCategoryMetadataPreservedAcrossServiceRelaunch`: Verifies that custom category display name, icon, and description are preserved across fresh service instantiations and in `QuizSession.categoryBreakdown` without falling back to raw capitalized strings.
-10. `testUnreadableCorruptedCatalogGeneratesEmergencyBackup`: Verifies that encountering an unreadable or corrupt catalog creates an emergency `.bak` backup copy before initializing, preventing accidental data erasure.
+10. `testUnreadableCorruptedCatalogGeneratesEmergencyBackup`: Verifies that encountering an unreadable or corrupt catalog creates an emergency `.bak` backup copy before initializing, preventing accidental data erasure, and validates byte-by-byte content equality with the corrupted original.
 11. `testCategoryUpdateAndCRUDOperations`: Verifies full CRUD (create, update, delete) for custom categories via `EditCategorySheet` and cascading metadata updates to existing questions.
 12. `testDuplicateCategoryIDsInImportDoesNotCrash`: Verifies that importing or decoding JSON containing duplicate category IDs (`"id": "same"`) does not crash with a fatal error, deduplicates gracefully, and successfully links questions to the category.
 13. `testCorruptedCatalogWithFailedBackupBlocksSaveOperation`: Verifies that when a corrupted catalog is detected and its backup cannot be created (deterministic EACCES), the service unconditionally sets `isCatalogSaveBlockedToPreventDataLoss` to true and blocks writes with `customCatalogSaveFailed`, preserving the corrupted file untouched.
@@ -128,7 +128,7 @@ The package test suite was expanded with `Sprint9DynamicCatalogTests.swift`, add
   6. `testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay`
   7. `testLeaderboardAndHistoryOpensAndDismisses`
   8. `testIPadLandscapeAndPortraitErgonomicAdaptation`
-  9. `testStudyMaterialManagerSheetCanOpenAndClose`: Non-conditional mandatory assertions verifying navigation through all three segmented tabs (*Subjects*, *Questions*, *Import*), "+ Add Question" and "Browse JSON File" controls, opening the "+ Add New Subject" modal sheet, entering "Robotics", saving, verifying its immediate appearance in the list, and dismissing back to `HomeView`. All 9 tests passed cleanly (`** TEST SUCCEEDED **`).
+  9. `testStudyMaterialManagerSheetCanOpenAndClose`: Non-conditional mandatory assertions verifying navigation through all three segmented tabs (*Subjects*, *Questions*, *Import*), "+ Add Question" and "Browse JSON File" controls, opening the "+ Add New Subject" modal sheet, entering "Robotics", saving, verifying its immediate appearance in the list, editing the custom subject to "Robotics Lab", verifying updated persistence, and dismissing back to `HomeView`. All 9 tests passed cleanly (`** TEST SUCCEEDED **`).
 
 ### 3. Code Coverage
 Measured with `xcrun llvm-cov` across all 26 production files:

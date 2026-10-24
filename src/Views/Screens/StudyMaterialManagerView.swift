@@ -77,13 +77,11 @@ public struct StudyMaterialManagerView: View {
                     self.statusMessage = msg
                 }
             }
-            .sheet(isPresented: $showEditCategorySheet) {
-                if let category = categoryToEdit {
-                    EditCategorySheet(viewModel: viewModel, category: category) { success, msg in
-                        self.isStatusError = !success
-                        self.statusMessage = msg
-                        self.categoryToEdit = nil
-                    }
+            .sheet(item: $categoryToEdit) { category in
+                EditCategorySheet(viewModel: viewModel, category: category) { success, msg in
+                    self.isStatusError = !success
+                    self.statusMessage = msg
+                    self.categoryToEdit = nil
                 }
             }
             .sheet(isPresented: $showQuestionEditorSheet) {
@@ -184,6 +182,7 @@ public struct StudyMaterialManagerView: View {
                                     }
                                     .buttonStyle(.borderless)
                                     .accessibilityLabel("Edit Subject \(category.displayName)")
+                                    .accessibilityIdentifier("studyMaterial.editSubjectButton.\(category.rawValue)")
                                     
                                     Text("Custom")
                                         .font(.caption2.bold())
@@ -214,6 +213,7 @@ public struct StudyMaterialManagerView: View {
                         }
                     }
                     .padding(.vertical, 4)
+                    .accessibilityElement(children: .contain)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         if category.isCustom {
                             Button(role: .destructive) {
@@ -807,6 +807,8 @@ struct QuestionEditorSheet: View {
                             Text(cat.displayName).tag(cat.rawValue)
                         }
                     }
+                    .pickerStyle(.menu)
+                    .accessibilityIdentifier("studyMaterial.questionSubjectPicker")
                     .frame(minHeight: 44)
                     
                     Picker("Difficulty", selection: $difficulty) {
@@ -814,11 +816,14 @@ struct QuestionEditorSheet: View {
                             Text(diff.displayName).tag(diff)
                         }
                     }
+                    .pickerStyle(.menu)
+                    .accessibilityIdentifier("studyMaterial.questionDifficultyPicker")
                     .frame(minHeight: 44)
                 }
                 
                 Section(header: Text("Question Prompt")) {
                     TextField("Enter question prompt…", text: $prompt)
+                        .accessibilityIdentifier("studyMaterial.questionPromptField")
                         .frame(minHeight: 44)
                 }
                 
@@ -831,6 +836,7 @@ struct QuestionEditorSheet: View {
                 
                 Section(header: Text("Pedagogical Explanation")) {
                     TextField("Explain why the correct answer is right…", text: $explanation)
+                        .accessibilityIdentifier("studyMaterial.questionExplanationField")
                         .frame(minHeight: 44)
                 }
                 
@@ -855,6 +861,7 @@ struct QuestionEditorSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { saveQuestion() }
                         .font(.body.bold())
+                        .accessibilityIdentifier("studyMaterial.saveQuestionButton")
                         .frame(minHeight: 44)
                 }
             }
@@ -873,8 +880,10 @@ struct QuestionEditorSheet: View {
             }
             .buttonStyle(.borderless)
             .accessibilityLabel("Mark option \(index + 1) as correct")
+            .accessibilityIdentifier("studyMaterial.correctOptionRadio.\(index)")
             
             TextField("Option \(index + 1)", text: text)
+                .accessibilityIdentifier("studyMaterial.questionOption.\(index)")
                 .frame(minHeight: 44)
         }
     }

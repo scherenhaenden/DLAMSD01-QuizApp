@@ -1,0 +1,191 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "BF582338-A843-41D7-8045-5431D43EB72B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Home - accessibility XXXL_0_E26461DA-7B01-44E0-A470-3379B7FCE69F.png",
+        "timestamp" : 1792865277.881
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testAccessibilityDynamicTypeKeepsCategoryStartAvailable()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testAccessibilityDynamicTypeKeepsCategoryStartAvailable"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "2FE8CF3E-A383-4ABF-8B67-CEAD0835433E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - resumed after background_0_5192388F-C649-4EAB-9F35-30D29EBF4E30.png",
+        "timestamp" : 1792865293.272
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "A05BE0EA-4F46-4835-8250-52F47CF6AC0C.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Results - completed round_0_BF12EB1B-11E4-4A1B-A0B0-3A0FE763D37C.png",
+        "timestamp" : 1792865347.62
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "DF9684BB-BEB1-460F-93E8-6D0612247F73.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - answer feedback_0_C975DAB0-06C8-48C5-8C45-9EAEF237F2EF.png",
+        "timestamp" : 1792865308.464
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "1BA1EE68-4293-4F58-95E8-EC8CB6BCF0E8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Home - category counts_0_E8628164-6A60-419F-897C-BEE6374FB137.png",
+        "timestamp" : 1792865305.451
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testCategoryRoundShowsFeedbackResultsAndCanReplay()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testCategoryRoundShowsFeedbackResultsAndCanReplay"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "397B1EA0-C73B-44E0-A426-A89D520893B1.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - incorrect answer feedback_0_29EA095B-C04F-46AD-B1DF-FC69E6914E92.png",
+        "timestamp" : 1792865372.915
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testIncorrectAnswerMarksTheCorrectOption()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testIncorrectAnswerMarksTheCorrectOption"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "3A867986-2E4D-42B5-9DC9-4129F06C4A47.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Results - iPad Landscape Layout_0_3FD2B285-932A-4B37-96F9-2FF25537151D.png",
+        "timestamp" : 1792865438.249
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "06DD4E7C-AA4C-4DA0-BA6E-0393EABFA621.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - iPad Landscape Layout_0_EBE97E0F-A709-4D86-9BA9-2E42E8D65B6E.png",
+        "timestamp" : 1792865392.274
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "DC2FCFD1-F137-4606-A3C5-815F9353079D.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Leaderboard - iPad Landscape Layout_0_D1664283-2C50-4157-A9A9-075925917EBD.png",
+        "timestamp" : 1792865386.616
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "74691852-A8EF-4D65-B31A-23294F6BBD2D.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Home - iPad Landscape Layout_0_CA7BC53A-8E4A-49BC-9B8F-DD61A45FC6DB.png",
+        "timestamp" : 1792865382.521
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testIPadLandscapeAndPortraitErgonomicAdaptation()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testIPadLandscapeAndPortraitErgonomicAdaptation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "8A81CC23-772B-46C6-A46A-412B108F4E9C.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Leaderboard - modal sheet_0_4D004413-89DF-42A6-9115-81BA458CB451.png",
+        "timestamp" : 1792865455.186
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testLeaderboardAndHistoryOpensAndDismisses()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testLeaderboardAndHistoryOpensAndDismisses"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "D233A8DA-49F8-4DD2-974D-46928159BFEB.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - live countdown timeout_0_1DBC6DCC-72BD-4873-883A-5725C2B37AF6.png",
+        "timestamp" : 1792865482.536
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testLiveCountdownReachesTimeoutAndEnablesAdvance()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testLiveCountdownReachesTimeoutAndEnablesAdvance"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "B72CDF5A-6849-41E6-AE36-52313FA08EC0.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Home - mixed round_0_323C05BA-2528-49D0-B9D1-D017B873285E.png",
+        "timestamp" : 1792865493.059
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testMixedRoundStartsAndReturnsToTopics()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testMixedRoundStartsAndReturnsToTopics"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "660B8397-3115-4D92-953F-8E7ECA035AEB.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Study Material - Add Subject Sheet_0_5D5C3B13-22B5-4909-8032-D89134D76035.png",
+        "timestamp" : 1792865520.049
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "SIMULATOR-IPHONE-17",
+        "deviceName" : "iPhone 17",
+        "exportedFileName" : "15F97CA3-FCF1-4A8F-99F8-4E0ABE70C4D6.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Study Material - Manager Opened_0_E9BA3C27-4FA3-4EBA-9318-384AA98961E1.png",
+        "timestamp" : 1792865505.199
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testStudyMaterialManagerSheetCanOpenAndClose()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testStudyMaterialManagerSheetCanOpenAndClose"
+  }
+]

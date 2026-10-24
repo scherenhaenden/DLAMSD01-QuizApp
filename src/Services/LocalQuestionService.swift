@@ -45,6 +45,13 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
                 .appendingPathComponent("TrainYourBrain", isDirectory: true)
                 .appendingPathComponent("custom_catalog.json")
         }
+        
+        if CommandLine.arguments.contains("--reset-state"), let url = self.customCatalogURL {
+            try? FileManager.default.removeItem(at: url)
+            let bakURL = url.deletingPathExtension().appendingPathExtension("bak")
+            try? FileManager.default.removeItem(at: bakURL)
+            CategoryRegistry.shared.resetToDefaults()
+        }
     }
     
     /// Testing initializer accepting in-memory JSON data, with optional custom catalog persistence URL.

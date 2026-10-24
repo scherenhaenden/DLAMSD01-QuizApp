@@ -231,6 +231,7 @@ final class TrainYourBrainUITests: XCTestCase {
         XCTAssertTrue(category.isEnabled)
         XCTAssertGreaterThanOrEqual(category.frame.height, 44.0, "Category card must meet minimum 44pt touch target")
         XCTAssertGreaterThanOrEqual(category.frame.width, 44.0)
+        XCTAssertLessThanOrEqual(category.frame.width, 640.0, "Category card width must respect 640pt ergonomic max-width constraint on iPad landscape")
         
         // Open Leaderboard modal in landscape
         scoresButton.tap()
@@ -256,10 +257,32 @@ final class TrainYourBrainUITests: XCTestCase {
         let advanceButton = app.buttons["quiz.advance"]
         XCTAssertTrue(advanceButton.waitForExistence(timeout: 10), "Advance button must be available in landscape")
         XCTAssertGreaterThanOrEqual(advanceButton.frame.height, 44.0, "Advance button must maintain minimum 44pt target in landscape")
+        advanceButton.tap()
         
-        let closeButton = app.buttons["quiz.close"]
-        XCTAssertTrue(closeButton.waitForExistence(timeout: 5))
-        closeButton.tap()
+        // Complete remaining 5 questions to reach ResultView in landscape
+        answerAndAdvance(questionCount: 5)
+        
+        let playAgain = app.buttons["result.playAgain"]
+        if !playAgain.waitForExistence(timeout: 10) {
+            if app.buttons["quiz.advance"].exists {
+                app.buttons["quiz.advance"].tap()
+            }
+        }
+        XCTAssertTrue(playAgain.waitForExistence(timeout: 15), "Play Again button must appear in landscape ResultView")
+        let completedHeader = app.staticTexts["Round Completed!"]
+        let effortHeader = app.staticTexts["Good Effort!"]
+        XCTAssertTrue(completedHeader.waitForExistence(timeout: 10) || effortHeader.waitForExistence(timeout: 10), "ResultView header must appear in landscape")
+        
+        let returnToMenu = app.buttons["result.returnToMenu"]
+        XCTAssertTrue(returnToMenu.waitForExistence(timeout: 5), "Return to Menu button must appear in landscape")
+        XCTAssertGreaterThanOrEqual(playAgain.frame.height, 44.0, "Play Again button must meet 44pt touch target")
+        XCTAssertGreaterThanOrEqual(returnToMenu.frame.height, 44.0, "Return to Menu button must meet 44pt touch target")
+        attachScreenshot(named: "Results - iPad Landscape Layout")
+        
+        if !returnToMenu.isHittable {
+            app.swipeUp()
+        }
+        returnToMenu.tap()
         
         // 4. Restore Portrait orientation
         XCUIDevice.shared.orientation = .portrait

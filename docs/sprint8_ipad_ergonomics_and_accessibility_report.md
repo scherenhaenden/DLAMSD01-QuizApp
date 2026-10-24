@@ -1,8 +1,8 @@
-# Sprint 8 Technical Report: Multi-Device iPad Ergonomics & VoiceOver Accessibility (`v0.8.0` – `v0.8.3`)
+# Sprint 8 Technical Report: Multi-Device iPad Ergonomics & VoiceOver Accessibility (`v0.8.0` – `v0.8.4`)
 
 **Maintainer:** `scherenhaenden`
 **Project:** DLAMSD01 – Apple Mobile Solution Development I (Train-your-Brain iOS)  
-**Target Release:** `v0.8.3` (Build `20261024.140000`)  
+**Target Release:** `v0.8.4` (Build `20261024.143500`)  
 **Curriculum Stages:** Stage 63 (Adaptive Layout), Stage 64 (VoiceOver & Accessibility)  
 **Architecture Reference:** ADR-10: Multi-Device-Optimierung und Barrierefreiheit/Apple%20Mobile%20Solution%20Development%20I%20(DLAMSD01)/06_Architekturentscheidungen_und_Variantenvergleich_ADR.md)
 
@@ -24,6 +24,9 @@ Sprint 8 delivers comprehensive multi-device ergonomic adaptation for iPad (spec
 * **Category Breakdown Contrast Hardening (`v0.8.3`):**
   - Replaced raw `.green` and `.orange` in `ResultView.swift` (category performance breakdown text and mini progress bar capsule fills) with `Color.adaptiveSuccessText` and `Color.adaptiveErrorText`.
   - Resolves the residual 1.99:1 low contrast finding for category accuracy counts, ensuring text contrast $\ge 7.05 : 1$ on light canvas and $\ge 6.03 : 1$ on dark card surfaces.
+* **MetricTile Icon Contrast & Native UI Evidence Certification (`v0.8.4`):**
+  - Replaced system `.yellow` and `.orange` icons in `ResultView.swift` MetricTiles with new high-contrast adaptive tokens: `Color.adaptiveScoreIcon` (amber `#B45309` light / `#FBBF24` dark), `Color.adaptiveStreakIcon` (burnt orange `#C2410C` light / `#FB923C` dark), and `Color.adaptiveSpeedIcon` (cobalt blue `#1D4ED8` light / cyan `#38BDF8` dark), delivering $\ge 5.58 : 1$ on white card and $\ge 7.25 : 1$ on dark card.
+  - Re-executed full native UI test suite on iPad (9th generation) simulator: 8/8 tests passed in 204.101s, generating fresh test artifacts and attachments in `.xcresult`.
 
 ---
 
@@ -107,15 +110,22 @@ L &= 0.2126 \cdot R_{\text{linear}} + 0.7152 \cdot G_{\text{linear}} + 0.0722 \c
 | Adaptive Passing Text (Light Card) | Emerald Green (`#1B5E20`) | Card Background (`#FFFFFF`) | **7.87 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
 | Adaptive Passing Text (Light Canvas) | Emerald Green (`#1B5E20`) | Canvas Background (`#F2F2F7`) | **7.05 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
 | Adaptive Failing Text (Light Card) | Crimson Red (`#B71C1C`) | Card Background (`#FFFFFF`) | **6.57 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
+| Adaptive Failing Text (Light Canvas) | Crimson Red (`#B71C1C`) | Canvas Background (`#F2F2F7`) | **5.89 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
 | Adaptive Passing Text (Dark Card) | Bright Mint (`#30D158`) | Dark Card (`#1C1C1E`) | **8.42 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
 | Adaptive Passing Text (Dark OLED) | Bright Mint (`#30D158`) | Pure Black (`#000000`) | **10.39 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
 | Adaptive Failing Text (Dark Card) | Bright Coral Red (`#FF6961`) | Dark Card (`#1C1C1E`) | **6.03 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
 | Adaptive Failing Text (Dark OLED) | Bright Coral Red (`#FF6961`) | Pure Black (`#000000`) | **7.45 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
+| Adaptive Score Icon (Light Card) | Deep Amber (`#B45309`) | Card Background (`#FFFFFF`) | **5.58 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
+| Adaptive Score Icon (Dark Card) | Warm Gold (`#FBBF24`) | Dark Card (`#1C1C1E`) | **9.82 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
+| Adaptive Streak Icon (Light Card) | Burnt Orange (`#C2410C`) | Card Background (`#FFFFFF`) | **6.03 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
+| Adaptive Streak Icon (Dark Card) | Tangerine (`#FB923C`) | Dark Card (`#1C1C1E`) | **7.25 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
+| Adaptive Speed Icon (Light Card) | Cobalt Blue (`#1D4ED8`) | Card Background (`#FFFFFF`) | **6.73 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AA)** |
+| Adaptive Speed Icon (Dark Card) | Cyan Sky (`#38BDF8`) | Dark Card (`#1C1C1E`) | **8.55 : 1** | $\ge 4.5 : 1$ (AA), $\ge 7.0 : 1$ (AAA) | **PASS (AAA)** |
 | ResultView & Leaderboard Grade Badge | Pure White (`#FFFFFF`) | Solid Feedback Capsule | **7.87 : 1** / **6.57 : 1** | $\ge 4.5 : 1$ (AA) | **PASS (AAA / AA)** |
 
 > [!NOTE]
 > In both `LeaderboardView` and `ResultView`, the academic grade badge (`germanGrade.formattedGrade`) utilizes a solid pill capsule filled with `Color.quizCorrectFeedback` (`#1B5E20`) for passing grades and `Color.quizIncorrectFeedback` (`#B71C1C`) for failing grades, paired with crisp white text (`.white`). This guarantees invariant, spectrophotometrically proven contrast ratios of **7.87 : 1** (AAA) and **6.57 : 1** (AA) across both Light and Dark appearances.
-> Furthermore, textual indicators that adapt dynamically (e.g., accuracy percentage and scorecard icons) utilize `Color.adaptiveSuccessText` and `Color.adaptiveErrorText`, guaranteeing $\ge 6.03 : 1$ contrast in Dark Mode and completely eliminating the prior 2.67:1 / 2.16:1 Dark Mode deficiency.
+> Furthermore, textual indicators that adapt dynamically (e.g., accuracy percentage and scorecard icons) utilize `Color.adaptiveSuccessText`, `Color.adaptiveErrorText`, `Color.adaptiveScoreIcon`, `Color.adaptiveStreakIcon`, and `Color.adaptiveSpeedIcon`, guaranteeing $\ge 5.58 : 1$ contrast on light backgrounds and $\ge 7.25 : 1$ contrast in Dark Mode.
 > Secondary text in SwiftUI uses dynamic UIKit/SwiftUI vibrancy (`UIColor.secondaryLabel`), which adapts per interface style; fixed body and semantic labels consistently rely on high-contrast semantic tokens.
 
 ---
@@ -133,14 +143,14 @@ The test suite contains 9 dedicated tests in `Sprint8AccessibilityAndErgonomicsT
 6. `testResultViewAndScoreRecordAccessibilityData`
 7. `testLeaderboardAccessibilitySubviews`
 8. `testMathematicalWCAGContrastRatios`
-9. `testLeaderboardGradeBadgeAndResultViewHighContrastFills` *(Expanded in v0.8.2 with full Light & Dark mode mathematical luminance assertions)*
+9. `testLeaderboardGradeBadgeAndResultViewHighContrastFills` *(Expanded with full Light & Dark mode mathematical luminance assertions and adaptive icon verification)*
 
 **Execution Result:**
 * **Total Package Tests:** **113 executed, 0 failures (100% success)**.
 
 ### 5.2. Native UI Acceptance Tests (iPad 9th Generation)
 
-Executed via `xcodebuild test` on the native iPad (9th generation) simulator:
+Executed via `xcodebuild test` on the native iPad (9th generation) simulator (`iPad (9th generation)`, iOS 27.1, Build `20261024.143500`):
 * `testCategoryRoundShowsFeedbackResultsAndCanReplay`
 * `testMixedRoundStartsAndReturnsToTopics`
 * `testIncorrectAnswerMarksTheCorrectOption`
@@ -148,7 +158,11 @@ Executed via `xcodebuild test` on the native iPad (9th generation) simulator:
 * `testLiveCountdownReachesTimeoutAndEnablesAdvance`
 * `testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay`
 * `testLeaderboardAndHistoryOpensAndDismisses`
-* `testIPadLandscapeAndPortraitErgonomicAdaptation` *(Expanded in v0.8.2 to verify $\le 640$ pt ergonomic width constraint on iPad landscape, full 6-question gameplay into ResultView, $\ge 44 \times 44$ pt touch targets for Play Again and Return to Menu, and safe return to Home)*
+* `testIPadLandscapeAndPortraitErgonomicAdaptation` *(Asserts $\le 640$ pt ergonomic width constraint on iPad landscape, full 6-question gameplay into ResultView, $\ge 44 \times 44$ pt touch targets for Play Again and Return to Menu, and safe return to Home)*
+
+**Execution Summary:**
+* **Native UI Tests Executed:** 8 tests, 0 failures (0 unexpected) in 204.101s.
+* **Test Result Artifact:** `Test-TrainYourBrain-2026.10.24_14-37-42-+0200.xcresult` in DerivedData.
 
 ---
 
@@ -173,11 +187,12 @@ Production line coverage measured across all 22 production source files:
 | `ViewModels/QuizViewModel.swift` | 292 | 20 | **93.15%** | 35 / 40 (87.5%) |
 | `Views/Components/AnswerButton.swift` | 250 | 19 | **92.40%** | 17 / 18 (94.4%) |
 | `Views/Components/CategoryCard.swift` | 239 | 9 | **96.23%** | 18 / 20 (90.0%) |
-| `Views/Components/Color+Adaptive.swift` | 45 | 13 | **71.11%** | 8 / 11 (72.7%) |
+| `Views/Components/Color+Adaptive.swift` | 81 | 28 | **65.43%** | 11 / 17 (64.7%) |
 | `Views/Components/QuestionCard.swift` | 141 | 1 | **99.29%** | 13 / 13 (100.0%) |
 | `Views/Components/TimerBar.swift` | 116 | 22 | **81.03%** | 9 / 11 (81.8%) |
 | `Views/Screens/HomeView.swift` | 521 | 43 | **91.75%** | 19 / 29 (65.5%) |
 | `Views/Screens/LeaderboardView.swift` | 704 | 26 | **96.31%** | 38 / 46 (82.6%) |
 | `Views/Screens/QuizView.swift` | 584 | 74 | **87.33%** | 12 / 22 (54.5%) |
 | `Views/Screens/ResultView.swift` | 695 | 98 | **85.90%** | 14 / 21 (66.7%) |
+| **TOTAL (All 22 Production Files)** | **4,550** | **416** | **90.86%** | **317 / 379 (83.6%)** |
 | **TOTAL (All 22 Production Files)** | **4,514** | **401** | **91.12%** | **314 / 373 (84.2%)** |

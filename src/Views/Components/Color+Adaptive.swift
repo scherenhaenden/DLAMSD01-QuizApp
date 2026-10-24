@@ -60,6 +60,69 @@ extension Color {
         #endif
     }
 
+    /// Adaptive amber/gold icon color providing >= 4.5:1 (AA) contrast:
+    /// - Light mode: Deep amber `#B45309` (CR = 5.58:1 on white, 5.01:1 on canvas)
+    /// - Dark mode: Warm golden yellow `#FBBF24` (CR = 9.82:1 on #1C1C1E, 12.38:1 on #000000)
+    public static var adaptiveScoreIcon: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark
+                ? UIColor(red: 251.0 / 255, green: 191.0 / 255, blue: 36.0 / 255, alpha: 1.0)
+                : UIColor(red: 180.0 / 255, green: 83.0 / 255, blue: 9.0 / 255, alpha: 1.0)
+        })
+        #elseif canImport(AppKit)
+        return Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 251.0 / 255, green: 191.0 / 255, blue: 36.0 / 255, alpha: 1.0)
+                : NSColor(red: 180.0 / 255, green: 83.0 / 255, blue: 9.0 / 255, alpha: 1.0)
+        }))
+        #else
+        return Color(red: 180.0 / 255, green: 83.0 / 255, blue: 9.0 / 255)
+        #endif
+    }
+
+    /// Adaptive flame/orange icon color providing >= 4.5:1 (AA) contrast:
+    /// - Light mode: Burnt orange `#C2410C` (CR = 6.03:1 on white, 5.41:1 on canvas)
+    /// - Dark mode: Bright coral orange `#FB923C` (CR = 7.25:1 on #1C1C1E, 9.14:1 on #000000)
+    public static var adaptiveStreakIcon: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark
+                ? UIColor(red: 251.0 / 255, green: 146.0 / 255, blue: 60.0 / 255, alpha: 1.0)
+                : UIColor(red: 194.0 / 255, green: 65.0 / 255, blue: 12.0 / 255, alpha: 1.0)
+        })
+        #elseif canImport(AppKit)
+        return Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 251.0 / 255, green: 146.0 / 255, blue: 60.0 / 255, alpha: 1.0)
+                : NSColor(red: 194.0 / 255, green: 65.0 / 255, blue: 12.0 / 255, alpha: 1.0)
+        }))
+        #else
+        return Color(red: 194.0 / 255, green: 65.0 / 255, blue: 12.0 / 255)
+        #endif
+    }
+
+    /// Adaptive timer/speed blue icon color providing >= 4.5:1 (AA) contrast:
+    /// - Light mode: Rich cobalt blue `#1D4ED8` (CR = 6.73:1 on white, 6.03:1 on canvas)
+    /// - Dark mode: Sky cyan `#38BDF8` (CR = 8.55:1 on #1C1C1E, 10.78:1 on #000000)
+    public static var adaptiveSpeedIcon: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark
+                ? UIColor(red: 56.0 / 255, green: 189.0 / 255, blue: 248.0 / 255, alpha: 1.0)
+                : UIColor(red: 29.0 / 255, green: 78.0 / 255, blue: 216.0 / 255, alpha: 1.0)
+        })
+        #elseif canImport(AppKit)
+        return Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 56.0 / 255, green: 189.0 / 255, blue: 248.0 / 255, alpha: 1.0)
+                : NSColor(red: 29.0 / 255, green: 78.0 / 255, blue: 216.0 / 255, alpha: 1.0)
+        }))
+        #else
+        return Color(red: 29.0 / 255, green: 78.0 / 255, blue: 216.0 / 255)
+        #endif
+    }
+
     /// Adaptive grouped canvas background:
     /// - Light mode: `#F2F2F7` (`UIColor.systemGroupedBackground`)
     /// - Dark mode: `#000000` (Pure OLED black)

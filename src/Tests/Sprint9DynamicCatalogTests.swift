@@ -531,4 +531,150 @@ final class Sprint9DynamicCatalogTests: XCTestCase {
         XCTAssertEqual(decoded.questions.count, 1)
         XCTAssertEqual(decoded.categories.first?.id, "devops")
     }
+    
+    // MARK: - Test 8: Save Failure Full Transactional Rollback
+    
+    func testSaveFailureRollsBackInMemoryStateAndRegistry() throws {
+        // Point service to a write-forbidden path to guarantee persistCustomPayload throws
+        let invalidCatalogURL = URL(fileURLWithPath: "/dev/null/forbidden/directory/custom_catalog.json")
+        let service = LocalQuestionService(
+            mockData: try! JSONEncoder().encode(makeSeedQuestions()),
+            customCatalogURL: invalidCatalogURL
+        )
+        
+        let customCat = QuizCategory(
+            id: "failing_save_cat",
+            displayName: "Failing Save Category",
+            iconName: "xmark.circle",
+            description: "Should roll back completely",
+            isCustom: true
+        )
+        
+        XCTAssertThrowsError(try service.addCategory(customCat)) { error in
+            guard case QuestionServiceError.customCatalogSaveFailed = error else {
+                XCTFail("Expected customCatalogSaveFailed but got \(error)")
+                return
+            }
+        }
+        
+        // Assert in-memory registry contains NO trace of the rejected category
+        XCTAssertNil(CategoryRegistry.shared.category(for: "failing_save_cat"))
+        XCTAssertFalse(QuizCategory.allCases.contains(where: { $0.rawValue == "failing_save_cat" }))
+        XCTAssertEqual(try service.loadCustomQuestions().count, 0)
+    }
+    
+    // MARK: - Test 9: Category Metadata Preserved Across Service Relaunch
+    
+    func testCategoryMetadataPreservedAcrossServiceRelaunch() throws {
+        let initialService = LocalQuestionService(
+            mockData: try! JSONEncoder().encode(makeSeedQuestions()),
+            customCatalogURL: testCatalogURL
+        )
+        
+        let customCat = QuizCategory(
+            id: "cloud",
+            displayName: "Cloud / Redes",
+            iconName: "cloud.sun.fill",
+            description: "AWS and GCP Cloud Infrastructure",
+            isCustom: true
+        )
+        try initialService.addCategory(customCat)
+        
+        let question = try Question(
+            id: UUID(),
+            prompt: "What is an S3 bucket?",
+            options: ["Object store", "Relational DB", "Block storage", "Queue"],
+            correctAnswerIndex: 0,
+            explanation: "S3 provides managed object storage.",
+            category: customCat,
+            difficulty: .medium
+        )
+        try initialService.addQuestion(question)
+        
+        // Simulate app restart: reset registry and construct a completely new service instance
+        CategoryRegistry.shared.resetToDefaults()
+        let restartedService = LocalQuestionService(
+            mockData: try! JSONEncoder().encode(makeSeedQuestions()),
+            customCatalogURL: testCatalogURL
+        )
+        
+        let loadedQuestions = try restartedService.loadCustomQuestions()
+        XCTAssertEqual(loadedQuestions.count, 1)
+        
+        let loadedQuestion = loadedQuestions.first!
+        XCTAssertEqual(loadedQuestion.category.rawValue, "cloud")
+        XCTAssertEqual(loadedQuestion.category.displayName, "Cloud / Redes", "Display name must be preserved exactly without capitalized fallback")
+        XCTAssertEqual(loadedQuestion.category.iconName, "cloud.sun.fill", "Icon name must be preserved exactly")
+        
+        // Test QuizSession categoryBreakdown retains correct custom title
+        var session = QuizSession(questions: [loadedQuestion], category: loadedQuestion.category)
+        session.start()
+        session.submitAnswer(optionIndex: 0)
+        
+        let breakdown = session.categoryBreakdown
+        XCTAssertEqual(breakdown.count, 1)
+        XCTAssertEqual(breakdown.first?.categoryId, "cloud")
+        XCTAssertEqual(breakdown.first?.categoryTitle, "Cloud / Redes")
+    }
+    
+    // MARK: - Test 10: Unreadable Corrupted Catalog Creates Emergency Backup
+    
+    func testUnreadableCorruptedCatalogGeneratesEmergencyBackup() throws {
+        // Write corrupted non-JSON data into the catalog file
+        let corruptedData = "INVALID_CORRUPT_NOT_A_JSON_PAYLOAD_<<<>>>".data(using: .utf8)!
+        try corruptedData.write(to: testCatalogURL)
+        
+        let service = LocalQuestionService(
+            mockData: try! JSONEncoder().encode(makeSeedQuestions()),
+            customCatalogURL: testCatalogURL
+        )
+        
+        let customQuestions = try service.loadCustomQuestions()
+        XCTAssertEqual(customQuestions.count, 0)
+        XCTAssertNotNil(service.lastLoadWarning)
+        
+        // Verify emergency backup file was created
+        let dirContents = try FileManager.default.contentsOfDirectory(atPath: tempDirectoryURL.path)
+        let backupFiles = dirContents.filter { $0.contains("corrupted") && $0.hasSuffix(".bak") }
+        XCTAssertEqual(backupFiles.count, 1, "An emergency backup file must be created to prevent data loss")
+    }
+    
+    // MARK: - Test 11: Category Update CRUD Operation
+    
+    func testCategoryUpdateAndCRUDOperations() throws {
+        let service = LocalQuestionService(
+            mockData: try! JSONEncoder().encode(makeSeedQuestions()),
+            customCatalogURL: testCatalogURL
+        )
+        let vm = QuizViewModel(questionService: service, scoreStore: TestScoreStore())
+        
+        try vm.addCustomCategory(name: "DevOps", iconName: "gear", description: "CI/CD basics")
+        let catId = "devops"
+        
+        try vm.addCustomQuestion(
+            prompt: "What is CI?",
+            options: ["Continuous Integration", "Compute Instance", "Cloud Index", "Code Input"],
+            correctAnswerIndex: 0,
+            explanation: "Automated test integration.",
+            category: QuizCategory(rawValue: catId),
+            difficulty: .easy
+        )
+        
+        // Perform Update
+        try vm.updateCustomCategory(
+            id: catId,
+            displayName: "Platform Engineering & SRE",
+            iconName: "server.rack",
+            description: "Advanced reliability engineering"
+        )
+        
+        let updatedCat = CategoryRegistry.shared.category(for: catId)
+        XCTAssertNotNil(updatedCat)
+        XCTAssertEqual(updatedCat?.displayName, "Platform Engineering & SRE")
+        XCTAssertEqual(updatedCat?.iconName, "server.rack")
+        
+        // Verify in-memory question also updated its category title
+        let questions = vm.customQuestions
+        XCTAssertEqual(questions.first?.category.displayName, "Platform Engineering & SRE")
+    }
 }

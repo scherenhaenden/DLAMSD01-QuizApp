@@ -9,6 +9,8 @@ public struct StudyMaterialManagerView: View {
     
     @State private var selectedTab: Int = 0
     @State private var showAddCategorySheet = false
+    @State private var showEditCategorySheet = false
+    @State private var categoryToEdit: QuizCategory? = nil
     @State private var showQuestionEditorSheet = false
     @State private var questionToEdit: Question? = nil
     
@@ -36,6 +38,7 @@ public struct StudyMaterialManagerView: View {
                     Text("Import").tag(2)
                 }
                 .pickerStyle(.segmented)
+                .accessibilityIdentifier("studyMaterial.segmentedPicker")
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 
@@ -72,6 +75,15 @@ public struct StudyMaterialManagerView: View {
                 AddCategorySheet(viewModel: viewModel) { success, msg in
                     self.isStatusError = !success
                     self.statusMessage = msg
+                }
+            }
+            .sheet(isPresented: $showEditCategorySheet) {
+                if let category = categoryToEdit {
+                    EditCategorySheet(viewModel: viewModel, category: category) { success, msg in
+                        self.isStatusError = !success
+                        self.statusMessage = msg
+                        self.categoryToEdit = nil
+                    }
                 }
             }
             .sheet(isPresented: $showQuestionEditorSheet) {
@@ -137,6 +149,7 @@ public struct StudyMaterialManagerView: View {
                         .frame(minHeight: 44)
                 }
                 .accessibilityLabel("Add New Subject")
+                .accessibilityIdentifier("studyMaterial.addSubjectButton")
             }
             
             Section(header: Text("Academic Subjects (\(viewModel.allCategories.count))")) {
@@ -154,6 +167,18 @@ public struct StudyMaterialManagerView: View {
                                     .foregroundColor(Color.primary)
                                 Spacer()
                                 if category.isCustom {
+                                    Button {
+                                        categoryToEdit = category
+                                        showEditCategorySheet = true
+                                    } label: {
+                                        Image(systemName: "pencil")
+                                            .font(.caption.bold())
+                                            .foregroundColor(.accentColor)
+                                            .padding(6)
+                                    }
+                                    .buttonStyle(.borderless)
+                                    .accessibilityLabel("Edit Subject \(category.displayName)")
+                                    
                                     Text("Custom")
                                         .font(.caption2.bold())
                                         .padding(.horizontal, 6)
@@ -190,6 +215,14 @@ public struct StudyMaterialManagerView: View {
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
+                            
+                            Button {
+                                categoryToEdit = category
+                                showEditCategorySheet = true
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.orange)
                         }
                     }
                 }
@@ -220,6 +253,7 @@ public struct StudyMaterialManagerView: View {
                         .cornerRadius(8)
                 }
                 .accessibilityLabel("Add New Question")
+                .accessibilityIdentifier("studyMaterial.addQuestionButton")
                 
                 Spacer()
                 
@@ -358,6 +392,7 @@ public struct StudyMaterialManagerView: View {
                         .cornerRadius(10)
                     }
                     .accessibilityLabel("Select JSON File to import")
+                    .accessibilityIdentifier("studyMaterial.browseFileButton")
                 }
                 .padding(16)
                 .background(Color.adaptiveCardBackground)
@@ -567,6 +602,7 @@ struct AddCategorySheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                         .frame(minHeight: 44)
+                        .accessibilityIdentifier("studyMaterial.cancelSubjectButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { saveCategory() }
@@ -592,6 +628,118 @@ struct AddCategorySheet: View {
                 description: description
             )
             onCompletion(true, "Created subject '\(cleanName)'.")
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+
+// MARK: - Sheet: Edit Category
+struct EditCategorySheet: View {
+    @ObservedObject var viewModel: QuizViewModel
+    let category: QuizCategory
+    @Environment(\.dismiss) private var dismiss
+    let onCompletion: (Bool, String) -> Void
+    
+    @State private var name: String
+    @State private var description: String
+    @State private var selectedIcon: String
+    @State private var errorMessage: String?
+    
+    private let availableIcons = [
+        "folder.fill", "book.fill", "graduationcap.fill", "laptopcomputer",
+        "atom", "cpu", "network", "shield.fill", "globe", "server.rack"
+    ]
+    
+    init(
+        viewModel: QuizViewModel,
+        category: QuizCategory,
+        onCompletion: @escaping (Bool, String) -> Void
+    ) {
+        self.viewModel = viewModel
+        self.category = category
+        self.onCompletion = onCompletion
+        _name = State(initialValue: category.displayName)
+        _description = State(initialValue: category.localizedDescription)
+        _selectedIcon = State(initialValue: category.iconName)
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("Subject Details")) {
+                    TextField("Subject Name", text: $name)
+                        .frame(minHeight: 44)
+                    TextField("Description", text: $description)
+                        .frame(minHeight: 44)
+                }
+                
+                Section(header: Text("Icon Symbol")) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(availableIcons, id: \.self) { icon in
+                                Button {
+                                    selectedIcon = icon
+                                } label: {
+                                    Image(systemName: icon)
+                                        .font(.title2)
+                                        .frame(width: 44, height: 44)
+                                        .background(selectedIcon == icon ? Color.accentColor : Color.adaptiveCardBackground)
+                                        .foregroundColor(selectedIcon == icon ? .white : Color.primary)
+                                        .cornerRadius(10)
+                                }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel("Icon \(icon)")
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                }
+                
+                if let error = errorMessage {
+                    Section {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(Color.adaptiveErrorText)
+                    }
+                }
+            }
+            .navigationTitle("Edit Subject")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .frame(minHeight: 44)
+                        .accessibilityIdentifier("studyMaterial.cancelSubjectButton")
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { saveCategory() }
+                        .font(.body.bold())
+                        .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .frame(minHeight: 44)
+                }
+            }
+        }
+    }
+    
+    private func saveCategory() {
+        let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanName.isEmpty else {
+            errorMessage = "Subject name cannot be empty."
+            return
+        }
+        
+        do {
+            try viewModel.updateCustomCategory(
+                id: category.rawValue,
+                displayName: cleanName,
+                iconName: selectedIcon,
+                description: description.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+            onCompletion(true, "Subject '\(cleanName)' updated successfully.")
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
@@ -692,6 +840,7 @@ struct QuestionEditorSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                         .frame(minHeight: 44)
+                        .accessibilityIdentifier("studyMaterial.cancelQuestionButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { saveQuestion() }

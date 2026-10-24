@@ -99,7 +99,8 @@ public struct QuizSession: Equatable, Sendable {
         var tallies: [String: (title: String, total: Int, correct: Int)] = [:]
         for (idx, question) in questions.enumerated() {
             let catId = question.category.rawValue
-            let catTitle = question.category.displayName
+            let resolvedCategory = CategoryRegistry.shared.category(for: catId) ?? question.category
+            let catTitle = resolvedCategory.displayName
             let isCorrect = (userSelections.indices.contains(idx) && userSelections[idx] == question.correctAnswerIndex)
             var current = tallies[catId] ?? (title: catTitle, total: 0, correct: 0)
             current.total += 1

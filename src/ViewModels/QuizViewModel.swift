@@ -187,6 +187,28 @@ public final class QuizViewModel: ObservableObject {
         loadQuestionCatalog(forceReload: true)
     }
     
+    /// Updates metadata for an existing user-defined custom category.
+    public func updateCustomCategory(
+        id: String,
+        displayName: String,
+        iconName: String = "folder.fill",
+        description: String = ""
+    ) throws {
+        let trimmedName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
+            throw QuestionServiceError.invalidCatalogPayload("Category name cannot be empty.")
+        }
+        let category = QuizCategory(
+            rawValue: id,
+            customDisplayName: trimmedName,
+            customIconName: iconName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "folder.fill" : iconName,
+            customDescription: description.trimmingCharacters(in: .whitespacesAndNewlines),
+            isCustom: true
+        )
+        try questionService.updateCategory(category)
+        loadQuestionCatalog(forceReload: true)
+    }
+    
     /// Deletes a custom category and removes all associated questions.
     public func deleteCustomCategory(id: String) throws {
         try questionService.deleteCategory(id: id)

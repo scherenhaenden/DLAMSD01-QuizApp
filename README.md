@@ -15,8 +15,8 @@ Version **0.9.0** (Build `20261024.150000`), Sprint 9: Dynamic Study Material & 
 - Dual External Material Import:
   - Local JSON import via `.fileImporter` (local storage and iCloud Drive).
   - Remote web download via `URLSession` (`NetworkCatalogImporterProtocol`).
-  - Transactional rollback: corrupt or invalid question payloads abort cleanly without modifying existing catalog state.
-- Comprehensive Management UI (`StudyMaterialManagerView`): Modal sheet accessible from HomeView with 3 segmented tabs: *Subjects* (with system vs custom badges and swipe-to-delete), *Questions* (filterable by subject with edit/delete actions), and *Import* (file browsing and URL download with accessible status feedback).
+  - Transactional rollback & emergency backup: corrupt or invalid question payloads abort cleanly without modifying in-memory state or disk, and corrupted local files generate an emergency `.bak` backup copy.
+- Comprehensive Management UI (`StudyMaterialManagerView`): Modal sheet accessible from HomeView with 3 segmented tabs: *Subjects* (with system vs custom badges, in-app editing via `EditCategorySheet`, and swipe-to-delete), *Questions* (filterable by subject with edit/delete actions), and *Import* (file browsing and URL download with accessible status feedback).
 - Multi-device ergonomic layout: 640 pt centered container across all primary screens (`HomeView`, `QuizView`, `ResultView`, `LeaderboardView`), ensuring optimal reading line length (50-75 characters) and thumb-reach comfort on iPad (9th generation, 10.2" display) in both Portrait and Landscape orientations (US-15).
 - Deep VoiceOver accessibility: semantic labels, hints, and traits on `AnswerButton`, `CategoryCard`, `QuestionCard`, `TimerBar` (with `.updatesFrequently` trait), `ResultView`, and `LeaderboardView`, supplemented by live speech feedback announcements for evaluations and timeouts (US-16).
 - Mathematical WCAG 2.1 AA contrast audit: Emerald green feedback fill and passing badge (`#1B5E20`) achieve 7.87:1 contrast on white (exceeding WCAG AAA 7:1), Crimson red feedback fill and failing badge (`#B71C1C`) achieve 6.57:1 (WCAG AA 4.5:1).

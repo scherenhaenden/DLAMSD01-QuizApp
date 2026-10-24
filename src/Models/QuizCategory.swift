@@ -145,6 +145,10 @@ public struct QuizCategory: RawRepresentable, Codable, CaseIterable, Identifiabl
         if let name = customDisplayName, !name.isEmpty {
             return name
         }
+        if let registered = CategoryRegistry.shared.category(for: rawValue),
+           let regName = registered.customDisplayName, !regName.isEmpty {
+            return regName
+        }
         switch rawValue {
         case Self.softwareEngineering.rawValue:
             return "Software Engineering"
@@ -164,6 +168,10 @@ public struct QuizCategory: RawRepresentable, Codable, CaseIterable, Identifiabl
         if let icon = customIconName, !icon.isEmpty {
             return icon
         }
+        if let registered = CategoryRegistry.shared.category(for: rawValue),
+           let regIcon = registered.customIconName, !regIcon.isEmpty {
+            return regIcon
+        }
         switch rawValue {
         case Self.softwareEngineering.rawValue:
             return "gearshape.2.fill"
@@ -182,6 +190,10 @@ public struct QuizCategory: RawRepresentable, Codable, CaseIterable, Identifiabl
     public var localizedDescription: String {
         if let desc = customDescription, !desc.isEmpty {
             return desc
+        }
+        if let registered = CategoryRegistry.shared.category(for: rawValue),
+           let regDesc = registered.customDescription, !regDesc.isEmpty {
+            return regDesc
         }
         switch rawValue {
         case Self.softwareEngineering.rawValue:

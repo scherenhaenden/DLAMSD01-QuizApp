@@ -19,6 +19,9 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
     private var bundledCache: [Question]?
     private var customPayload: CustomCatalogPayload?
     
+    /// Records any diagnostic warning or corruption encountered when loading local files.
+    public private(set) var lastLoadWarning: String?
+    
     /// Default initializer configured for reading a bundled resource file and persisting to Application Support.
     public init(
         resourceName: String = "questions",
@@ -91,23 +94,59 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
         lock.lock()
         defer { lock.unlock() }
         
-        loadCustomPayloadIfNeeded()
-        
         // Prevent overriding system categories
         if QuizCategory.defaultCategories.contains(where: { $0.rawValue == category.rawValue }) {
-            return
+            throw QuestionServiceError.systemCategoryModificationNotAllowed(category.rawValue)
         }
         
-        CategoryRegistry.shared.register(category)
+        try executeAtomicMutation {
+            CategoryRegistry.shared.register(category)
+            let record = CustomCategoryRecord(from: category)
+            if let idx = self.customPayload?.categories.firstIndex(where: { $0.id == category.rawValue }) {
+                self.customPayload?.categories[idx] = record
+            } else {
+                self.customPayload?.categories.append(record)
+            }
+        }
+    }
+    
+    /// Updates metadata for an existing user-defined custom category.
+    public func updateCategory(_ category: QuizCategory) throws {
+        lock.lock()
+        defer { lock.unlock() }
         
-        let record = CustomCategoryRecord(from: category)
-        if let idx = customPayload?.categories.firstIndex(where: { $0.id == category.rawValue }) {
-            customPayload?.categories[idx] = record
-        } else {
-            customPayload?.categories.append(record)
+        if QuizCategory.defaultCategories.contains(where: { $0.rawValue == category.rawValue }) {
+            throw QuestionServiceError.systemCategoryModificationNotAllowed(category.rawValue)
         }
         
-        try persistCustomPayloadUnchecked()
+        try executeAtomicMutation {
+            guard let idx = self.customPayload?.categories.firstIndex(where: { $0.id == category.rawValue }) else {
+                throw QuestionServiceError.categoryNotFound(category.rawValue)
+            }
+            let record = CustomCategoryRecord(from: category)
+            self.customPayload?.categories[idx] = record
+            CategoryRegistry.shared.register(category)
+            
+            // Re-link questions referencing this category so in-memory models update immediately
+            if let questions = self.customPayload?.questions {
+                self.customPayload?.questions = questions.map { q in
+                    if q.category.rawValue == category.rawValue {
+                        if let updated = try? Question(
+                            id: q.id,
+                            prompt: q.prompt,
+                            options: q.options,
+                            correctAnswerIndex: q.correctAnswerIndex,
+                            explanation: q.explanation,
+                            category: category,
+                            difficulty: q.difficulty
+                        ) {
+                            return updated
+                        }
+                    }
+                    return q
+                }
+            }
+        }
     }
     
     /// Deletes a custom category and removes all associated questions from persistent storage.
@@ -119,13 +158,11 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
             throw QuestionServiceError.systemCategoryDeletionNotAllowed(id)
         }
         
-        loadCustomPayloadIfNeeded()
-        
-        CategoryRegistry.shared.unregister(id: id)
-        customPayload?.categories.removeAll { $0.id == id }
-        customPayload?.questions.removeAll { $0.category.rawValue == id }
-        
-        try persistCustomPayloadUnchecked()
+        try executeAtomicMutation {
+            CategoryRegistry.shared.unregister(id: id)
+            self.customPayload?.categories.removeAll { $0.id == id }
+            self.customPayload?.questions.removeAll { $0.category.rawValue == id }
+        }
     }
     
     /// Appends a new question to the custom catalog and persists it.
@@ -133,23 +170,22 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
         lock.lock()
         defer { lock.unlock() }
         
-        loadCustomPayloadIfNeeded()
-        
-        if customPayload?.questions.contains(where: { $0.id == question.id }) == true {
-            throw QuestionServiceError.duplicateQuestionId(question.id)
-        }
-        
-        // If question belongs to an unregistered custom category, register it
-        if !QuizCategory.defaultCategories.contains(where: { $0.rawValue == question.category.rawValue }) {
-            CategoryRegistry.shared.register(question.category)
-            let catRecord = CustomCategoryRecord(from: question.category)
-            if customPayload?.categories.contains(where: { $0.id == question.category.rawValue }) == false {
-                customPayload?.categories.append(catRecord)
+        try executeAtomicMutation {
+            if self.customPayload?.questions.contains(where: { $0.id == question.id }) == true {
+                throw QuestionServiceError.duplicateQuestionId(question.id)
             }
+            
+            // If question belongs to an unregistered custom category, register it
+            if !QuizCategory.defaultCategories.contains(where: { $0.rawValue == question.category.rawValue }) {
+                CategoryRegistry.shared.register(question.category)
+                let catRecord = CustomCategoryRecord(from: question.category)
+                if self.customPayload?.categories.contains(where: { $0.id == question.category.rawValue }) == false {
+                    self.customPayload?.categories.append(catRecord)
+                }
+            }
+            
+            self.customPayload?.questions.append(question)
         }
-        
-        customPayload?.questions.append(question)
-        try persistCustomPayloadUnchecked()
     }
     
     /// Updates an existing question within the custom catalog.
@@ -162,14 +198,12 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
             throw QuestionServiceError.systemQuestionDeletionNotAllowed(question.id.uuidString)
         }
         
-        loadCustomPayloadIfNeeded()
-        
-        guard let idx = customPayload?.questions.firstIndex(where: { $0.id == question.id }) else {
-            throw QuestionServiceError.questionNotFound(question.id)
+        try executeAtomicMutation {
+            guard let idx = self.customPayload?.questions.firstIndex(where: { $0.id == question.id }) else {
+                throw QuestionServiceError.questionNotFound(question.id)
+            }
+            self.customPayload?.questions[idx] = question
         }
-        
-        customPayload?.questions[idx] = question
-        try persistCustomPayloadUnchecked()
     }
     
     /// Removes a question from the custom catalog.
@@ -182,14 +216,12 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
             throw QuestionServiceError.systemQuestionDeletionNotAllowed(id.uuidString)
         }
         
-        loadCustomPayloadIfNeeded()
-        
-        guard let idx = customPayload?.questions.firstIndex(where: { $0.id == id }) else {
-            throw QuestionServiceError.questionNotFound(id)
+        try executeAtomicMutation {
+            guard let idx = self.customPayload?.questions.firstIndex(where: { $0.id == id }) else {
+                throw QuestionServiceError.questionNotFound(id)
+            }
+            self.customPayload?.questions.remove(at: idx)
         }
-        
-        customPayload?.questions.remove(at: idx)
-        try persistCustomPayloadUnchecked()
     }
     
     /// Transactionally imports categories and questions from raw JSON data.
@@ -250,27 +282,45 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
             }
         }
         
-        // Transaction commit: apply to registry and in-memory payload
-        for catRecord in importedCategories {
-            let category = catRecord.toQuizCategory
-            CategoryRegistry.shared.register(category)
-            if let idx = customPayload?.categories.firstIndex(where: { $0.id == catRecord.id }) {
-                customPayload?.categories[idx] = catRecord
-            } else {
-                customPayload?.categories.append(catRecord)
+        return try executeAtomicMutation {
+            for catRecord in importedCategories {
+                let category = catRecord.toQuizCategory
+                CategoryRegistry.shared.register(category)
+                if let idx = self.customPayload?.categories.firstIndex(where: { $0.id == catRecord.id }) {
+                    self.customPayload?.categories[idx] = catRecord
+                } else {
+                    self.customPayload?.categories.append(catRecord)
+                }
             }
-        }
-        
-        for q in importedQuestions {
-            if let idx = customPayload?.questions.firstIndex(where: { $0.id == q.id }) {
-                customPayload?.questions[idx] = q
-            } else {
-                customPayload?.questions.append(q)
+            
+            for q in importedQuestions {
+                if let idx = self.customPayload?.questions.firstIndex(where: { $0.id == q.id }) {
+                    self.customPayload?.questions[idx] = q
+                } else {
+                    self.customPayload?.questions.append(q)
+                }
             }
+            return (importedCategories.count, importedQuestions.count)
         }
+    }
+    
+    // MARK: - Transactional Atomic Helper
+    
+    private func executeAtomicMutation<T>(_ block: () throws -> T) throws -> T {
+        loadCustomPayloadIfNeeded()
+        let previousPayload = self.customPayload
+        let previousRegistry = CategoryRegistry.shared.snapshot()
         
-        try persistCustomPayloadUnchecked()
-        return (importedCategories.count, importedQuestions.count)
+        do {
+            let result = try block()
+            try persistCustomPayloadUnchecked()
+            return result
+        } catch {
+            // Transaction Rollback: restore in-memory payload and registry snapshot
+            self.customPayload = previousPayload
+            CategoryRegistry.shared.resetTo(previousRegistry)
+            throw error
+        }
     }
     
     // MARK: - Private Storage & Bundle Helpers
@@ -321,7 +371,15 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
             }
             
             self.customPayload = payload
+            self.lastLoadWarning = nil
         } catch {
+            // Safety measure: NEVER silently overwrite a corrupted user catalog!
+            // 1. Create a safe backup of the corrupted file before continuing
+            let timestamp = Int(Date().timeIntervalSince1970)
+            let backupURL = url.deletingPathExtension().appendingPathExtension("corrupted.\(timestamp).bak")
+            try? FileManager.default.copyItem(at: url, to: backupURL)
+            
+            self.lastLoadWarning = "Corrupted catalog detected. Emergency backup created at \(backupURL.lastPathComponent): \(error.localizedDescription)"
             self.customPayload = CustomCatalogPayload()
         }
     }

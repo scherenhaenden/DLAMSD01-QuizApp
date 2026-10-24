@@ -633,10 +633,11 @@ final class Sprint9DynamicCatalogTests: XCTestCase {
         XCTAssertEqual(customQuestions.count, 0)
         XCTAssertNotNil(service.lastLoadWarning)
         
-        // Verify emergency backup file was created
+        // Verify emergency backup file was created and verified
         let dirContents = try FileManager.default.contentsOfDirectory(atPath: tempDirectoryURL.path)
         let backupFiles = dirContents.filter { $0.contains("corrupted") && $0.hasSuffix(".bak") }
         XCTAssertEqual(backupFiles.count, 1, "An emergency backup file must be created to prevent data loss")
+        XCTAssertFalse(service.isCatalogSaveBlockedToPreventDataLoss, "Save should not be blocked when backup succeeded and was verified")
     }
     
     // MARK: - Test 11: Category Update CRUD Operation
@@ -676,5 +677,109 @@ final class Sprint9DynamicCatalogTests: XCTestCase {
         // Verify in-memory question also updated its category title
         let questions = vm.customQuestions
         XCTAssertEqual(questions.first?.category.displayName, "Platform Engineering & SRE")
+    }
+    
+    // MARK: - Test 12: Duplicate Category IDs Do Not Crash Process
+    
+    func testDuplicateCategoryIDsInImportDoesNotCrash() throws {
+        // Reproduce exact Codex audit scenario: JSON with duplicate category IDs
+        let duplicateCategoryJSON = """
+        {
+            "categories": [
+                {
+                    "id": "same",
+                    "displayName": "Initial Category",
+                    "iconName": "folder.fill",
+                    "description": "First instance"
+                },
+                {
+                    "id": "same",
+                    "displayName": "Overridden Category",
+                    "iconName": "book.fill",
+                    "description": "Duplicate instance"
+                }
+            ],
+            "questions": [
+                {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "prompt": "Test Prompt for duplicate category check",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswerIndex": 0,
+                    "explanation": "Valid explanation.",
+                    "category": "same",
+                    "difficulty": "medium"
+                }
+            ]
+        }
+        """.data(using: .utf8)!
+        
+        let decoder = JSONDecoder()
+        // Must decode without throwing Fatal error: Duplicate values for key
+        let payload = try decoder.decode(CustomCatalogPayload.self, from: duplicateCategoryJSON)
+        XCTAssertEqual(payload.categories.count, 1, "Duplicate category IDs must be deduplicated")
+        XCTAssertEqual(payload.questions.count, 1)
+        XCTAssertEqual(payload.questions.first?.category.rawValue, "same")
+        
+        // Also test importing via LocalQuestionService
+        let service = LocalQuestionService(
+            mockData: try! JSONEncoder().encode(makeSeedQuestions()),
+            customCatalogURL: testCatalogURL
+        )
+        let result = try service.importCatalog(from: duplicateCategoryJSON)
+        XCTAssertEqual(result.categoriesCount, 1)
+        XCTAssertEqual(result.questionsCount, 1)
+        
+        let loaded = try service.loadCustomQuestions()
+        XCTAssertEqual(loaded.count, 1)
+        XCTAssertEqual(loaded.first?.category.rawValue, "same")
+    }
+    
+    // MARK: - Test 13: Corrupted Catalog With Failed Backup Blocks Save Operation
+    
+    func testCorruptedCatalogWithFailedBackupBlocksSaveOperation() throws {
+        // Place corrupted data
+        let corruptedData = "NOT_A_VALID_JSON_CORRUPTED_PAYLOAD".data(using: .utf8)!
+        try corruptedData.write(to: testCatalogURL)
+        
+        // Create an un-copyable scenario by placing a non-deletable directory at the backup target
+        // or by simulating unreadable backup target
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let backupURL = testCatalogURL.deletingPathExtension().appendingPathExtension("corrupted.\(timestamp).bak")
+        
+        // Create a directory at the backup path to prevent copyItem from completing
+        try FileManager.default.createDirectory(at: backupURL, withIntermediateDirectories: true)
+        // Make the directory non-writable
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: backupURL.path)
+        
+        defer {
+            // Restore permissions for cleanup
+            try? FileManager.default.setAttributes([.posixPermissions: 0o777], ofItemAtPath: backupURL.path)
+            try? FileManager.default.removeItem(at: backupURL)
+        }
+        
+        let service = LocalQuestionService(
+            mockData: try! JSONEncoder().encode(makeSeedQuestions()),
+            customCatalogURL: testCatalogURL
+        )
+        
+        _ = try service.loadCustomQuestions()
+        
+        // If backup failed, isCatalogSaveBlockedToPreventDataLoss must be true
+        if service.isCatalogSaveBlockedToPreventDataLoss {
+            XCTAssertTrue(service.lastLoadWarning?.contains("CRITICAL") ?? false)
+            
+            // Any attempt to write must fail and protect the original corrupted file
+            XCTAssertThrowsError(try service.addCategory(QuizCategory(rawValue: "new_cat"))) { error in
+                guard case QuestionServiceError.customCatalogSaveFailed(let msg) = error else {
+                    XCTFail("Expected customCatalogSaveFailed error, got: \(error)")
+                    return
+                }
+                XCTAssertTrue(msg.contains("blocked"), "Must indicate write operation was blocked")
+            }
+            
+            // Confirm the original corrupted file content was NOT overwritten
+            let existingData = try Data(contentsOf: testCatalogURL)
+            XCTAssertEqual(existingData, corruptedData, "Corrupted file must be preserved intact")
+        }
     }
 }

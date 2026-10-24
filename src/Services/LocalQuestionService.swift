@@ -22,6 +22,9 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
     /// Records any diagnostic warning or corruption encountered when loading local files.
     public private(set) var lastLoadWarning: String?
     
+    /// Flags whether saving is strictly blocked to protect an existing corrupted catalog file whose backup failed.
+    public private(set) var isCatalogSaveBlockedToPreventDataLoss: Bool = false
+    
     /// Default initializer configured for reading a bundled resource file and persisting to Application Support.
     public init(
         resourceName: String = "questions",
@@ -282,6 +285,27 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
             }
         }
         
+        // Deduplicate imported categories and questions safely to prevent duplicate insertions
+        var uniqueImportedCategories: [CustomCategoryRecord] = []
+        var seenCatIds = Set<String>()
+        for cat in importedCategories {
+            if !seenCatIds.contains(cat.id) {
+                seenCatIds.insert(cat.id)
+                uniqueImportedCategories.append(cat)
+            }
+        }
+        importedCategories = uniqueImportedCategories
+        
+        var uniqueImportedQuestions: [Question] = []
+        var seenQuestionIds = Set<UUID>()
+        for q in importedQuestions {
+            if !seenQuestionIds.contains(q.id) {
+                seenQuestionIds.insert(q.id)
+                uniqueImportedQuestions.append(q)
+            }
+        }
+        importedQuestions = uniqueImportedQuestions
+        
         return try executeAtomicMutation {
             for catRecord in importedCategories {
                 let category = catRecord.toQuizCategory
@@ -372,19 +396,49 @@ public final class LocalQuestionService: QuestionServiceProtocol, @unchecked Sen
             
             self.customPayload = payload
             self.lastLoadWarning = nil
-        } catch {
+        } catch let decodeError {
             // Safety measure: NEVER silently overwrite a corrupted user catalog!
             // 1. Create a safe backup of the corrupted file before continuing
             let timestamp = Int(Date().timeIntervalSince1970)
             let backupURL = url.deletingPathExtension().appendingPathExtension("corrupted.\(timestamp).bak")
-            try? FileManager.default.copyItem(at: url, to: backupURL)
             
-            self.lastLoadWarning = "Corrupted catalog detected. Emergency backup created at \(backupURL.lastPathComponent): \(error.localizedDescription)"
-            self.customPayload = CustomCatalogPayload()
+            var backupVerified = false
+            do {
+                if FileManager.default.fileExists(atPath: backupURL.path) {
+                    try FileManager.default.removeItem(at: backupURL)
+                }
+                try FileManager.default.copyItem(at: url, to: backupURL)
+                if FileManager.default.fileExists(atPath: backupURL.path) {
+                    let backupAttrs = try FileManager.default.attributesOfItem(atPath: backupURL.path)
+                    let origAttrs = try FileManager.default.attributesOfItem(atPath: url.path)
+                    if let backupSize = backupAttrs[.size] as? Int64,
+                       let origSize = origAttrs[.size] as? Int64,
+                       backupSize == origSize {
+                        backupVerified = true
+                    }
+                }
+            } catch {
+                backupVerified = false
+            }
+            
+            if backupVerified {
+                self.isCatalogSaveBlockedToPreventDataLoss = false
+                self.lastLoadWarning = "Corrupted catalog detected. Emergency backup verified at \(backupURL.lastPathComponent): \(decodeError.localizedDescription)"
+                self.customPayload = CustomCatalogPayload()
+            } else {
+                // If the backup failed or could not be verified, BLOCK any overwrite of the original file
+                // to prevent permanent data loss!
+                self.isCatalogSaveBlockedToPreventDataLoss = true
+                self.lastLoadWarning = "CRITICAL: Corrupted catalog detected at \(url.lastPathComponent) and emergency backup failed! Write operations are blocked to prevent permanent data loss: \(decodeError.localizedDescription)"
+                self.customPayload = CustomCatalogPayload()
+            }
         }
     }
     
     private func persistCustomPayloadUnchecked() throws {
+        if isCatalogSaveBlockedToPreventDataLoss {
+            throw QuestionServiceError.customCatalogSaveFailed("Write operation blocked: an unreadable or corrupted catalog exists at destination and could not be safely backed up. Manual recovery is required to prevent data loss.")
+        }
         guard let url = customCatalogURL else { return }
         guard let payload = customPayload else { return }
         

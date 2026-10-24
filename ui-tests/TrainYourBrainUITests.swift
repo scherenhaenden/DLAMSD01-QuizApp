@@ -222,11 +222,15 @@ final class TrainYourBrainUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 2.0) // Allow rotation and layout animation to settle
         attachScreenshot(named: "Home - iPad Landscape Layout")
         
-        // Verify touch targets remain available in landscape
+        // Verify touch targets remain comfortably accessible and meet minimum HIG recommendations (>= 44x44 pt)
         let scoresButton = app.buttons["home.scoresButton"]
         XCTAssertTrue(scoresButton.waitForExistence(timeout: 10))
+        XCTAssertGreaterThanOrEqual(scoresButton.frame.height, 44.0, "Leaderboard button must meet minimum 44pt touch target")
+        
         XCTAssertTrue(category.waitForExistence(timeout: 10))
         XCTAssertTrue(category.isEnabled)
+        XCTAssertGreaterThanOrEqual(category.frame.height, 44.0, "Category card must meet minimum 44pt touch target")
+        XCTAssertGreaterThanOrEqual(category.frame.width, 44.0)
         
         // Open Leaderboard modal in landscape
         scoresButton.tap()
@@ -237,8 +241,27 @@ final class TrainYourBrainUITests: XCTestCase {
         let doneButton = app.buttons["leaderboard.dismiss"]
         XCTAssertTrue(doneButton.waitForExistence(timeout: 5))
         doneButton.tap()
+        Thread.sleep(forTimeInterval: 1.0) // Allow modal sheet dismissal animation to complete
         
-        // 3. Restore Portrait orientation
+        // 3. Verify Quiz active gameplay in Landscape orientation
+        XCTAssertTrue(category.waitForExistence(timeout: 10))
+        category.tap()
+        
+        let answer0 = app.buttons["quiz.answer.0"]
+        XCTAssertTrue(answer0.waitForExistence(timeout: 10), "Question and options must load in landscape mode")
+        XCTAssertGreaterThanOrEqual(answer0.frame.height, 44.0, "Answer option must maintain minimum 44pt target in landscape")
+        attachScreenshot(named: "Quiz - iPad Landscape Layout")
+        
+        answer0.tap()
+        let advanceButton = app.buttons["quiz.advance"]
+        XCTAssertTrue(advanceButton.waitForExistence(timeout: 10), "Advance button must be available in landscape")
+        XCTAssertGreaterThanOrEqual(advanceButton.frame.height, 44.0, "Advance button must maintain minimum 44pt target in landscape")
+        
+        let closeButton = app.buttons["quiz.close"]
+        XCTAssertTrue(closeButton.waitForExistence(timeout: 5))
+        closeButton.tap()
+        
+        // 4. Restore Portrait orientation
         XCUIDevice.shared.orientation = .portrait
         Thread.sleep(forTimeInterval: 1.5)
         XCTAssertTrue(category.waitForExistence(timeout: 10))

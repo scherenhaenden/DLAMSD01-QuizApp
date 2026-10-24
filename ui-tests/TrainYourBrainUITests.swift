@@ -334,28 +334,44 @@ final class TrainYourBrainUITests: XCTestCase {
         attachScreenshot(named: "Study Material - Add Subject Sheet")
 
         let nameField = app.textFields["studyMaterial.newSubjectNameField"]
-        if nameField.waitForExistence(timeout: 5) {
-            nameField.tap()
-            nameField.typeText("Robotics")
-            let saveButton = app.buttons["studyMaterial.saveNewSubjectButton"]
-            if saveButton.waitForExistence(timeout: 3) && saveButton.isEnabled {
-                saveButton.tap()
-                let createdSubject = app.staticTexts["Robotics"]
-                XCTAssertTrue(createdSubject.waitForExistence(timeout: 5), "Created subject must appear in list")
-            }
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5), "New Subject name textfield must appear")
+        nameField.tap()
+        nameField.typeText("Robotics")
+        let saveButton = app.buttons["studyMaterial.saveNewSubjectButton"]
+        XCTAssertTrue(saveButton.waitForExistence(timeout: 5), "Save button must exist on New Subject sheet")
+        XCTAssertTrue(saveButton.isEnabled, "Save button must be enabled when name is non-empty")
+        saveButton.tap()
+
+        let createdSubject = app.staticTexts["Robotics"]
+        XCTAssertTrue(createdSubject.waitForExistence(timeout: 5), "Created subject 'Robotics' must appear in list")
+
+        // 4. Test editing the newly created custom subject
+        let editButton = app.buttons["studyMaterial.editSubjectButton.robotics"]
+        let fallbackEdit = app.buttons["Edit Subject Robotics"]
+        XCTAssertTrue(editButton.waitForExistence(timeout: 5) || fallbackEdit.waitForExistence(timeout: 2), "Edit button for 'Robotics' must exist in subjects list")
+        if editButton.exists {
+            editButton.tap()
         } else {
-            let cancelButton = app.buttons["studyMaterial.cancelSubjectButton"]
-            let fallbackCancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancelButton.waitForExistence(timeout: 5) || fallbackCancel.waitForExistence(timeout: 2), "Cancel button must exist on New Subject sheet")
-            if cancelButton.exists {
-                cancelButton.tap()
-            } else {
-                fallbackCancel.tap()
-            }
+            fallbackEdit.tap()
         }
 
+        let editTitle = app.staticTexts["Edit Subject"]
+        XCTAssertTrue(editTitle.waitForExistence(timeout: 5), "Edit Subject sheet must appear")
+        let editNameField = app.textFields["studyMaterial.editSubjectNameField"]
+        XCTAssertTrue(editNameField.waitForExistence(timeout: 5), "Edit Subject name field must appear")
+        editNameField.tap()
+        let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: 25)
+        editNameField.typeText(deleteString)
+        editNameField.typeText("Robotics Lab")
+        let saveEditButton = app.buttons["studyMaterial.saveEditSubjectButton"]
+        XCTAssertTrue(saveEditButton.waitForExistence(timeout: 5), "Save button must exist on Edit Subject sheet")
+        saveEditButton.tap()
+
+        let updatedSubject = app.staticTexts["Robotics Lab"]
+        XCTAssertTrue(updatedSubject.waitForExistence(timeout: 5), "Updated subject 'Robotics Lab' must appear in subjects list")
+
         let doneButton = app.buttons["Done"]
-        XCTAssertTrue(doneButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 5), "Done button must exist on Study Material sheet")
         doneButton.tap()
 
         XCTAssertTrue(app.buttons["home.scoresButton"].waitForExistence(timeout: 10))

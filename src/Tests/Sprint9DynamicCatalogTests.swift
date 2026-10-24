@@ -637,6 +637,9 @@ final class Sprint9DynamicCatalogTests: XCTestCase {
         let dirContents = try FileManager.default.contentsOfDirectory(atPath: tempDirectoryURL.path)
         let backupFiles = dirContents.filter { $0.contains("corrupted") && $0.hasSuffix(".bak") }
         XCTAssertEqual(backupFiles.count, 1, "An emergency backup file must be created to prevent data loss")
+        let backupURL = tempDirectoryURL.appendingPathComponent(backupFiles[0])
+        let backupBytes = try Data(contentsOf: backupURL)
+        XCTAssertEqual(backupBytes, corruptedData, "Backup file content must match corrupted original byte-by-byte")
         XCTAssertFalse(service.isCatalogSaveBlockedToPreventDataLoss, "Save should not be blocked when backup succeeded and was verified")
     }
     

@@ -1,8 +1,8 @@
-# Sprint 8 Technical Report: Multi-Device iPad Ergonomics & VoiceOver Accessibility (`v0.8.0` / `v0.8.1` / `v0.8.2`)
+# Sprint 8 Technical Report: Multi-Device iPad Ergonomics & VoiceOver Accessibility (`v0.8.0` – `v0.8.3`)
 
 **Maintainer:** `scherenhaenden`
 **Project:** DLAMSD01 – Apple Mobile Solution Development I (Train-your-Brain iOS)  
-**Target Release:** `v0.8.2` (Build `20261024.134000`)  
+**Target Release:** `v0.8.3` (Build `20261024.140000`)  
 **Curriculum Stages:** Stage 63 (Adaptive Layout), Stage 64 (VoiceOver & Accessibility)  
 **Architecture Reference:** ADR-10: Multi-Device-Optimierung und Barrierefreiheit/Apple%20Mobile%20Solution%20Development%20I%20(DLAMSD01)/06_Architekturentscheidungen_und_Variantenvergleich_ADR.md)
 
@@ -21,6 +21,9 @@ Sprint 8 delivers comprehensive multi-device ergonomic adaptation for iPad (spec
   - **Dynamic Adaptive Text Tokens:** Introduced `Color.adaptiveSuccessText` and `Color.adaptiveErrorText` in `Color+Adaptive.swift` using dynamic UIKit/AppKit providers. In Light Mode, resolves to `#1B5E20` ($CR = 7.87:1$ on white, $7.05:1$ on canvas) and `#B71C1C` ($CR = 6.57:1$ on white, $5.89:1$ on canvas). In Dark Mode, resolves to bright mint `#30D158` ($CR = 10.39:1$ on OLED black `#000000`, $8.42:1$ on card `#1C1C1E`) and bright coral red `#FF6961` ($CR = 7.45:1$ on OLED black, $6.03:1$ on card), completely eliminating the previous 2.67:1 / 2.16:1 Dark Mode contrast deficiency.
   - **UI Control Contrast Benchmark:** Corrected `#007AFF` on white card to exact sRGB contrast of **4.02 : 1** (exceeding the WCAG 3.0:1 benchmark for graphical UI controls).
   - **Complete Landscape UI Flow & 640pt Constraint Verification:** Expanded `testIPadLandscapeAndPortraitErgonomicAdaptation` to assert `category.frame.width <= 640.0` on iPad 10.2" landscape, complete an entire 6-question quiz round in landscape, verify the landscape `ResultView` header and action buttons, assert $\ge 44 \times 44$ pt touch targets, and return smoothly to the home menu.
+* **Category Breakdown Contrast Hardening (`v0.8.3`):**
+  - Replaced raw `.green` and `.orange` in `ResultView.swift` (category performance breakdown text and mini progress bar capsule fills) with `Color.adaptiveSuccessText` and `Color.adaptiveErrorText`.
+  - Resolves the residual 1.99:1 low contrast finding for category accuracy counts, ensuring text contrast $\ge 7.05 : 1$ on light canvas and $\ge 6.03 : 1$ on dark card surfaces.
 
 ---
 
@@ -78,6 +81,11 @@ AccessibilityNotification.Announcement(
     "Correct. Your score is \(viewModel.currentScore) points."
 ).post()
 ```
+
+### 3.2. VoiceOver Verification Scope
+
+- **Automated Declarative Testing:** All accessibility labels, hints, values, and traits are programmatically asserted across component states in `Sprint8AccessibilityAndErgonomicsTests.swift`.
+- **Screen Reader Runtime Protocol:** The application's semantic tree provides complete navigable coverage for VoiceOver. Full end-to-end interactive screen reader evaluation (including physical VoiceOver rotor navigation, two-finger double-tap, sweep gestures, and speech synthesis pacing) is documented as an exploratory verification protocol in ADR-10, ready for final physical device acceptance.
 
 ---
 

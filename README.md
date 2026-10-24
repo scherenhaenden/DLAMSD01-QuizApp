@@ -4,10 +4,19 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.8.4** (Build `20261024.143500`), Sprint 8: Multi-Device Optimization (iPad 9.ª Gen 10.2"), 640pt ergonomic layout container, VoiceOver accessibility, WCAG 2.1 AA/AAA contrast compliance, solid high-contrast grade badges, adaptive Dark Mode color tokens, category breakdown contrast hardening, adaptive MetricTile icons, and storage capacity boundary hardening.
+Version **0.9.0** (Build `20261024.150000`), Sprint 9: Dynamic Study Material & Catalog Expansion (Custom subjects, in-app question authoring with 4 choices and radio-marked correct answer, sandbox persistence in `Application Support/TrainYourBrain/custom_catalog.json`, transactional JSON file and URL network import via `URLSession`, integrated quiz gameplay with German academic grading 1.0–5.0 and Leaderboard tracking, and `StudyMaterialManagerView`).
 
 ### Implemented
 
+- Dynamic Study Material & Extensible Categories: `QuizCategory` is an open struct supported by thread-safe in-memory `CategoryRegistry`, combining foundational B.Sc. curriculum subjects with user-defined or imported subjects.
+- In-App Question Authoring: Direct on-device question creation with prompt, 4 options, radio-picker to designate the single correct choice, pedagogical rationale, category classification, and difficulty rating (`Easy`, `Medium`, `Hard`).
+- Robust Domain Invariant Validation: Questions enforce non-empty prompt/explanation, exactly 4 unique options, and a valid correct answer index (0..<4). Malformed entries are rejected before saving.
+- Persistent Sandbox Storage: User-created categories and questions are persisted atomically to `Application Support/TrainYourBrain/custom_catalog.json`, surviving app terminations and device restarts. Core curriculum questions remain immutable.
+- Dual External Material Import:
+  - Local JSON import via `.fileImporter` (local storage and iCloud Drive).
+  - Remote web download via `URLSession` (`NetworkCatalogImporterProtocol`).
+  - Transactional rollback: corrupt or invalid question payloads abort cleanly without modifying existing catalog state.
+- Comprehensive Management UI (`StudyMaterialManagerView`): Modal sheet accessible from HomeView with 3 segmented tabs: *Subjects* (with system vs custom badges and swipe-to-delete), *Questions* (filterable by subject with edit/delete actions), and *Import* (file browsing and URL download with accessible status feedback).
 - Multi-device ergonomic layout: 640 pt centered container across all primary screens (`HomeView`, `QuizView`, `ResultView`, `LeaderboardView`), ensuring optimal reading line length (50-75 characters) and thumb-reach comfort on iPad (9th generation, 10.2" display) in both Portrait and Landscape orientations (US-15).
 - Deep VoiceOver accessibility: semantic labels, hints, and traits on `AnswerButton`, `CategoryCard`, `QuestionCard`, `TimerBar` (with `.updatesFrequently` trait), `ResultView`, and `LeaderboardView`, supplemented by live speech feedback announcements for evaluations and timeouts (US-16).
 - Mathematical WCAG 2.1 AA contrast audit: Emerald green feedback fill and passing badge (`#1B5E20`) achieve 7.87:1 contrast on white (exceeding WCAG AAA 7:1), Crimson red feedback fill and failing badge (`#B71C1C`) achieve 6.57:1 (WCAG AA 4.5:1).
@@ -33,7 +42,7 @@ Version **0.8.4** (Build `20261024.143500`), Sprint 8: Multi-Device Optimization
 - Programmatic answer-feedback VoiceOver announcements for correct, incorrect, and timeout states.
 - Appearance selection stored through `@AppStorage`. Dedicated "Scores" button in HomeView header opening the Leaderboard modal sheet.
 
-Question content can be changed in `src/Resources/questions.json`. New categories also require updating `QuizCategory`. There is no question editor or import feature in the app.
+Question content is pre-seeded with 24 reference curriculum questions in `src/Resources/questions.json`. Users can expand the catalog by creating custom subjects and authoring questions directly in the app or importing JSON banks locally or via URL.
 
 ## Open and build
 

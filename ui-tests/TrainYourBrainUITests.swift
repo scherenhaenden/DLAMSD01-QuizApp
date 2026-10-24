@@ -290,6 +290,23 @@ final class TrainYourBrainUITests: XCTestCase {
         XCTAssertTrue(category.waitForExistence(timeout: 10))
     }
 
+    func testStudyMaterialManagerSheetCanOpenAndClose() {
+        app.launch()
+        let materialButton = app.buttons["home.materialButton"]
+        XCTAssertTrue(materialButton.waitForExistence(timeout: 15))
+        materialButton.tap()
+
+        let navTitle = app.staticTexts["Study Material"]
+        XCTAssertTrue(navTitle.waitForExistence(timeout: 10))
+        attachScreenshot(named: "Study Material - Manager Opened")
+
+        let doneButton = app.buttons["Done"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 5))
+        doneButton.tap()
+
+        XCTAssertTrue(app.buttons["home.scoresButton"].waitForExistence(timeout: 10))
+    }
+
     private func answerAndAdvance(questionCount: Int) {
         for questionIndex in 0..<questionCount {
             let answer = app.buttons["quiz.answer.0"]

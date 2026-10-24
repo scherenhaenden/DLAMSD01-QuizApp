@@ -116,6 +116,9 @@ public final class QuizViewModel: ObservableObject {
     /// Haptic feedback provider delivering tactile sensory response upon user answers.
     private let hapticService: HapticFeedbackServiceProtocol
     
+    /// Remote network catalog fetcher.
+    private let networkImporter: NetworkCatalogImporterProtocol
+    
     /// Local persistence store for recording high scores and historical rounds (ADR-07).
     public let scoreStore: ScoreStoreProtocol
     
@@ -124,18 +127,20 @@ public final class QuizViewModel: ObservableObject {
         questionService: QuestionServiceProtocol = LocalQuestionService(),
         scoreStore: ScoreStoreProtocol = UserDefaultsScoreStore(),
         monotonicClock: @escaping () -> TimeInterval = QuizViewModel.defaultMonotonicClock,
-        hapticService: HapticFeedbackServiceProtocol = SystemHapticFeedbackService.shared
+        hapticService: HapticFeedbackServiceProtocol = SystemHapticFeedbackService.shared,
+        networkImporter: NetworkCatalogImporterProtocol = NetworkCatalogImporter()
     ) {
         self.questionService = questionService
         self.scoreStore = scoreStore
         self.monotonicClock = monotonicClock
         self.hapticService = hapticService
+        self.networkImporter = networkImporter
     }
     
     /// Loads counts once per ViewModel lifetime. A failed load can be retried from HomeView.
     /// Catalog errors leave navigation idle so that recovery stays on the home screen.
-    public func loadQuestionCatalog() {
-        guard !isCatalogLoaded else { return }
+    public func loadQuestionCatalog(forceReload: Bool = false) {
+        if isCatalogLoaded && !forceReload { return }
         do {
             let questions = try questionService.loadAllQuestions()
             guard !questions.isEmpty else { throw QuestionServiceError.emptyQuestionSet }
@@ -146,6 +151,111 @@ public final class QuizViewModel: ObservableObject {
             availableQuestionCounts = [:]
             catalogError = error.localizedDescription
         }
+    }
+    
+    // MARK: - Dynamic Study Material Operations (Sprint 9)
+    
+    /// Returns all registered categories including defaults and user-defined ones.
+    public var allCategories: [QuizCategory] {
+        QuizCategory.allCases
+    }
+    
+    /// Returns only user-created categories.
+    public var customCategories: [QuizCategory] {
+        CategoryRegistry.shared.customCategoryList
+    }
+    
+    /// Returns all user-created or imported questions.
+    public var customQuestions: [Question] {
+        (try? questionService.loadCustomQuestions()) ?? []
+    }
+    
+    /// Adds a user-defined category to the study material catalog.
+    public func addCustomCategory(name: String, iconName: String = "folder.fill", description: String = "") throws {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
+            throw QuestionServiceError.invalidCatalogPayload("Category name cannot be empty.")
+        }
+        let category = QuizCategory(
+            id: trimmedName.lowercased().replacingOccurrences(of: " ", with: "_"),
+            displayName: trimmedName,
+            iconName: iconName,
+            description: description,
+            isCustom: true
+        )
+        try questionService.addCategory(category)
+        loadQuestionCatalog(forceReload: true)
+    }
+    
+    /// Deletes a custom category and removes all associated questions.
+    public func deleteCustomCategory(id: String) throws {
+        try questionService.deleteCategory(id: id)
+        loadQuestionCatalog(forceReload: true)
+    }
+    
+    /// Creates and persists a new question in the custom catalog.
+    public func addCustomQuestion(
+        prompt: String,
+        options: [String],
+        correctAnswerIndex: Int,
+        explanation: String,
+        category: QuizCategory,
+        difficulty: Difficulty = .medium
+    ) throws {
+        let question = try Question(
+            prompt: prompt,
+            options: options,
+            correctAnswerIndex: correctAnswerIndex,
+            explanation: explanation,
+            category: category,
+            difficulty: difficulty
+        )
+        try questionService.addQuestion(question)
+        loadQuestionCatalog(forceReload: true)
+    }
+    
+    /// Updates an existing question in the custom catalog.
+    public func updateCustomQuestion(
+        id: UUID,
+        prompt: String,
+        options: [String],
+        correctAnswerIndex: Int,
+        explanation: String,
+        category: QuizCategory,
+        difficulty: Difficulty = .medium
+    ) throws {
+        let question = try Question(
+            id: id,
+            prompt: prompt,
+            options: options,
+            correctAnswerIndex: correctAnswerIndex,
+            explanation: explanation,
+            category: category,
+            difficulty: difficulty
+        )
+        try questionService.updateQuestion(question)
+        loadQuestionCatalog(forceReload: true)
+    }
+    
+    /// Removes a custom question from persistent storage.
+    public func deleteCustomQuestion(id: UUID) throws {
+        try questionService.deleteQuestion(id: id)
+        loadQuestionCatalog(forceReload: true)
+    }
+    
+    /// Imports study material transactionally from raw JSON data.
+    @discardableResult
+    public func importStudyMaterial(from data: Data) throws -> (categoriesCount: Int, questionsCount: Int) {
+        let result = try questionService.importCatalog(from: data)
+        loadQuestionCatalog(forceReload: true)
+        return result
+    }
+    
+    /// Downloads and imports study material transactionally from a web URL.
+    @discardableResult
+    public func importStudyMaterial(from url: URL) async throws -> (categoriesCount: Int, questionsCount: Int) {
+        let data = try await networkImporter.fetchCatalogData(from: url)
+        return try importStudyMaterial(from: data)
     }
 
     // MARK: - Game Lifecycle Actions

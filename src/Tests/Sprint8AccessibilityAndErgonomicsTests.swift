@@ -347,7 +347,23 @@ final class Sprint8AccessibilityAndErgonomicsTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(darkErrorOnCard, 4.5, "Dark error text on card must pass WCAG AA (6.03:1)")
         XCTAssertGreaterThanOrEqual(darkErrorOnOled, 7.0, "Dark error text on OLED black must pass WCAG AAA (7.45:1)")
         
-        // 3. Verify ResultView View Instantiation with Adaptive Tokens and Category Breakdown
+        // 3. Adaptive Dashboard Icons Contrast Assertions (Score, Streak, Speed):
+        let lightScoreLum = relativeLuminance(r: 180, g: 83, b: 9) // #B45309
+        let darkScoreLum = relativeLuminance(r: 251, g: 191, b: 36) // #FBBF24
+        XCTAssertGreaterThanOrEqual(contrastRatio(l1: lightCardBg, l2: lightScoreLum), 4.5, "Light score amber icon exceeds 4.5:1 on card")
+        XCTAssertGreaterThanOrEqual(contrastRatio(l1: darkScoreLum, l2: darkCardBg), 7.0, "Dark score amber icon exceeds 7.0:1 on dark card")
+        
+        let lightStreakLum = relativeLuminance(r: 194, g: 65, b: 12) // #C2410C
+        let darkStreakLum = relativeLuminance(r: 251, g: 146, b: 60) // #FB923C
+        XCTAssertGreaterThanOrEqual(contrastRatio(l1: lightCardBg, l2: lightStreakLum), 4.5, "Light streak orange icon exceeds 4.5:1 on card")
+        XCTAssertGreaterThanOrEqual(contrastRatio(l1: darkStreakLum, l2: darkCardBg), 7.0, "Dark streak orange icon exceeds 7.0:1 on dark card")
+        
+        let lightSpeedLum = relativeLuminance(r: 29, g: 78, b: 216) // #1D4ED8
+        let darkSpeedLum = relativeLuminance(r: 56, g: 189, b: 248) // #38BDF8
+        XCTAssertGreaterThanOrEqual(contrastRatio(l1: lightCardBg, l2: lightSpeedLum), 4.5, "Light speed blue icon exceeds 4.5:1 on card")
+        XCTAssertGreaterThanOrEqual(contrastRatio(l1: darkSpeedLum, l2: darkCardBg), 7.0, "Dark speed blue icon exceeds 7.0:1 on dark card")
+        
+        // 4. Verify ResultView View Instantiation with Adaptive Tokens and Category Breakdown
         let breakdown = [
             CategoryPerformance(categoryId: "sw_eng", categoryTitle: "Software Engineering", correctCount: 5, totalCount: 6),
             CategoryPerformance(categoryId: "swift", categoryTitle: "Swift & Apple Ecosystem", correctCount: 1, totalCount: 4)
@@ -375,5 +391,10 @@ final class Sprint8AccessibilityAndErgonomicsTests: XCTestCase {
         )
         let failingResultView = ResultView(record: failing, onPlayAgain: {}, onBackToMenu: {})
         XCTAssertNotNil(failingResultView.body)
+        
+        // 5. Verify dynamic color tokens resolve properly on current platform
+        XCTAssertNotNil(Color.adaptiveScoreIcon)
+        XCTAssertNotNil(Color.adaptiveStreakIcon)
+        XCTAssertNotNil(Color.adaptiveSpeedIcon)
     }
 }

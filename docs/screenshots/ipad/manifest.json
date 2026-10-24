@@ -1,0 +1,191 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "FCBCDF96-4EF4-49AC-9C90-1C1009C40300.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Home - accessibility XXXL_0_5EAF5323-9DFA-4843-8610-0EEC537C2103.png",
+        "timestamp" : 1792864470.997
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testAccessibilityDynamicTypeKeepsCategoryStartAvailable()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testAccessibilityDynamicTypeKeepsCategoryStartAvailable"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "C2EAE174-0A99-402B-BAC7-B3715BD555B9.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - resumed after background_0_C2FA1245-EA31-4982-8FFB-D4A276DCFB8F.png",
+        "timestamp" : 1792864486.91
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "3EA8262A-9B27-471B-9019-77B27D406CD9.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Results - completed round_0_3928D618-737D-46E7-B922-27191F14D38B.png",
+        "timestamp" : 1792864526.123
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "3C5B8772-5BCA-4AB2-857A-11AC988E6082.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - answer feedback_0_3D4CB861-3EC2-40CC-BD36-C597EE2B3F10.png",
+        "timestamp" : 1792864502.577
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "72017204-4559-4119-B132-FAF855261E55.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Home - category counts_0_799C75D7-5A08-45FD-A243-7124D3BC8442.png",
+        "timestamp" : 1792864499.405
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testCategoryRoundShowsFeedbackResultsAndCanReplay()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testCategoryRoundShowsFeedbackResultsAndCanReplay"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "CEB41103-F759-496D-82F6-7AD49EEC8684.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - incorrect answer feedback_0_82DF1671-0004-4D32-86E5-A3DDE81FCC48.png",
+        "timestamp" : 1792864542.062
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testIncorrectAnswerMarksTheCorrectOption()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testIncorrectAnswerMarksTheCorrectOption"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "A5297549-5996-49B3-8D35-52D4DB64AB66.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Results - iPad Landscape Layout_0_E864B5F4-8D68-4A25-B8B6-C1BEC3B9F77A.png",
+        "timestamp" : 1792864593.329
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "7207C344-068C-400A-85BB-2C84AE47F755.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - iPad Landscape Layout_0_11B7E1C9-E3BB-4238-89A5-E89D6D608EBD.png",
+        "timestamp" : 1792864562.611
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "FFE4AF87-F2F6-459B-AA08-BFD87734FBC6.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Leaderboard - iPad Landscape Layout_0_3FF4D894-1891-4CD0-8E8A-8F9B5F46B337.png",
+        "timestamp" : 1792864556.904
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "8D7EDED9-5780-4D8C-9924-BFEA1B7B861C.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Home - iPad Landscape Layout_0_31C66033-732B-4061-8CCD-8CECDB2A86E7.png",
+        "timestamp" : 1792864552.665
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testIPadLandscapeAndPortraitErgonomicAdaptation()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testIPadLandscapeAndPortraitErgonomicAdaptation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "3EBD8BFE-6342-43FF-835A-E92E0A346F9B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Leaderboard - modal sheet_0_364A45CC-C9CC-4A93-A437-9D51936DA167.png",
+        "timestamp" : 1792864607.99
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testLeaderboardAndHistoryOpensAndDismisses()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testLeaderboardAndHistoryOpensAndDismisses"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "BFC55E28-D4F6-456B-BD18-5CE6594EC6AC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Quiz - live countdown timeout_0_FC77E2B6-9EB2-4703-B3C7-9F7B87AA5045.png",
+        "timestamp" : 1792864636.1
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testLiveCountdownReachesTimeoutAndEnablesAdvance()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testLiveCountdownReachesTimeoutAndEnablesAdvance"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "A1C14BB7-CDFE-4193-B111-AF2445AECAEC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Home - mixed round_0_22B8A0F5-7795-410D-A942-C15E85176307.png",
+        "timestamp" : 1792864647.17
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testMixedRoundStartsAndReturnsToTopics()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testMixedRoundStartsAndReturnsToTopics"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "48B66B23-A161-4225-B36F-F55561B8A507.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Study Material - Add Subject Sheet_0_D0374CF9-F620-40A0-8B49-9F2FAFDE5627.png",
+        "timestamp" : 1792864675.174
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B1B833A3-BB12-4930-AFC2-E0F33B450C43",
+        "deviceName" : "iPad (9th generation)",
+        "exportedFileName" : "B8856032-69F4-4EF5-A50C-C637508D1B19.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Study Material - Manager Opened_0_F514B583-D764-4173-ACBA-83323A0D9001.png",
+        "timestamp" : 1792864660.06
+      }
+    ],
+    "testIdentifier" : "TrainYourBrainUITests/testStudyMaterialManagerSheetCanOpenAndClose()",
+    "testIdentifierURL" : "test://com.apple.xcode/TrainYourBrain/TrainYourBrainUITests/TrainYourBrainUITests/testStudyMaterialManagerSheetCanOpenAndClose"
+  }
+]

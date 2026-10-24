@@ -62,7 +62,7 @@ public struct HomeView: View {
                                     viewModel.startQuiz()
                                 }
 
-                                ForEach(QuizCategory.allCases) { category in
+                                ForEach(viewModel.allCategories) { category in
                                     CategoryCard(
                                         category: category,
                                         questionCount: viewModel.questionCount(for: category),

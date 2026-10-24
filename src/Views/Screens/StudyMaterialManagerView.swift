@@ -69,6 +69,7 @@ public struct StudyMaterialManagerView: View {
                     }
                     .font(.body.bold())
                     .frame(minHeight: 44)
+                    .accessibilityIdentifier("studyMaterial.doneButton")
                 }
             }
             .sheet(isPresented: $showAddCategorySheet) {
@@ -183,6 +184,18 @@ public struct StudyMaterialManagerView: View {
                                     .buttonStyle(.borderless)
                                     .accessibilityLabel("Edit Subject \(category.displayName)")
                                     .accessibilityIdentifier("studyMaterial.editSubjectButton.\(category.rawValue)")
+                                    
+                                    Button(role: .destructive) {
+                                        deleteCategory(category)
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.caption.bold())
+                                            .foregroundColor(Color.adaptiveErrorText)
+                                            .padding(6)
+                                    }
+                                    .buttonStyle(.borderless)
+                                    .accessibilityLabel("Delete Subject \(category.displayName)")
+                                    .accessibilityIdentifier("studyMaterial.deleteSubjectButton.\(category.rawValue)")
                                     
                                     Text("Custom")
                                         .font(.caption2.bold())
@@ -330,6 +343,18 @@ public struct StudyMaterialManagerView: View {
                                 }
                                 .buttonStyle(.borderless)
                                 .accessibilityLabel("Edit Question")
+                                
+                                Button(role: .destructive) {
+                                    deleteQuestion(question)
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .font(.caption.bold())
+                                        .foregroundColor(Color.adaptiveErrorText)
+                                        .frame(minWidth: 32, minHeight: 32)
+                                }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel("Delete Question")
+                                .accessibilityIdentifier("studyMaterial.deleteQuestionButton")
                             }
                             
                             Text(question.prompt)
@@ -346,6 +371,7 @@ public struct StudyMaterialManagerView: View {
                                 .lineLimit(2)
                         }
                         .padding(.vertical, 4)
+                        .accessibilityElement(children: .contain)
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
                                 deleteQuestion(question)
@@ -784,7 +810,7 @@ struct QuestionEditorSheet: View {
         self.editingQuestion = editingQuestion
         self.onCompletion = onCompletion
         
-        let initialCat = editingQuestion?.category.rawValue ?? viewModel.allCategories.first?.rawValue ?? ""
+        let initialCat = editingQuestion?.category.rawValue ?? viewModel.allCategories.first(where: { $0.isCustom })?.rawValue ?? viewModel.allCategories.first?.rawValue ?? ""
         _selectedCategoryId = State(initialValue: initialCat)
         if let q = editingQuestion {
             _prompt = State(initialValue: q.prompt)

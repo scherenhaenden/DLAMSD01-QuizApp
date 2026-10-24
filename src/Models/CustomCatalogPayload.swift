@@ -42,20 +42,39 @@ public struct CustomCatalogPayload: Codable, Sendable {
     }
     
     public init(categories: [CustomCategoryRecord] = [], questions: [Question] = []) {
-        self.categories = categories
+        var seenCatIds = Set<String>()
+        var uniqueCategories: [CustomCategoryRecord] = []
+        for cat in categories {
+            if !seenCatIds.contains(cat.id) {
+                seenCatIds.insert(cat.id)
+                uniqueCategories.append(cat)
+            }
+        }
+        self.categories = uniqueCategories
         self.questions = questions
     }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let decodedCategories = try container.decodeIfPresent([CustomCategoryRecord].self, forKey: .categories) ?? []
-        self.categories = decodedCategories
+        
+        // Safely deduplicate categories by id to prevent crashes from duplicate keys in imported JSON
+        var seenCatIds = Set<String>()
+        var uniqueCategories: [CustomCategoryRecord] = []
+        for cat in decodedCategories {
+            if !seenCatIds.contains(cat.id) {
+                seenCatIds.insert(cat.id)
+                uniqueCategories.append(cat)
+            }
+        }
+        self.categories = uniqueCategories
         
         let rawQuestions = try container.decodeIfPresent([Question].self, forKey: .questions) ?? []
         
         // Re-link questions with decoded categories local to this payload
         // (Do NOT mutate global CategoryRegistry.shared during decoding to prevent dirty state on decode failure)
-        let categoryMap = Dictionary(uniqueKeysWithValues: decodedCategories.map { ($0.id, $0.toQuizCategory) })
+        // Uses uniquingKeysWith to guarantee zero risk of Duplicate values fatal error
+        let categoryMap = Dictionary(uniqueCategories.map { ($0.id, $0.toQuizCategory) }, uniquingKeysWith: { first, _ in first })
         self.questions = rawQuestions.map { q in
             if let matchedCategory = categoryMap[q.category.rawValue] {
                 if let reconstructed = try? Question(

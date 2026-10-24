@@ -347,13 +347,18 @@ final class Sprint8AccessibilityAndErgonomicsTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(darkErrorOnCard, 4.5, "Dark error text on card must pass WCAG AA (6.03:1)")
         XCTAssertGreaterThanOrEqual(darkErrorOnOled, 7.0, "Dark error text on OLED black must pass WCAG AAA (7.45:1)")
         
-        // 3. Verify ResultView View Instantiation with Adaptive Tokens
+        // 3. Verify ResultView View Instantiation with Adaptive Tokens and Category Breakdown
+        let breakdown = [
+            CategoryPerformance(categoryId: "sw_eng", categoryTitle: "Software Engineering", correctCount: 5, totalCount: 6),
+            CategoryPerformance(categoryId: "swift", categoryTitle: "Swift & Apple Ecosystem", correctCount: 1, totalCount: 4)
+        ]
         let passing = ScoreRecord(
             score: 100,
             totalQuestions: 10,
             correctAnswers: 10,
             streakRecord: 10,
             category: .softwareEngineering,
+            categoryBreakdown: breakdown,
             completedAt: Date(timeIntervalSince1970: 1000)
         )
         let passingResultView = ResultView(record: passing, onPlayAgain: {}, onBackToMenu: {})
@@ -365,6 +370,7 @@ final class Sprint8AccessibilityAndErgonomicsTests: XCTestCase {
             correctAnswers: 2,
             streakRecord: 1,
             category: .softwareEngineering,
+            categoryBreakdown: breakdown,
             completedAt: Date(timeIntervalSince1970: 2000)
         )
         let failingResultView = ResultView(record: failing, onPlayAgain: {}, onBackToMenu: {})

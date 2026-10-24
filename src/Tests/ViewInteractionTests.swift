@@ -136,4 +136,24 @@ final class ViewInteractionTests: XCTestCase {
         XCTAssertNotNil(failingResultView.body)
         XCTAssertFalse(failingRecord.isPassing)
     }
+    
+    // MARK: - StudyMaterialManagerView Interaction Tests
+    
+    func testStudyMaterialManagerViewRendering() throws {
+        let vm = try makeLoadedViewModel()
+        let managerView = StudyMaterialManagerView(viewModel: vm)
+        XCTAssertNotNil(managerView.body)
+        
+        // Add Category Sheet rendering
+        let addSheet = AddCategorySheet(viewModel: vm) { _, _ in }
+        XCTAssertNotNil(addSheet.body)
+        
+        // Edit Category Sheet rendering
+        let editSheet = EditCategorySheet(viewModel: vm, category: QuizCategory(id: "test", displayName: "Test")) { _, _ in }
+        XCTAssertNotNil(editSheet.body)
+        
+        // Question Editor Sheet rendering
+        let questionSheet = QuestionEditorSheet(viewModel: vm, editingQuestion: nil) { _, _ in }
+        XCTAssertNotNil(questionSheet.body)
+    }
 }

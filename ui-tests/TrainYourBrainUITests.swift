@@ -6,6 +6,7 @@ final class TrainYourBrainUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
+        app.launchArguments = ["--reset-state"]
         XCUIDevice.shared.orientation = .portrait
     }
 
@@ -288,6 +289,244 @@ final class TrainYourBrainUITests: XCTestCase {
         XCUIDevice.shared.orientation = .portrait
         Thread.sleep(forTimeInterval: 1.5)
         XCTAssertTrue(category.waitForExistence(timeout: 10))
+    }
+
+    func testStudyMaterialManagerSheetCanOpenAndClose() {
+        app.launch()
+        let materialButton = app.buttons["home.materialButton"]
+        XCTAssertTrue(materialButton.waitForExistence(timeout: 15))
+        materialButton.tap()
+
+        let navTitle = app.staticTexts["Study Material"]
+        XCTAssertTrue(navTitle.waitForExistence(timeout: 10))
+        attachScreenshot(named: "Study Material - Manager Opened")
+
+        // 1. Verify and navigate to Questions tab (mandatory non-conditional assertion)
+        let questionsSegment = app.buttons["Questions"]
+        XCTAssertTrue(questionsSegment.waitForExistence(timeout: 5), "Questions segment tab must exist")
+        questionsSegment.tap()
+        let addQuestionButton = app.buttons["studyMaterial.addQuestionButton"]
+        let fallbackAddQuestion = app.buttons["Add New Question"]
+        XCTAssertTrue(addQuestionButton.waitForExistence(timeout: 5) || fallbackAddQuestion.waitForExistence(timeout: 2), "Add Question button must exist in Questions tab")
+
+        // 2. Verify and navigate to Import tab (mandatory non-conditional assertion)
+        let importSegment = app.buttons["Import"]
+        XCTAssertTrue(importSegment.waitForExistence(timeout: 5), "Import segment tab must exist")
+        importSegment.tap()
+        let browseButton = app.buttons["studyMaterial.browseFileButton"]
+        let fallbackBrowse = app.buttons["Select JSON File to import"]
+        XCTAssertTrue(browseButton.waitForExistence(timeout: 5) || fallbackBrowse.waitForExistence(timeout: 2), "Browse JSON File button must exist in Import tab")
+
+        // 3. Navigate back to Subjects tab and inspect Add Subject sheet (mandatory non-conditional assertions)
+        let subjectsSegment = app.buttons["Subjects"]
+        XCTAssertTrue(subjectsSegment.waitForExistence(timeout: 5), "Subjects segment tab must exist")
+        subjectsSegment.tap()
+        let addSubjectButton = app.buttons["studyMaterial.addSubjectButton"]
+        let fallbackAddSubject = app.buttons["Add New Subject"]
+        XCTAssertTrue(addSubjectButton.waitForExistence(timeout: 5) || fallbackAddSubject.waitForExistence(timeout: 2), "Add New Subject button must exist in Subjects tab")
+        if addSubjectButton.exists {
+            addSubjectButton.tap()
+        } else {
+            fallbackAddSubject.tap()
+        }
+
+        let newSubjectTitle = app.staticTexts["New Subject"]
+        XCTAssertTrue(newSubjectTitle.waitForExistence(timeout: 5), "New Subject modal sheet must appear")
+        attachScreenshot(named: "Study Material - Add Subject Sheet")
+
+        let nameField = app.textFields["studyMaterial.newSubjectNameField"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5), "New Subject name textfield must appear")
+        nameField.tap()
+        nameField.typeText("Robotics")
+        let saveButton = app.buttons["studyMaterial.saveNewSubjectButton"]
+        XCTAssertTrue(saveButton.waitForExistence(timeout: 5), "Save button must exist on New Subject sheet")
+        XCTAssertTrue(saveButton.isEnabled, "Save button must be enabled when name is non-empty")
+        saveButton.tap()
+
+        let createdSubject = app.staticTexts["Robotics"]
+        XCTAssertTrue(createdSubject.waitForExistence(timeout: 5), "Created subject 'Robotics' must appear in list")
+
+        // 4. Test editing the newly created custom subject
+        let editButton = app.buttons["studyMaterial.editSubjectButton.robotics"]
+        let fallbackEdit = app.buttons["Edit Subject Robotics"]
+        if !editButton.exists && !fallbackEdit.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(editButton.waitForExistence(timeout: 5) || fallbackEdit.waitForExistence(timeout: 2), "Edit button for 'Robotics' must exist in subjects list")
+        if editButton.exists {
+            editButton.tap()
+        } else {
+            fallbackEdit.tap()
+        }
+
+        let editTitle = app.staticTexts["Edit Subject"]
+        XCTAssertTrue(editTitle.waitForExistence(timeout: 5), "Edit Subject sheet must appear")
+        let editNameField = app.textFields["studyMaterial.editSubjectNameField"]
+        XCTAssertTrue(editNameField.waitForExistence(timeout: 5), "Edit Subject name field must appear")
+        editNameField.tap()
+        let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: 25)
+        editNameField.typeText(deleteString)
+        editNameField.typeText("Robotics Lab")
+        let saveEditButton = app.buttons["studyMaterial.saveEditSubjectButton"]
+        XCTAssertTrue(saveEditButton.waitForExistence(timeout: 5), "Save button must exist on Edit Subject sheet")
+        saveEditButton.tap()
+
+        let updatedSubject = app.staticTexts["Robotics Lab"]
+        XCTAssertTrue(updatedSubject.waitForExistence(timeout: 5), "Updated subject 'Robotics Lab' must appear in subjects list")
+
+        // 5. Navigate to Questions tab and author a custom question
+        questionsSegment.tap()
+        XCTAssertTrue(addQuestionButton.waitForExistence(timeout: 5))
+        addQuestionButton.tap()
+
+        let questionPromptField = app.textFields["studyMaterial.questionPromptField"]
+        XCTAssertTrue(questionPromptField.waitForExistence(timeout: 5), "Question prompt field must appear")
+        questionPromptField.tap()
+        questionPromptField.typeText("What is ROS?")
+
+        let option0 = app.textFields["studyMaterial.questionOption.0"]
+        XCTAssertTrue(option0.waitForExistence(timeout: 5))
+        option0.tap()
+        option0.typeText("Robot Operating System")
+
+        let option1 = app.textFields["studyMaterial.questionOption.1"]
+        XCTAssertTrue(option1.waitForExistence(timeout: 5))
+        option1.tap()
+        option1.typeText("Random Optical System")
+
+        app.swipeUp()
+
+        let option2 = app.textFields["studyMaterial.questionOption.2"]
+        XCTAssertTrue(option2.waitForExistence(timeout: 5))
+        option2.tap()
+        option2.typeText("Remote Open Server")
+
+        let option3 = app.textFields["studyMaterial.questionOption.3"]
+        if !option3.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(option3.waitForExistence(timeout: 5))
+        option3.tap()
+        option3.typeText("Realtime Output Suite")
+
+        let explanationField = app.textFields["studyMaterial.questionExplanationField"]
+        if !explanationField.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(explanationField.waitForExistence(timeout: 5), "Explanation field must appear")
+        explanationField.tap()
+        explanationField.typeText("ROS stands for Robot Operating System.")
+
+        let saveQuestionButton = app.buttons["studyMaterial.saveQuestionButton"]
+        XCTAssertTrue(saveQuestionButton.waitForExistence(timeout: 5))
+        saveQuestionButton.tap()
+
+        let createdQuestionPrompt = app.staticTexts["What is ROS?"]
+        XCTAssertTrue(createdQuestionPrompt.waitForExistence(timeout: 5), "Created question must appear in questions list")
+
+        // 6. Dismiss Study Material sheet and return to HomeView
+        let doneButton = app.buttons["studyMaterial.doneButton"]
+        let fallbackDone = app.buttons["Done"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 5) || fallbackDone.waitForExistence(timeout: 2), "Done button must exist on Study Material sheet")
+        if doneButton.exists {
+            doneButton.tap()
+        } else {
+            fallbackDone.tap()
+        }
+
+        // 7. Verify custom category is available on HomeView and play a quiz round
+        let roboticsCategoryCard = app.buttons["home.category.robotics"]
+        if !roboticsCategoryCard.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(roboticsCategoryCard.waitForExistence(timeout: 10), "Custom category card must appear on HomeView")
+        if !roboticsCategoryCard.isHittable {
+            app.swipeUp()
+        }
+        roboticsCategoryCard.tap()
+
+        let firstAnswer = app.buttons["quiz.answer.0"]
+        XCTAssertTrue(firstAnswer.waitForExistence(timeout: 10), "Quiz with custom question must start and display answers")
+        firstAnswer.tap()
+
+        let feedback = app.staticTexts.matching(
+            NSPredicate(format: "label == %@ OR label == %@", "Correct!", "Incorrect")
+        ).firstMatch
+        XCTAssertTrue(feedback.waitForExistence(timeout: 10), "Pedagogical feedback must appear for custom question")
+
+        let advanceButton = app.buttons["quiz.advance"]
+        XCTAssertTrue(advanceButton.waitForExistence(timeout: 10))
+        if !advanceButton.isHittable {
+            app.swipeUp()
+        }
+        advanceButton.tap()
+
+        let playAgain = app.buttons["result.playAgain"]
+        if !playAgain.waitForExistence(timeout: 5) {
+            if advanceButton.exists {
+                advanceButton.tap()
+            }
+        }
+        XCTAssertTrue(playAgain.waitForExistence(timeout: 10), "Result screen must render after finishing round")
+
+        let returnToMenuButton = app.buttons["result.returnToMenu"]
+        XCTAssertTrue(returnToMenuButton.waitForExistence(timeout: 5), "Result screen Return to Menu button must exist")
+        if !returnToMenuButton.isHittable {
+            app.swipeUp()
+        }
+        returnToMenuButton.tap()
+
+        XCTAssertTrue(app.buttons["home.scoresButton"].waitForExistence(timeout: 10))
+
+        // 8. Verify persistence across app termination and relaunch
+        app.terminate()
+        app.launchArguments.removeAll(where: { $0 == "--reset-state" })
+        app.launch()
+
+        let persistedCategoryCard = app.buttons["home.category.robotics"]
+        if !persistedCategoryCard.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(persistedCategoryCard.waitForExistence(timeout: 10), "Custom category must persist across app restart")
+
+        // 9. Clean up: reopen study material sheet and verify deletion
+        let reopenMaterialButton = app.buttons["home.materialButton"]
+        if !reopenMaterialButton.exists {
+            app.swipeDown()
+        }
+        XCTAssertTrue(reopenMaterialButton.waitForExistence(timeout: 10), "Material button must be accessible on HomeView after relaunch")
+        reopenMaterialButton.tap()
+
+        let reopenedSegmentedPicker = app.segmentedControls["studyMaterial.segmentedPicker"]
+        XCTAssertTrue(reopenedSegmentedPicker.waitForExistence(timeout: 5))
+        let reopenedQuestionsSegment = reopenedSegmentedPicker.buttons["Questions"]
+        reopenedQuestionsSegment.tap()
+
+        let questionToDeletePrompt = app.staticTexts["What is ROS?"]
+        if questionToDeletePrompt.waitForExistence(timeout: 5) {
+            let deleteQuestionButton = app.buttons["studyMaterial.deleteQuestionButton"]
+            if deleteQuestionButton.waitForExistence(timeout: 5) {
+                deleteQuestionButton.tap()
+            }
+        }
+
+        let reopenedSubjectsSegment = reopenedSegmentedPicker.buttons["Subjects"]
+        reopenedSubjectsSegment.tap()
+
+        let deleteSubjectButton = app.buttons["studyMaterial.deleteSubjectButton.robotics"]
+        if !deleteSubjectButton.exists {
+            app.swipeUp()
+        }
+        if deleteSubjectButton.waitForExistence(timeout: 5) {
+            deleteSubjectButton.tap()
+        }
+
+        let finalDone = app.buttons["studyMaterial.doneButton"]
+        if finalDone.waitForExistence(timeout: 5) {
+            finalDone.tap()
+        } else if app.buttons["Done"].waitForExistence(timeout: 2) {
+            app.buttons["Done"].tap()
+        }
     }
 
     private func answerAndAdvance(questionCount: Int) {

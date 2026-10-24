@@ -5,6 +5,7 @@ public struct HomeView: View {
     @ObservedObject public var viewModel: QuizViewModel
     @AppStorage("app_theme") private var selectedTheme: String = AppTheme.system.rawValue
     @State private var showLeaderboard: Bool = false
+    @State private var showMaterialManager: Bool = false
 
     public init(viewModel: QuizViewModel) {
         self.viewModel = viewModel
@@ -61,7 +62,7 @@ public struct HomeView: View {
                                     viewModel.startQuiz()
                                 }
 
-                                ForEach(QuizCategory.allCases) { category in
+                                ForEach(viewModel.allCategories) { category in
                                     CategoryCard(
                                         category: category,
                                         questionCount: viewModel.questionCount(for: category),
@@ -85,6 +86,9 @@ public struct HomeView: View {
             .sheet(isPresented: $showLeaderboard) {
                 LeaderboardView(viewModel: LeaderboardViewModel(scoreStore: viewModel.scoreStore))
             }
+            .sheet(isPresented: $showMaterialManager) {
+                StudyMaterialManagerView(viewModel: viewModel)
+            }
         }
         .task {
             viewModel.loadQuestionCatalog()
@@ -98,7 +102,7 @@ public struct HomeView: View {
     }
 
     private var headerActions: some View {
-        HStack {
+        HStack(spacing: 8) {
             Button {
                 showLeaderboard = true
             } label: {
@@ -112,6 +116,20 @@ public struct HomeView: View {
             }
             .accessibilityLabel("View Leaderboard and High Scores")
             .accessibilityIdentifier("home.scoresButton")
+
+            Button {
+                showMaterialManager = true
+            } label: {
+                Label("Material", systemImage: "folder.badge.plus")
+                    .font(.subheadline.bold())
+                    .padding(.horizontal, 12)
+                    .frame(minHeight: 44)
+                    .background(Color.adaptiveCardBackground)
+                    .foregroundColor(.accentColor)
+                    .clipShape(Capsule())
+            }
+            .accessibilityLabel("Manage Study Material and Questions")
+            .accessibilityIdentifier("home.materialButton")
 
             Spacer(minLength: 0)
 

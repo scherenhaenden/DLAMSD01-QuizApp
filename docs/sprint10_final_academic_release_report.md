@@ -10,7 +10,7 @@ All 10 disciplined development sprints are successfully completed and verified:
 - **Sprint 3 (v0.3.0):** Interactive UI Components (`AnswerButton`, `QuestionCard`, `CategoryCard`).
 - **Sprint 4 (v0.4.0, v0.4.1, v0.4.2):** Reactive 10 Hz Timer (`TimerBar`), Monotonic Hardware Clock (`systemUptime`) Anti-Cheat Protection.
 - **Sprint 5 (v0.5.0, v0.5.1):** Multisensory Feedback Subsystem, Thread-Safe `UINotificationFeedbackGenerator` Lifecycle.
-- **Sprint 6 (v0.6.0, v0.6.1):** Results Analytics, Official German University Grading Scale (1.0–5.0) matching § 15 APO.
+- **Sprint 6 (v0.6.0, v0.6.1):** Results Analytics, Academic Grading Scale (1.0–5.0) inspired by German university grades (Produktskala).
 - **Sprint 7 (v0.7.0, v0.7.1):** Thread-Safe Local Persistence (`UserDefaultsScoreStore`), Shielded Best Retention (`pruneRecordsWithBestProtection`), `LeaderboardView`.
 - **Sprint 8 (v0.8.0 – v0.8.4):** Multi-Device iPad Ergonomics (640pt Centered Container), Deep VoiceOver Accessibility, WCAG 2.1 AA/AAA Contrast.
 - **Sprint 9 (v0.9.0):** Dynamic Study Material, In-App Question Authoring, Transactional JSON & URL Network Import with Atomic Rollback, Emergency `.bak` Backup.
@@ -72,7 +72,7 @@ TOTAL                                               1475               433    70
 - **Line Coverage:** **73.93%** (6,288 / 8,505 lines)
 - **Function Coverage:** **71.81%** (456 / 635 functions)
 - **Region / Statement Coverage:** **70.64%** (1,042 / 1,475 regions)
-- **Branch Coverage (Logical Segments):** Measured via execution regions: **70.64%**
+- **Branch Coverage:** Not instrumented by Apple Clang without explicit branch profiling flags (reported as 0/0 branches in llvm-cov export). The 70.64% figure measures execution regions (statements).
 
 ---
 

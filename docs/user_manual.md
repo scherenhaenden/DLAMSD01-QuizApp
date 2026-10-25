@@ -159,8 +159,8 @@ Nach Beendigung der letzten Frage präsentiert die `ResultView` eine detailliert
 └────────────────────────────────────────────────────────┘
 ```
 
-### 5.1 Das Deutsche Notensystem (IU Rahmenprüfungsordnung)
-Die App ermittelt auf Basis der erreichten Prozentpunkte eine akademische Note gemäß der linearen Notenskala deutscher Hochschulen (§ 15 APO):
+### 5.1 Das akademische Notensystem (Produktskala)
+Die App ermittelt auf Basis der erreichten Prozentpunkte eine Note gemäß einer an das deutsche Hochschulsystem angelehnten linearen Produktskala (Bestehensgrenze bei 50 % für 4,0 und Bestnote ab 95 % für 1,0; keine normative Herleitung aus einer offiziellen Prüfungsordnung):
 
 | Genauigkeit in % | Deutsche Note | Akademisches Prädikat | Farbcodierung |
 | :---: | :---: | :--- | :--- |

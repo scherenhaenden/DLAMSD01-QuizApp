@@ -209,4 +209,55 @@ final class Sprint10FinalReleaseTests: XCTestCase {
         XCTAssertEqual(viewModel.questionCount(for: alpha), 1)
         XCTAssertEqual(viewModel.questionCount(for: beta), 0)
     }
+    
+    // MARK: - 8. Score Store Save Failure Handling (C01)
+    
+    func testScoreSaveFailureExposesErrorAndRetainsFinishedState() throws {
+        struct FailingScoreStore: ScoreStoreProtocol, @unchecked Sendable {
+            func save(record: ScoreRecord) throws {
+                throw ScoreStoreError.persistenceFailed("Disk quota exceeded in sandbox")
+            }
+            func loadRecords() -> [ScoreRecord] { [] }
+            func loadHighScores(limit: Int) -> [ScoreRecord] { [] }
+            func bestScore(for category: QuizCategory?) -> ScoreRecord? { nil }
+            func clearAll() throws {}
+        }
+        
+        let failingStore = FailingScoreStore()
+        let vm = QuizViewModel(questionService: service, scoreStore: failingStore)
+        
+        try vm.addCustomCategory(name: "TestCat", iconName: "star", description: "Test")
+        let cat = vm.allCategories.first(where: { $0.displayName == "TestCat" })!
+        try vm.addCustomQuestion(
+            prompt: "Test Question?",
+            options: ["A", "B", "C", "D"],
+            correctAnswerIndex: 0,
+            explanation: "Explanation",
+            category: cat,
+            difficulty: .easy
+        )
+        
+        vm.startQuiz(category: cat)
+        XCTAssertEqual(vm.viewState, .playing)
+        XCTAssertNil(vm.lastScoreSaveError)
+        
+        let correctIdx = vm.currentQuestion?.correctAnswerIndex ?? 0
+        vm.selectAnswer(at: correctIdx)
+        XCTAssertEqual(vm.viewState, .answered(selectedIndex: correctIdx, isCorrect: true))
+        
+        // Advance to end of quiz
+        vm.nextQuestion()
+        
+        if case .finished(let record) = vm.viewState {
+            XCTAssertEqual(record.score, 10)
+            XCTAssertNotNil(vm.lastScoreSaveError, "Save error must be captured")
+            XCTAssertTrue(vm.lastScoreSaveError!.contains("Disk quota exceeded"))
+        } else {
+            XCTFail("ViewState should be finished even when saving fails")
+        }
+        
+        // Resetting to menu clears the error
+        vm.resetToMenu()
+        XCTAssertNil(vm.lastScoreSaveError)
+    }
 }

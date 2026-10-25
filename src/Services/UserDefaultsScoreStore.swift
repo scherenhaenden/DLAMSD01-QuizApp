@@ -124,6 +124,18 @@ public final class UserDefaultsScoreStore: ScoreStoreProtocol, @unchecked Sendab
         }
     }
     
+    /// Storage key used to preserve raw bytes when corrupted data is encountered.
+    public var backupStorageKey: String {
+        return storageKey + ".corrupted_bak"
+    }
+
+    /// Retrieves preserved raw bytes of any previously corrupted payload, if present.
+    public func loadCorruptedBackupData() -> Data? {
+        lock.lock()
+        defer { lock.unlock() }
+        return userDefaults.data(forKey: backupStorageKey)
+    }
+
     private func internalLoadRecords() -> [ScoreRecord] {
         guard let data = userDefaults.data(forKey: storageKey) else {
             return []
@@ -134,7 +146,8 @@ public final class UserDefaultsScoreStore: ScoreStoreProtocol, @unchecked Sendab
             // Sort chronologically descending
             return records.sorted { $0.completedAt > $1.completedAt }
         } catch {
-            // Defensive recovery: if payload is corrupted, clear to prevent persistent crash
+            // Defensive recovery: preserve raw corrupted payload in backup key before clearing active key
+            userDefaults.set(data, forKey: backupStorageKey)
             userDefaults.removeObject(forKey: storageKey)
             return []
         }

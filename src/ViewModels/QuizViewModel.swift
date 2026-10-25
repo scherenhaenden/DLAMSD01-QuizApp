@@ -59,6 +59,9 @@ public final class QuizViewModel: ObservableObject {
     @Published public private(set) var isCatalogLoaded = false
     @Published public private(set) var catalogError: String?
     
+    /// Diagnostic error recorded if saving round results to the score store fails.
+    @Published public private(set) var lastScoreSaveError: String?
+    
     /// Diagnostic warning from the persistence layer regarding backup or corruption events.
     public var lastLoadWarning: String? {
         (questionService as? LocalQuestionService)?.lastLoadWarning
@@ -323,6 +326,7 @@ public final class QuizViewModel: ObservableObject {
             self.accumulatedResponseTime = 0.0
             self.questionStartMonotonic = monotonicClock()
             self.hapticService.prepare()
+            self.lastScoreSaveError = nil
             self.syncFromSession()
             self.startTimer()
             self.viewState = .playing
@@ -386,7 +390,12 @@ public final class QuizViewModel: ObservableObject {
         if case .completed(let record) = currentSession.state {
             stopTimer()
             self.questionStartMonotonic = nil
-            try? scoreStore.save(record: record)
+            do {
+                try scoreStore.save(record: record)
+                self.lastScoreSaveError = nil
+            } catch {
+                self.lastScoreSaveError = error.localizedDescription
+            }
             self.viewState = .finished(record)
         } else {
             selectedAnswerIndex = nil
@@ -414,6 +423,7 @@ public final class QuizViewModel: ObservableObject {
         timeRemaining = standardTimeLimit
         selectedAnswerIndex = nil
         lastRequestedCategory = nil
+        lastScoreSaveError = nil
         viewState = .idle
     }
     

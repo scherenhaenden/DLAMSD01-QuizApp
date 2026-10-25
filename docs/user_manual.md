@@ -6,8 +6,12 @@
 
 ---
 
-## 1. Einleitung & Didaktische Zielsetzung
+## 1. Einleitung, Didaktische Zielsetzung & Dokumentarische Einordnung
 
+### 1.1 Dokumentarische Einordnung (Bitácora Documental)
+Dieses Benutzerhandbuch wurde als integraler Bestandteil der kontinuierlichen Entwicklungs- und Dokumentationsbitácora des Projekts **Train Your Brain** konzipiert. Es erfüllt den expliziten Zweck, Dritten – darunter Prüfern, Tutoren, Peer-Reviewern und externen Anwendern – eine lückenlose, vollkommen autonome Handlungsanleitung bereitzustellen. Ziel ist es, dass jede Person die Applikation ohne Anwesenheit, mündliche Instruktion oder technische Unterstützung des Autors eigenständig installieren, konfigurieren, im vollen Funktionsumfang bedienen, mit eigenem didaktischen Lernmaterial erweitern und evaluieren kann.
+
+### 1.2 Didaktische Zielsetzung
 Die native iOS- und iPadOS-Applikation **Train Your Brain** wurde konzipiert, um Studierenden der Informatik und Softwareentwicklung eine interaktive, didaktisch fundierte Plattform zur Festigung prüfungsrelevanten Fachwissens bereitzustellen. Gemäß der Aufgabenstellung des Moduls *DLAMSD01* verbindet die Anwendung moderne Human-Interface-Guidelines von Apple mit fortgeschrittenen didaktischen Mechanismen:
 
 - **Aktives Lernen (Active Recall):** Gezielte Wissensabfrage in Kernfächern des Curriculums (*Software Engineering*, *Swift & Apple Ökosystem*, *Algorithmen & Datenstrukturen*, *Qualitätssicherung & Testen*).
@@ -300,6 +304,10 @@ Die nachfolgende Tabelle verweist auf die offiziellen, aus den automatisierten T
 | **Hintergrund-Wiederaufnahme** | [iPad Lifecycle Resume](screenshots/report/ipad/quiz___resumed_after_background.png) | [iPhone Lifecycle Resume](screenshots/report/iphone/quiz___resumed_after_background.png) |
 | **Ergebnisanalyse & Note** | [iPad Results](screenshots/report/ipad/results___completed_round.png) | [iPhone Results](screenshots/report/iphone/results___completed_round.png) |
 | **Bestenliste (High Scores)** | [iPad Leaderboard](screenshots/report/ipad/leaderboard___modal_sheet.png) | [iPhone Leaderboard](screenshots/report/iphone/leaderboard___modal_sheet.png) |
-| **Lernmaterial-Verwaltung** | [iPad Material Manager](screenshots/report/ipad/study_material___manager_opened.png) | [iPhone Material Manager](screenshots/report/iphone/study_material___manager_opened.png) |
+| **Lernmaterial-Verwaltung (Fächer)** | [iPad Material Manager](screenshots/report/ipad/study_material___manager_opened.png) | [iPhone Material Manager](screenshots/report/iphone/study_material___manager_opened.png) |
 | **Neues Fach erstellen (Modal)** | [iPad Add Subject](screenshots/report/ipad/study_material___add_subject_sheet.png) | [iPhone Add Subject](screenshots/report/iphone/study_material___add_subject_sheet.png) |
+| **Fach bearbeiten (Edit Sheet)** | [iPad Edit Subject](screenshots/report/ipad/study_material___edit_subject_sheet.png) | [iPhone Edit Subject](screenshots/report/iphone/study_material___edit_subject_sheet.png) |
+| **Fragenkatalog & Filter (Pestaña 2)**| [iPad Questions Tab](screenshots/report/ipad/study_material___questions_tab.png) | [iPhone Questions Tab](screenshots/report/iphone/study_material___questions_tab.png) |
+| **Neue Frage verfassen (Modal)** | [iPad Add Question](screenshots/report/ipad/study_material___add_question_sheet.png) | [iPhone Add Question](screenshots/report/iphone/study_material___add_question_sheet.png) |
+| **Import & Web-Download (Pestaña 3)**| [iPad Import Tab](screenshots/report/ipad/study_material___import_tab.png) | [iPhone Import Tab](screenshots/report/iphone/study_material___import_tab.png) |
 | **Querformat 640-pt Ergonomie** | [iPad Landscape Layout](screenshots/report/ipad/quiz___ipad_landscape_layout.png) | [iPhone Landscape Layout](screenshots/report/iphone/quiz___ipad_landscape_layout.png) |

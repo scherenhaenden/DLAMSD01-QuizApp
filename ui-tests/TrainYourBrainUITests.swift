@@ -308,6 +308,7 @@ final class TrainYourBrainUITests: XCTestCase {
         let addQuestionButton = app.buttons["studyMaterial.addQuestionButton"]
         let fallbackAddQuestion = app.buttons["Add New Question"]
         XCTAssertTrue(addQuestionButton.waitForExistence(timeout: 5) || fallbackAddQuestion.waitForExistence(timeout: 2), "Add Question button must exist in Questions tab")
+        attachScreenshot(named: "Study Material - Questions Tab")
 
         // 2. Verify and navigate to Import tab (mandatory non-conditional assertion)
         let importSegment = app.buttons["Import"]
@@ -316,6 +317,7 @@ final class TrainYourBrainUITests: XCTestCase {
         let browseButton = app.buttons["studyMaterial.browseFileButton"]
         let fallbackBrowse = app.buttons["Select JSON File to import"]
         XCTAssertTrue(browseButton.waitForExistence(timeout: 5) || fallbackBrowse.waitForExistence(timeout: 2), "Browse JSON File button must exist in Import tab")
+        attachScreenshot(named: "Study Material - Import Tab")
 
         // 3. Navigate back to Subjects tab and inspect Add Subject sheet (mandatory non-conditional assertions)
         let subjectsSegment = app.buttons["Subjects"]
@@ -361,6 +363,7 @@ final class TrainYourBrainUITests: XCTestCase {
 
         let editTitle = app.staticTexts["Edit Subject"]
         XCTAssertTrue(editTitle.waitForExistence(timeout: 5), "Edit Subject sheet must appear")
+        attachScreenshot(named: "Study Material - Edit Subject Sheet")
         let editNameField = app.textFields["studyMaterial.editSubjectNameField"]
         XCTAssertTrue(editNameField.waitForExistence(timeout: 5), "Edit Subject name field must appear")
         editNameField.tap()
@@ -416,6 +419,7 @@ final class TrainYourBrainUITests: XCTestCase {
         XCTAssertTrue(explanationField.waitForExistence(timeout: 5), "Explanation field must appear")
         explanationField.tap()
         explanationField.typeText("ROS stands for Robot Operating System.")
+        attachScreenshot(named: "Study Material - Add Question Sheet")
 
         let saveQuestionButton = app.buttons["studyMaterial.saveQuestionButton"]
         XCTAssertTrue(saveQuestionButton.waitForExistence(timeout: 5))

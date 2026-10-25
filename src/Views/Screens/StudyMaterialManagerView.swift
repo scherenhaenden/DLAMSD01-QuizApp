@@ -24,8 +24,9 @@ public struct StudyMaterialManagerView: View {
     // Category filter for questions tab
     @State private var selectedCategoryFilter: String = "all"
     
-    public init(viewModel: QuizViewModel) {
+    public init(viewModel: QuizViewModel, initialTab: Int = 0) {
         self.viewModel = viewModel
+        self._selectedTab = State(initialValue: initialTab)
     }
     
     public var body: some View {
@@ -493,7 +494,7 @@ public struct StudyMaterialManagerView: View {
     
     // MARK: - Actions & Handlers
     
-    private func deleteCategory(_ category: QuizCategory) {
+    func deleteCategory(_ category: QuizCategory) {
         do {
             try viewModel.deleteCustomCategory(id: category.rawValue)
             statusMessage = "Category '\(category.displayName)' and its questions were deleted."
@@ -504,7 +505,7 @@ public struct StudyMaterialManagerView: View {
         }
     }
     
-    private func deleteQuestion(_ question: Question) {
+    func deleteQuestion(_ question: Question) {
         do {
             try viewModel.deleteCustomQuestion(id: question.id)
             statusMessage = "Question deleted."
@@ -515,7 +516,7 @@ public struct StudyMaterialManagerView: View {
         }
     }
     
-    private func handleFileImport(result: Result<[URL], Error>) {
+    func handleFileImport(result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
             guard let selectedURL = urls.first else { return }
@@ -541,7 +542,7 @@ public struct StudyMaterialManagerView: View {
         }
     }
     
-    private func downloadFromURL() {
+    func downloadFromURL() {
         let trimmed = importURLString.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let url = URL(string: trimmed), let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else {
             statusMessage = "Please enter a valid HTTP or HTTPS URL."
@@ -585,6 +586,20 @@ struct AddCategorySheet: View {
         "folder.fill", "book.fill", "graduationcap.fill", "laptopcomputer",
         "atom", "cpu", "network", "shield.fill", "globe", "server.rack"
     ]
+    
+    init(
+        viewModel: QuizViewModel,
+        initialName: String = "",
+        initialDescription: String = "",
+        initialIcon: String = "folder.fill",
+        onCompletion: @escaping (Bool, String) -> Void
+    ) {
+        self.viewModel = viewModel
+        self._name = State(initialValue: initialName)
+        self._description = State(initialValue: initialDescription)
+        self._selectedIcon = State(initialValue: initialIcon)
+        self.onCompletion = onCompletion
+    }
     
     var body: some View {
         NavigationStack {
@@ -648,7 +663,7 @@ struct AddCategorySheet: View {
         }
     }
     
-    private func saveCategory() {
+    func saveCategory() {
         let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanName.isEmpty else {
             errorMessage = "Subject name cannot be empty."
@@ -761,7 +776,7 @@ struct EditCategorySheet: View {
         }
     }
     
-    private func saveCategory() {
+    func saveCategory() {
         let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanName.isEmpty else {
             errorMessage = "Subject name cannot be empty."
@@ -894,7 +909,7 @@ struct QuestionEditorSheet: View {
         }
     }
     
-    private func optionRow(index: Int, text: Binding<String>) -> some View {
+    func optionRow(index: Int, text: Binding<String>) -> some View {
         HStack(spacing: 12) {
             Button {
                 correctAnswerIndex = index
@@ -914,7 +929,7 @@ struct QuestionEditorSheet: View {
         }
     }
     
-    private func saveQuestion() {
+    func saveQuestion() {
         guard let cat = viewModel.allCategories.first(where: { $0.rawValue == selectedCategoryId }) else {
             errorMessage = "Please select a valid subject."
             return

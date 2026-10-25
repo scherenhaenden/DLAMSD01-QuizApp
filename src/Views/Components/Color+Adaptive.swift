@@ -29,15 +29,21 @@ extension Color {
                 : UIColor(red: 27.0 / 255, green: 94.0 / 255, blue: 32.0 / 255, alpha: 1.0)
         })
         #elseif canImport(AppKit)
-        return Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                ? NSColor(red: 48.0 / 255, green: 209.0 / 255, blue: 88.0 / 255, alpha: 1.0)
-                : NSColor(red: 27.0 / 255, green: 94.0 / 255, blue: 32.0 / 255, alpha: 1.0)
-        }))
+        return Color(nsColor: adaptiveSuccessNSColor)
         #else
         return Color(red: 27.0 / 255, green: 94.0 / 255, blue: 32.0 / 255)
         #endif
     }
+
+    #if canImport(AppKit)
+    public static var adaptiveSuccessNSColor: NSColor {
+        NSColor(name: nil, dynamicProvider: { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 48.0 / 255, green: 209.0 / 255, blue: 88.0 / 255, alpha: 1.0)
+                : NSColor(red: 27.0 / 255, green: 94.0 / 255, blue: 32.0 / 255, alpha: 1.0)
+        })
+    }
+    #endif
 
     /// Adaptive failing/error text color providing >= 4.5:1 (AA) contrast:
     /// - Light mode: Crimson red `#B71C1C` on light backgrounds (CR = 6.57:1 on white)
@@ -50,15 +56,21 @@ extension Color {
                 : UIColor(red: 183.0 / 255, green: 28.0 / 255, blue: 28.0 / 255, alpha: 1.0)
         })
         #elseif canImport(AppKit)
-        return Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                ? NSColor(red: 255.0 / 255, green: 105.0 / 255, blue: 97.0 / 255, alpha: 1.0)
-                : NSColor(red: 183.0 / 255, green: 28.0 / 255, blue: 28.0 / 255, alpha: 1.0)
-        }))
+        return Color(nsColor: adaptiveErrorNSColor)
         #else
         return Color(red: 183.0 / 255, green: 28.0 / 255, blue: 28.0 / 255)
         #endif
     }
+
+    #if canImport(AppKit)
+    public static var adaptiveErrorNSColor: NSColor {
+        NSColor(name: nil, dynamicProvider: { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 255.0 / 255, green: 105.0 / 255, blue: 97.0 / 255, alpha: 1.0)
+                : NSColor(red: 183.0 / 255, green: 28.0 / 255, blue: 28.0 / 255, alpha: 1.0)
+        })
+    }
+    #endif
 
     /// Adaptive amber/gold icon color providing >= 4.5:1 (AA) contrast:
     /// - Light mode: Deep amber `#B45309` (CR = 5.58:1 on white, 5.01:1 on canvas)
@@ -71,15 +83,21 @@ extension Color {
                 : UIColor(red: 180.0 / 255, green: 83.0 / 255, blue: 9.0 / 255, alpha: 1.0)
         })
         #elseif canImport(AppKit)
-        return Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                ? NSColor(red: 251.0 / 255, green: 191.0 / 255, blue: 36.0 / 255, alpha: 1.0)
-                : NSColor(red: 180.0 / 255, green: 83.0 / 255, blue: 9.0 / 255, alpha: 1.0)
-        }))
+        return Color(nsColor: adaptiveScoreNSColor)
         #else
         return Color(red: 180.0 / 255, green: 83.0 / 255, blue: 9.0 / 255)
         #endif
     }
+
+    #if canImport(AppKit)
+    public static var adaptiveScoreNSColor: NSColor {
+        NSColor(name: nil, dynamicProvider: { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 251.0 / 255, green: 191.0 / 255, blue: 36.0 / 255, alpha: 1.0)
+                : NSColor(red: 180.0 / 255, green: 83.0 / 255, blue: 9.0 / 255, alpha: 1.0)
+        })
+    }
+    #endif
 
     /// Adaptive flame/orange icon color providing >= 4.5:1 (AA) contrast:
     /// - Light mode: Burnt orange `#C2410C` (CR = 6.03:1 on white, 5.41:1 on canvas)
@@ -92,15 +110,21 @@ extension Color {
                 : UIColor(red: 194.0 / 255, green: 65.0 / 255, blue: 12.0 / 255, alpha: 1.0)
         })
         #elseif canImport(AppKit)
-        return Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                ? NSColor(red: 251.0 / 255, green: 146.0 / 255, blue: 60.0 / 255, alpha: 1.0)
-                : NSColor(red: 194.0 / 255, green: 65.0 / 255, blue: 12.0 / 255, alpha: 1.0)
-        }))
+        return Color(nsColor: adaptiveStreakNSColor)
         #else
         return Color(red: 194.0 / 255, green: 65.0 / 255, blue: 12.0 / 255)
         #endif
     }
+
+    #if canImport(AppKit)
+    public static var adaptiveStreakNSColor: NSColor {
+        NSColor(name: nil, dynamicProvider: { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 251.0 / 255, green: 146.0 / 255, blue: 60.0 / 255, alpha: 1.0)
+                : NSColor(red: 194.0 / 255, green: 65.0 / 255, blue: 12.0 / 255, alpha: 1.0)
+        })
+    }
+    #endif
 
     /// Adaptive timer/speed blue icon color providing >= 4.5:1 (AA) contrast:
     /// - Light mode: Rich cobalt blue `#1D4ED8` (CR = 6.73:1 on white, 6.03:1 on canvas)
@@ -113,15 +137,21 @@ extension Color {
                 : UIColor(red: 29.0 / 255, green: 78.0 / 255, blue: 216.0 / 255, alpha: 1.0)
         })
         #elseif canImport(AppKit)
-        return Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                ? NSColor(red: 56.0 / 255, green: 189.0 / 255, blue: 248.0 / 255, alpha: 1.0)
-                : NSColor(red: 29.0 / 255, green: 78.0 / 255, blue: 216.0 / 255, alpha: 1.0)
-        }))
+        return Color(nsColor: adaptiveSpeedNSColor)
         #else
         return Color(red: 29.0 / 255, green: 78.0 / 255, blue: 216.0 / 255)
         #endif
     }
+
+    #if canImport(AppKit)
+    public static var adaptiveSpeedNSColor: NSColor {
+        NSColor(name: nil, dynamicProvider: { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 56.0 / 255, green: 189.0 / 255, blue: 248.0 / 255, alpha: 1.0)
+                : NSColor(red: 29.0 / 255, green: 78.0 / 255, blue: 216.0 / 255, alpha: 1.0)
+        })
+    }
+    #endif
 
     /// Adaptive grouped canvas background:
     /// - Light mode: `#F2F2F7` (`UIColor.systemGroupedBackground`)

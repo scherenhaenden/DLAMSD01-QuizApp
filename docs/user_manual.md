@@ -2,7 +2,7 @@
 **DLAMSD01: Apple Mobile Solution Development I**  
 *IU Internationale Hochschule (IU International University of Applied Sciences)*  
 *Studiengang: B.Sc. Softwareentwicklung*  
-*Anwendungsversion:* **v0.9.0** (Build `20261024.150000`)
+*Anwendungsversion:* **v1.0.0** (Build `20261025.100000`)
 
 ---
 

@@ -507,23 +507,24 @@ final class TrainYourBrainUITests: XCTestCase {
         reopenedQuestionsSegment.tap()
 
         let questionToDeletePrompt = app.staticTexts["What is ROS?"]
-        if questionToDeletePrompt.waitForExistence(timeout: 5) {
-            let deleteQuestionButton = app.buttons["studyMaterial.deleteQuestionButton"]
-            if deleteQuestionButton.waitForExistence(timeout: 5) {
-                deleteQuestionButton.tap()
-            }
-        }
+        XCTAssertTrue(questionToDeletePrompt.waitForExistence(timeout: 5), "Custom question 'What is ROS?' must exist before deletion")
+        let deleteQuestionButton = app.buttons["studyMaterial.deleteQuestionButton"]
+        XCTAssertTrue(deleteQuestionButton.waitForExistence(timeout: 5), "Delete button for custom question must exist")
+        deleteQuestionButton.tap()
+        XCTAssertFalse(questionToDeletePrompt.waitForExistence(timeout: 2), "Deleted question must no longer exist in UI")
 
         let reopenedSubjectsSegment = reopenedSegmentedPicker.buttons["Subjects"]
+        XCTAssertTrue(reopenedSubjectsSegment.waitForExistence(timeout: 5))
         reopenedSubjectsSegment.tap()
 
         let deleteSubjectButton = app.buttons["studyMaterial.deleteSubjectButton.robotics"]
         if !deleteSubjectButton.exists {
             app.swipeUp()
         }
-        if deleteSubjectButton.waitForExistence(timeout: 5) {
-            deleteSubjectButton.tap()
-        }
+        XCTAssertTrue(deleteSubjectButton.waitForExistence(timeout: 5), "Delete button for custom subject 'robotics' must exist")
+        deleteSubjectButton.tap()
+        let deletedSubjectLabel = app.staticTexts["Robotics Lab"]
+        XCTAssertFalse(deletedSubjectLabel.waitForExistence(timeout: 2), "Deleted custom subject must no longer exist in UI")
 
         let finalDone = app.buttons["studyMaterial.doneButton"]
         if finalDone.waitForExistence(timeout: 5) {

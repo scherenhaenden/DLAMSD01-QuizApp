@@ -4,9 +4,11 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **0.9.0** (Build `20261024.150000`), Sprint 9: Dynamic Study Material & Catalog Expansion (Custom subjects, in-app question authoring with 4 choices and radio-marked correct answer, sandbox persistence in `Application Support/TrainYourBrain/custom_catalog.json`, transactional JSON file and URL network import via `URLSession`, integrated quiz gameplay with German academic grading 1.0–5.0 and Leaderboard tracking, and `StudyMaterialManagerView`).
+Version **1.0.0** (Build `20261025.100000`), Sprint 10: Final Academic Release (Final code freeze, hardened non-conditional UI assertions, corruption warning UI verification, 135 unit/integration tests with 100% success, 9 native UI acceptance tests on iPhone 17 and iPad 9, 20-screenshot operational suite, and comprehensive Word user manual `docs/user_manual.md`).
 
 ### Implemented
+
+- Final Academic Release Gate (Sprint 10): Version 1.0.0 code freeze, monotonic build number 20261025.100000, 135 XCTest unit/integration tests (100% passing in 0.66s), 9 native UI tests on iPhone 17 and iPad 9 (100% passing), hardened non-conditional UI deletion verification, and verified corruption alert rendering.
 
 - Dynamic Study Material & Extensible Categories: `QuizCategory` is an open struct supported by thread-safe in-memory `CategoryRegistry`, combining foundational B.Sc. curriculum subjects with user-defined or imported subjects.
 - In-App Question Authoring: Direct on-device question creation with prompt, 4 options, radio-picker to designate the single correct choice, pedagogical rationale, category classification, and difficulty rating (`Easy`, `Medium`, `Hard`).

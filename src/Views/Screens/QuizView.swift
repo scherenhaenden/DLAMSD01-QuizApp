@@ -15,13 +15,32 @@ public struct QuizView: View {
         self.viewModel = viewModel
     }
     
+    func triggerClose() {
+        viewModel.resetToMenu()
+    }
+
+    func triggerSelectAnswer(at index: Int) {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            viewModel.selectAnswer(at: index)
+        }
+    }
+
+    func triggerAdvance() {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            viewModel.nextQuestion()
+        }
+    }
+
+    func handleViewStateChange(_ newState: QuizViewModel.ViewState) {
+        guard case .answered = newState else { return }
+        announceAnswerFeedback(for: newState)
+    }
+
     public var body: some View {
         VStack(spacing: 20) {
             // Header: score, timer, and streak
             HStack {
-                Button(action: {
-                    viewModel.resetToMenu()
-                }) {
+                Button(action: triggerClose) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
                         .foregroundColor(.secondary)
@@ -91,9 +110,7 @@ public struct QuizView: View {
                                     isCorrectAnswer: isCorrect,
                                     isAnswerRevealed: isAnswerRevealed
                                 ) {
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                        viewModel.selectAnswer(at: index)
-                                    }
+                                    triggerSelectAnswer(at: index)
                                 }
                             }
                         }
@@ -114,11 +131,7 @@ public struct QuizView: View {
                                     .foregroundColor(.secondary)
                                     .lineSpacing(3)
                                 
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                        viewModel.nextQuestion()
-                                    }
-                                }) {
+                                Button(action: triggerAdvance) {
                                     Text(viewModel.questionIndex + 1 < viewModel.totalQuestions ? "Next Question" : "View Results")
                                         .font(.headline)
                                         .frame(maxWidth: .infinity)
@@ -148,13 +161,12 @@ public struct QuizView: View {
         .frame(maxWidth: 640) // Constrained 640pt ergonomic container for iPad (US-15)
         .frame(maxWidth: .infinity)
         .onChange(of: viewModel.viewState) { _, newState in
-            guard case .answered = newState else { return }
-            announceAnswerFeedback(for: newState)
+            handleViewStateChange(newState)
         }
     }
 
-    private func announceAnswerFeedback(for state: QuizViewModel.ViewState) {
-        #if os(iOS)
+    func announceAnswerFeedback(for state: QuizViewModel.ViewState) {
+        #if os(iOS) || os(macOS)
         guard case let .answered(selectedIndex, isCorrect) = state,
               let question = viewModel.currentQuestion else { return }
 

@@ -24,9 +24,118 @@ public struct StudyMaterialManagerView: View {
     // Category filter for questions tab
     @State private var selectedCategoryFilter: String = "all"
     
-    public init(viewModel: QuizViewModel, initialTab: Int = 0) {
+    public init(
+        viewModel: QuizViewModel,
+        initialTab: Int = 0,
+        initialStatusMessage: String? = nil,
+        initialIsStatusError: Bool = false,
+        initialCategoryFilter: String = "all",
+        initialImportURL: String = "",
+        initialIsDownloading: Bool = false,
+        initialShowAddCategory: Bool = false,
+        initialCategoryToEdit: QuizCategory? = nil,
+        initialShowQuestionEditor: Bool = false,
+        initialQuestionToEdit: Question? = nil
+    ) {
         self.viewModel = viewModel
         self._selectedTab = State(initialValue: initialTab)
+        self._statusMessage = State(initialValue: initialStatusMessage)
+        self._isStatusError = State(initialValue: initialIsStatusError)
+        self._selectedCategoryFilter = State(initialValue: initialCategoryFilter)
+        self._importURLString = State(initialValue: initialImportURL)
+        self._isDownloading = State(initialValue: initialIsDownloading)
+        self._showAddCategorySheet = State(initialValue: initialShowAddCategory)
+        self._categoryToEdit = State(initialValue: initialCategoryToEdit)
+        self._showQuestionEditorSheet = State(initialValue: initialShowQuestionEditor)
+        self._questionToEdit = State(initialValue: initialQuestionToEdit)
+    }
+    
+    var feedbackBannerView: some View { feedbackBanner }
+    var subjectsTabView: some View { subjectsTab }
+    var questionsTabView: some View { questionsTab }
+    var importTabView: some View { importTab }
+    
+    func presentAddCategorySheet() -> AddCategorySheet {
+        addCategorySheetView
+    }
+    
+    func presentEditCategorySheet(for category: QuizCategory) -> EditCategorySheet {
+        editCategorySheetView(for: category)
+    }
+    
+    func presentQuestionEditorSheet() -> QuestionEditorSheet {
+        questionEditorSheetView
+    }
+    
+    var addCategorySheetView: AddCategorySheet {
+        AddCategorySheet(viewModel: viewModel, onCompletion: handleAddCategoryCompletion)
+    }
+    
+    func editCategorySheetView(for category: QuizCategory) -> EditCategorySheet {
+        EditCategorySheet(viewModel: viewModel, category: category, onCompletion: handleEditCategoryCompletion)
+    }
+    
+    var questionEditorSheetView: QuestionEditorSheet {
+        QuestionEditorSheet(
+            viewModel: viewModel,
+            editingQuestion: questionToEdit,
+            onCompletion: handleQuestionEditorCompletion
+        )
+    }
+    
+    func handleAddCategoryCompletion(success: Bool, message: String) {
+        self.isStatusError = !success
+        self.statusMessage = message
+    }
+    
+    func handleEditCategoryCompletion(success: Bool, message: String) {
+        self.isStatusError = !success
+        self.statusMessage = message
+        self.categoryToEdit = nil
+    }
+    
+    func handleQuestionEditorCompletion(success: Bool, message: String) {
+        self.isStatusError = !success
+        self.statusMessage = message
+        self.questionToEdit = nil
+    }
+
+    func handleOnAppear() {
+        if let warning = viewModel.lastLoadWarning, statusMessage == nil {
+            self.statusMessage = warning
+            self.isStatusError = warning.contains("CRITICAL")
+        }
+    }
+    
+    func triggerDismiss() {
+        dismiss()
+    }
+    
+    func clearStatusMessage() {
+        statusMessage = nil
+    }
+    
+    func openAddCategory() {
+        showAddCategorySheet = true
+    }
+    
+    func openEditCategory(_ category: QuizCategory) {
+        categoryToEdit = category
+        showEditCategorySheet = true
+    }
+    
+    func openAddQuestion() {
+        questionToEdit = nil
+        showQuestionEditorSheet = true
+    }
+    
+    func openEditQuestion(_ question: Question) {
+        questionToEdit = question
+        showQuestionEditorSheet = true
+    }
+    
+    func openFileImporter() {
+        showFileImporter = true
     }
     
     public var body: some View {
@@ -65,50 +174,22 @@ public struct StudyMaterialManagerView: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done", action: triggerDismiss)
                     .font(.body.bold())
                     .frame(minHeight: 44)
                     .accessibilityIdentifier("studyMaterial.doneButton")
                 }
             }
-            .sheet(isPresented: $showAddCategorySheet) {
-                AddCategorySheet(viewModel: viewModel) { success, msg in
-                    self.isStatusError = !success
-                    self.statusMessage = msg
-                }
-            }
-            .sheet(item: $categoryToEdit) { category in
-                EditCategorySheet(viewModel: viewModel, category: category) { success, msg in
-                    self.isStatusError = !success
-                    self.statusMessage = msg
-                    self.categoryToEdit = nil
-                }
-            }
-            .sheet(isPresented: $showQuestionEditorSheet) {
-                QuestionEditorSheet(
-                    viewModel: viewModel,
-                    editingQuestion: questionToEdit
-                ) { success, msg in
-                    self.isStatusError = !success
-                    self.statusMessage = msg
-                    self.questionToEdit = nil
-                }
-            }
+            .sheet(isPresented: $showAddCategorySheet, content: presentAddCategorySheet)
+            .sheet(item: $categoryToEdit, content: presentEditCategorySheet)
+            .sheet(isPresented: $showQuestionEditorSheet, content: presentQuestionEditorSheet)
             .fileImporter(
                 isPresented: $showFileImporter,
                 allowedContentTypes: [.json],
-                allowsMultipleSelection: false
-            ) { result in
-                handleFileImport(result: result)
-            }
-            .onAppear {
-                if let warning = viewModel.lastLoadWarning, statusMessage == nil {
-                    self.statusMessage = warning
-                    self.isStatusError = warning.contains("CRITICAL")
-                }
-            }
+                allowsMultipleSelection: false,
+                onCompletion: handleFileImport
+            )
+            .onAppear(perform: handleOnAppear)
         }
     }
     
@@ -124,9 +205,7 @@ public struct StudyMaterialManagerView: View {
                     .font(.caption.weight(.medium))
                     .foregroundColor(Color.primary)
                 Spacer()
-                Button {
-                    statusMessage = nil
-                } label: {
+                Button(action: clearStatusMessage) {
                     Image(systemName: "xmark")
                         .font(.caption.bold())
                         .foregroundColor(Color.secondary)
@@ -146,9 +225,7 @@ public struct StudyMaterialManagerView: View {
     private var subjectsTab: some View {
         List {
             Section {
-                Button {
-                    showAddCategorySheet = true
-                } label: {
+                Button(action: openAddCategory) {
                     Label("Add New Subject", systemImage: "plus.circle.fill")
                         .font(.body.bold())
                         .foregroundColor(.accentColor)
@@ -174,8 +251,7 @@ public struct StudyMaterialManagerView: View {
                                 Spacer()
                                 if category.isCustom {
                                     Button {
-                                        categoryToEdit = category
-                                        showEditCategorySheet = true
+                                        openEditCategory(category)
                                     } label: {
                                         Image(systemName: "pencil")
                                             .font(.caption.bold())
@@ -237,8 +313,7 @@ public struct StudyMaterialManagerView: View {
                             }
                             
                             Button {
-                                categoryToEdit = category
-                                showEditCategorySheet = true
+                                openEditCategory(category)
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
@@ -260,10 +335,7 @@ public struct StudyMaterialManagerView: View {
     private var questionsTab: some View {
         VStack(spacing: 0) {
             HStack {
-                Button {
-                    questionToEdit = nil
-                    showQuestionEditorSheet = true
-                } label: {
+                Button(action: openAddQuestion) {
                     Label("Add Question", systemImage: "plus.circle.fill")
                         .font(.subheadline.bold())
                         .padding(.horizontal, 12)
@@ -334,8 +406,7 @@ public struct StudyMaterialManagerView: View {
                                 Spacer()
                                 
                                 Button {
-                                    questionToEdit = question
-                                    showQuestionEditorSheet = true
+                                    openEditQuestion(question)
                                 } label: {
                                     Image(systemName: "pencil")
                                         .font(.caption.bold())
@@ -406,9 +477,7 @@ public struct StudyMaterialManagerView: View {
                         .font(.caption)
                         .foregroundColor(Color.secondary)
                     
-                    Button {
-                        showFileImporter = true
-                    } label: {
+                    Button(action: openFileImporter) {
                         HStack {
                             Image(systemName: "folder")
                             Text("Browse & Select JSON File")
@@ -450,9 +519,7 @@ public struct StudyMaterialManagerView: View {
                         #endif
                         .frame(minHeight: 44)
                     
-                    Button {
-                        downloadFromURL()
-                    } label: {
+                    Button(action: downloadFromURL) {
                         HStack {
                             if isDownloading {
                                 ProgressView()
@@ -592,13 +659,23 @@ struct AddCategorySheet: View {
         initialName: String = "",
         initialDescription: String = "",
         initialIcon: String = "folder.fill",
+        initialErrorMessage: String? = nil,
         onCompletion: @escaping (Bool, String) -> Void
     ) {
         self.viewModel = viewModel
         self._name = State(initialValue: initialName)
         self._description = State(initialValue: initialDescription)
         self._selectedIcon = State(initialValue: initialIcon)
+        self._errorMessage = State(initialValue: initialErrorMessage)
         self.onCompletion = onCompletion
+    }
+    
+    func selectIcon(_ icon: String) {
+        selectedIcon = icon
+    }
+    
+    func triggerDismiss() {
+        dismiss()
     }
     
     var body: some View {
@@ -617,7 +694,7 @@ struct AddCategorySheet: View {
                         HStack(spacing: 16) {
                             ForEach(availableIcons, id: \.self) { icon in
                                 Button {
-                                    selectedIcon = icon
+                                    selectIcon(icon)
                                 } label: {
                                     Image(systemName: icon)
                                         .font(.title2)
@@ -648,12 +725,12 @@ struct AddCategorySheet: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel", action: triggerDismiss)
                         .frame(minHeight: 44)
                         .accessibilityIdentifier("studyMaterial.cancelSubjectButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveCategory() }
+                    Button("Save", action: saveCategory)
                         .font(.body.bold())
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         .accessibilityIdentifier("studyMaterial.saveNewSubjectButton")
@@ -704,14 +781,27 @@ struct EditCategorySheet: View {
     init(
         viewModel: QuizViewModel,
         category: QuizCategory,
+        initialName: String? = nil,
+        initialDescription: String? = nil,
+        initialIcon: String? = nil,
+        initialErrorMessage: String? = nil,
         onCompletion: @escaping (Bool, String) -> Void
     ) {
         self.viewModel = viewModel
         self.category = category
         self.onCompletion = onCompletion
-        _name = State(initialValue: category.displayName)
-        _description = State(initialValue: category.localizedDescription)
-        _selectedIcon = State(initialValue: category.iconName)
+        _name = State(initialValue: initialName ?? category.displayName)
+        _description = State(initialValue: initialDescription ?? category.localizedDescription)
+        _selectedIcon = State(initialValue: initialIcon ?? category.iconName)
+        _errorMessage = State(initialValue: initialErrorMessage)
+    }
+    
+    func selectIcon(_ icon: String) {
+        selectedIcon = icon
+    }
+    
+    func triggerDismiss() {
+        dismiss()
     }
     
     var body: some View {
@@ -730,7 +820,7 @@ struct EditCategorySheet: View {
                         HStack(spacing: 16) {
                             ForEach(availableIcons, id: \.self) { icon in
                                 Button {
-                                    selectedIcon = icon
+                                    selectIcon(icon)
                                 } label: {
                                     Image(systemName: icon)
                                         .font(.title2)
@@ -761,12 +851,12 @@ struct EditCategorySheet: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel", action: triggerDismiss)
                         .frame(minHeight: 44)
                         .accessibilityIdentifier("studyMaterial.cancelEditSubjectButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveCategory() }
+                    Button("Save", action: saveCategory)
                         .font(.body.bold())
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         .accessibilityIdentifier("studyMaterial.saveEditSubjectButton")
@@ -819,24 +909,41 @@ struct QuestionEditorSheet: View {
     init(
         viewModel: QuizViewModel,
         editingQuestion: Question?,
+        initialCategoryId: String? = nil,
+        initialPrompt: String? = nil,
+        initialOption0: String? = nil,
+        initialOption1: String? = nil,
+        initialOption2: String? = nil,
+        initialOption3: String? = nil,
+        initialCorrectIndex: Int? = nil,
+        initialExplanation: String? = nil,
+        initialDifficulty: Difficulty? = nil,
+        initialErrorMessage: String? = nil,
         onCompletion: @escaping (Bool, String) -> Void
     ) {
         self.viewModel = viewModel
         self.editingQuestion = editingQuestion
         self.onCompletion = onCompletion
         
-        let initialCat = editingQuestion?.category.rawValue ?? viewModel.allCategories.first(where: { $0.isCustom })?.rawValue ?? viewModel.allCategories.first?.rawValue ?? ""
+        let initialCat = initialCategoryId ?? editingQuestion?.category.rawValue ?? viewModel.allCategories.first(where: { $0.isCustom })?.rawValue ?? viewModel.allCategories.first?.rawValue ?? ""
         _selectedCategoryId = State(initialValue: initialCat)
-        if let q = editingQuestion {
-            _prompt = State(initialValue: q.prompt)
-            _option0 = State(initialValue: q.options.indices.contains(0) ? q.options[0] : "")
-            _option1 = State(initialValue: q.options.indices.contains(1) ? q.options[1] : "")
-            _option2 = State(initialValue: q.options.indices.contains(2) ? q.options[2] : "")
-            _option3 = State(initialValue: q.options.indices.contains(3) ? q.options[3] : "")
-            _correctAnswerIndex = State(initialValue: q.correctAnswerIndex)
-            _explanation = State(initialValue: q.explanation)
-            _difficulty = State(initialValue: q.difficulty)
-        }
+        _prompt = State(initialValue: initialPrompt ?? editingQuestion?.prompt ?? "")
+        _option0 = State(initialValue: initialOption0 ?? (editingQuestion?.options.indices.contains(0) == true ? editingQuestion!.options[0] : ""))
+        _option1 = State(initialValue: initialOption1 ?? (editingQuestion?.options.indices.contains(1) == true ? editingQuestion!.options[1] : ""))
+        _option2 = State(initialValue: initialOption2 ?? (editingQuestion?.options.indices.contains(2) == true ? editingQuestion!.options[2] : ""))
+        _option3 = State(initialValue: initialOption3 ?? (editingQuestion?.options.indices.contains(3) == true ? editingQuestion!.options[3] : ""))
+        _correctAnswerIndex = State(initialValue: initialCorrectIndex ?? editingQuestion?.correctAnswerIndex ?? 0)
+        _explanation = State(initialValue: initialExplanation ?? editingQuestion?.explanation ?? "")
+        _difficulty = State(initialValue: initialDifficulty ?? editingQuestion?.difficulty ?? .medium)
+        _errorMessage = State(initialValue: initialErrorMessage)
+    }
+    
+    func selectCorrectIndex(_ index: Int) {
+        correctAnswerIndex = index
+    }
+    
+    func triggerDismiss() {
+        dismiss()
     }
     
     var body: some View {
@@ -895,12 +1002,12 @@ struct QuestionEditorSheet: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel", action: triggerDismiss)
                         .frame(minHeight: 44)
                         .accessibilityIdentifier("studyMaterial.cancelQuestionButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveQuestion() }
+                    Button("Save", action: saveQuestion)
                         .font(.body.bold())
                         .accessibilityIdentifier("studyMaterial.saveQuestionButton")
                         .frame(minHeight: 44)
@@ -912,7 +1019,7 @@ struct QuestionEditorSheet: View {
     func optionRow(index: Int, text: Binding<String>) -> some View {
         HStack(spacing: 12) {
             Button {
-                correctAnswerIndex = index
+                selectCorrectIndex(index)
             } label: {
                 Image(systemName: correctAnswerIndex == index ? "largecircle.fill.circle" : "circle")
                     .foregroundColor(correctAnswerIndex == index ? Color.adaptiveSuccessText : Color.gray)

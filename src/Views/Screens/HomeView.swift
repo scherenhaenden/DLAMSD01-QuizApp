@@ -7,8 +7,38 @@ public struct HomeView: View {
     @State private var showLeaderboard: Bool = false
     @State private var showMaterialManager: Bool = false
 
-    public init(viewModel: QuizViewModel) {
+    public init(
+        viewModel: QuizViewModel,
+        initialShowLeaderboard: Bool = false,
+        initialShowMaterialManager: Bool = false
+    ) {
         self.viewModel = viewModel
+        self._showLeaderboard = State(initialValue: initialShowLeaderboard)
+        self._showMaterialManager = State(initialValue: initialShowMaterialManager)
+    }
+
+    public var headerActionsView: some View { headerActions }
+    public var themePickerView: some View { themePicker }
+    public var catalogSummaryText: String { catalogSummary }
+
+    public func triggerReload() {
+        viewModel.loadQuestionCatalog()
+    }
+
+    public func triggerQuickStart() {
+        viewModel.startQuiz()
+    }
+
+    public func triggerCategoryStart(_ category: QuizCategory) {
+        viewModel.startQuiz(category: category)
+    }
+
+    public func openLeaderboard() {
+        showLeaderboard = true
+    }
+
+    public func openMaterialManager() {
+        showMaterialManager = true
     }
 
     public var body: some View {
@@ -46,9 +76,7 @@ public struct HomeView: View {
                                     .font(.subheadline)
                                     .foregroundColor(.primary)
                                     .fixedSize(horizontal: false, vertical: true)
-                                Button("Reload Questions") {
-                                    viewModel.loadQuestionCatalog()
-                                }
+                                Button("Reload Questions", action: triggerReload)
                                 .buttonStyle(.bordered)
                             }
 
@@ -57,10 +85,9 @@ public struct HomeView: View {
                                 CategoryCard(
                                     category: nil,
                                     questionCount: viewModel.availableQuestionCount,
-                                    isLoading: isLoading
-                                ) {
-                                    viewModel.startQuiz()
-                                }
+                                    isLoading: isLoading,
+                                    action: triggerQuickStart
+                                )
 
                                 ForEach(viewModel.allCategories) { category in
                                     CategoryCard(
@@ -68,7 +95,7 @@ public struct HomeView: View {
                                         questionCount: viewModel.questionCount(for: category),
                                         isLoading: isLoading
                                     ) {
-                                        viewModel.startQuiz(category: category)
+                                        triggerCategoryStart(category)
                                     }
                                 }
                             }
@@ -103,9 +130,7 @@ public struct HomeView: View {
 
     private var headerActions: some View {
         HStack(spacing: 8) {
-            Button {
-                showLeaderboard = true
-            } label: {
+            Button(action: openLeaderboard) {
                 Label("Scores", systemImage: "trophy.fill")
                     .font(.subheadline.bold())
                     .padding(.horizontal, 12)
@@ -117,9 +142,7 @@ public struct HomeView: View {
             .accessibilityLabel("View Leaderboard and High Scores")
             .accessibilityIdentifier("home.scoresButton")
 
-            Button {
-                showMaterialManager = true
-            } label: {
+            Button(action: openMaterialManager) {
                 Label("Material", systemImage: "folder.badge.plus")
                     .font(.subheadline.bold())
                     .padding(.horizontal, 12)

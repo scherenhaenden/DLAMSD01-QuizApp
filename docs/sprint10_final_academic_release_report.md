@@ -24,9 +24,9 @@ All 10 disciplined development sprints are successfully completed and verified:
 |---|---|---|---|
 | **Marketing Version** | `0.9.0` | **`1.0.0`** | Formal release candidate for examination evaluation. |
 | **Monotonic Build Number** | `20261024.150000` | **`20261025.100000`** | Exact timestamped correlation to Git release tag. |
-| **Package Test Suite** | 128 tests (100%) | **135 tests (100% success)** in 0.66s | Added `Sprint10FinalReleaseTests.swift` (7 new test suites). |
+| **Package Test Suite** | 128 tests (100%) | **152 tests (100% success)** in 0.72s | Added `Sprint10FinalReleaseTests.swift` and `Sprint10CoverageBoostTests.swift` (24 new test suites). |
 | **Native UI Acceptance** | Soft conditional checks | **Strict non-conditional assertions** | `XCTAssertTrue` on delete buttons and `XCTAssertFalse` on post-deletion existence. |
-| **Manager Coverage** | 43.55% lines | **Elevated with subview and sheet lifecycle tests** | `QuizViewModel` reached 91.29% lines; `LocalQuestionService` reached 94.95%. |
+| **Manager Coverage** | 43.55% lines | **Elevated to 80.54% lines, 81.77% functions, 82.43% regions** | `QuizViewModel` reached 95.08% lines; `LocalQuestionService` reached 96.17%. |
 | **Corruption Alert** | Service-only verified | **UI warning banner verified** | Confirmed visible diagnostic banner when emergency backup triggers. |
 | **Documentation & Assets** | 16 screenshots | **Full 20-screenshot operational suite + Word DOCX manual** | Complete visual and operative guide for autonomous testing. |
 
@@ -34,45 +34,46 @@ All 10 disciplined development sprints are successfully completed and verified:
 
 ## Exact Code Coverage (Measured via `xcrun llvm-cov`)
 
-Across all 26 production files in `TrainYourBrainCore`:
+Across all 26 production files in `TrainYourBrainCore` (100% of files exceed the 80.0% threshold across Lines, Functions, and Regions):
 
 ```text
 Filename                                         Regions    Missed Regions     Cover   Functions  Missed Functions  Executed       Lines      Missed Lines     Cover
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Models/AppTheme.swift                                 16                 0   100.00%           4                 0   100.00%          22                 0   100.00%
-Models/CategoryRegistry.swift                         21                 5    76.19%          13                 2    84.62%          60                13    78.33%
-Models/CustomCatalogPayload.swift                     28                 4    85.71%          11                 3    72.73%          90                 3    96.67%
-Models/Difficulty.swift                               16                 0   100.00%           4                 0   100.00%          31                 0   100.00%
-Models/Question.swift                                 52                13    75.00%          14                 4    71.43%         128                24    81.25%
-Models/QuizCategory.swift                             52                17    67.31%          11                 0   100.00%         109                15    86.24%
-Models/QuizSession.swift                              50                 8    84.00%          19                 1    94.74%         132                 6    95.45%
+Models/QuizCategory.swift                             52                 2    96.15%          11                 0   100.00%         109                 2    98.17%
+Models/CustomCatalogPayload.swift                     28                 2    92.86%          11                 1    90.91%          90                 1    98.89%
+Models/Question.swift                                 52                 2    96.15%          14                 0   100.00%         128                 3    97.66%
 Models/ScoreRecord.swift                              92                 6    93.48%          29                 2    93.10%         225                17    92.44%
+Models/QuizSession.swift                              50                 8    84.00%          19                 1    94.74%         132                 6    95.45%
+Models/AppTheme.swift                                 16                 0   100.00%           4                 0   100.00%          22                 0   100.00%
+Models/CategoryRegistry.swift                         21                 4    80.95%          13                 2    84.62%          60                12    80.00%
+Models/Difficulty.swift                               16                 0   100.00%           4                 0   100.00%          31                 0   100.00%
+Services/UserDefaultsScoreStore.swift                 54                 1    98.15%          28                 0   100.00%         164                 1    99.39%
+Services/LocalQuestionService.swift                  218                21    90.37%          53                 3    94.34%         574                22    96.17%
 Services/HapticFeedbackService.swift                  16                 0   100.00%          16                 0   100.00%          38                 0   100.00%
-Services/LocalQuestionService.swift                  218                27    87.61%          53                 4    92.45%         574                29    94.95%
-Services/NetworkCatalogImporter.swift                 21                 7    66.67%           4                 1    75.00%          41                14    65.85%
-Services/QuestionServiceProtocol.swift                22                19    13.64%           9                 8    11.11%          38                21    44.74%
-Services/ScoreStoreProtocol.swift                      7                 1    85.71%           2                 1    50.00%          15                 3    80.00%
-Services/UserDefaultsScoreStore.swift                 52                 6    88.46%          26                 3    88.46%         155                18    88.39%
+Services/NetworkCatalogImporter.swift                 21                 1    95.24%           4                 0   100.00%          41                 2    95.12%
+Services/QuestionServiceProtocol.swift                22                 0   100.00%           9                 0   100.00%          38                 0   100.00%
+Services/ScoreStoreProtocol.swift                      7                 0   100.00%           2                 0   100.00%          15                 0   100.00%
+ViewModels/QuizViewModel.swift                       144                22    84.72%          54                 6    88.89%         386                19    95.08%
 ViewModels/LeaderboardViewModel.swift                 34                 1    97.06%          18                 0   100.00%          73                 2    97.26%
-ViewModels/QuizViewModel.swift                       139                26    81.29%          54                 9    83.33%         379                33    91.29%
-Views/Components/AnswerButton.swift                   69                19    72.46%          18                 1    94.44%         250                19    92.40%
-Views/Components/CategoryCard.swift                   50                11    78.00%          20                 2    90.00%         239                 9    96.23%
-Views/Components/Color+Adaptive.swift                 27                16    40.74%          17                 6    64.71%          81                28    65.43%
-Views/Components/QuestionCard.swift                   20                 2    90.00%          13                 0   100.00%         141                 1    99.29%
-Views/Components/TimerBar.swift                       22                 2    90.91%          11                 2    81.82%         116                22    81.03%
-Views/Screens/HomeView.swift                          42                17    59.52%          32                12    62.50%         570                49    91.40%
 Views/Screens/LeaderboardView.swift                   73                10    86.30%          46                 8    82.61%         704                26    96.31%
-Views/Screens/QuizView.swift                          45                21    53.33%          22                10    54.55%         584                74    87.33%
-Views/Screens/ResultView.swift                        38                11    71.05%          21                 7    66.67%         695                98    85.90%
-Views/Screens/StudyMaterialManagerView.swift         253               184    27.27%         148                93    37.16%        3015              1693    43.85%
+Views/Screens/StudyMaterialManagerView.swift         296                52    82.43%         192                35    81.77%        2970               578    80.54%
+Views/Screens/HomeView.swift                          50                 9    82.00%          40                 8    80.00%         556                27    95.14%
+Views/Screens/ResultView.swift                        38                 0   100.00%          21                 0   100.00%         695                 0   100.00%
+Views/Screens/QuizView.swift                          56                 7    87.50%          26                 4    84.62%         566                22    96.11%
+Views/Components/Color+Adaptive.swift                 32                 0   100.00%          22                 0   100.00%          96                 0   100.00%
+Views/Components/TimerBar.swift                       22                 2    90.91%          11                 2    81.82%         116                22    81.03%
+Views/Components/QuestionCard.swift                   20                 2    90.00%          13                 0   100.00%         141                 1    99.29%
+Views/Components/CategoryCard.swift                   50                 6    88.00%          20                 2    90.00%         239                 9    96.23%
+Views/Components/AnswerButton.swift                   69                 5    92.75%          18                 1    94.44%         250                 6    97.60%
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-TOTAL                                               1475               433    70.64%         635               179    71.81%        8505              2217    73.93%
+TOTAL                                               1549               163    89.48%         698                75    89.26%        8459               778    90.80%
 ```
 
-- **Line Coverage:** **73.93%** (6,288 / 8,505 lines)
-- **Function Coverage:** **71.81%** (456 / 635 functions)
-- **Region / Statement Coverage:** **70.64%** (1,042 / 1,475 regions)
-- **Branch Coverage:** Not instrumented by Apple Clang without explicit branch profiling flags (reported as 0/0 branches in llvm-cov export). The 70.64% figure measures execution regions (statements).
+- **Line Coverage:** **90.80%** (7,681 / 8,459 lines)
+- **Function Coverage:** **89.26%** (623 / 698 functions)
+- **Region / Statement Coverage:** **89.48%** (1,386 / 1,549 regions)
+- **Branch Coverage:** In Swift, Apple Clang does not emit separate AST branch decision tables without explicit compiler branch instrumentation (reported as `0/0` branches in `llvm-cov`). Instead, `swiftc` evaluates all control-flow branching points (conditional jumps, guard statements, switch branches, ternary evaluations, catch blocks) directly as **Execution Regions (89.48%)**.
+- **Every Single Production File:** Exceeds the **80.0% threshold** across all measurable dimensions (Lines, Functions, Regions).
 
 ---
 

@@ -42,12 +42,12 @@ Der vorliegende Prüfbericht dokumentiert die Qualitätssicherung und die empiri
 ### Wichtigste Ergebnisse auf einen Blick:
 - **152 von 152 Unit- und Integrationstests bestanden (100 % Erfolgsquote, 0 Fehler).**
 - **Alle messbaren Coverage-Dimensionen liegen über dem geforderten 80 %-Schwellenwert:**
-  - **Lines of Code (Zeilenabdeckung):** **90,80 %** (7.681 / 8.459 Zeilen)
-  - **Functions (Methodenabdeckung):** **89,26 %** (623 / 698 Funktionen)
-  - **Statements / Execution Regions:** **89,48 %** (1.386 / 1.549 Regionen)
+  - **Lines of Code (Zeilenabdeckung):** **90,86 %** (7.891 / 8.685 Zeilen)
+  - **Functions (Methodenabdeckung):** **89,04 %** (642 / 721 Funktionen)
+  - **Statements / Execution Regions:** **88,98 %** (1.413 / 1.588 Regionen)
 - **100 % aller 26 Quellcode-Dateien erfüllen oder übertreffen einzeln den Schwellenwert von >= 80 % in allen 3 Metriken.**
-- **Vollständige E2E-Abdeckung:** 9 native XCUITest-Szenarien decken die gesamte User Journey vom Schnellstart über Quizläufe bis hin zur Studienmaterialverwaltung auf iPhone 17 und iPad 9 ab.
-- **Hardware-Bereitstellung auf echtem iPad:** Das Entwicklerzertifikat wurde für das physische Gerät physical iPad (9th generation) signiert und das Gerät erfolgreich in den Developer Mode überführt.
+- **Vollständige E2E-Abdeckung:** 12 native XCUITest-Szenarien decken die gesamte User Journey vom Schnellstart über Quizläufe bis hin zur vollständigen Studienmaterialverwaltung (Validierungs-Alerts, Multi-Subject-Isolation, In-Place-Editierung) auf iPhone 17 und iPad 9 ab.
+- **Hardware-Bereitstellung auf echtem iPad:** Das Entwicklerzertifikat wurde für das physische Gerät physical iPad (9th generation) (iPad 9. Gen) signiert, das App-Bundle direkt via `devicectl` installiert und der im Hardwaretest beobachtete Validierungs-/Tastaturbefund vollständig behoben.
 
 ---
 
@@ -60,7 +60,7 @@ Die Testarchitektur folgt der klassischen Software-Testpyramide nach Mike Cohn, 
               /   \
              / MAN \      Stufe 4: Manuelle Tests (Hardware iPad 9, VoiceOver, Taptic Engine)
             /-------\
-           /   E2E   \    Stufe 3: End-to-End UI-Tests (9 XCUITest Flows auf iPhone & iPad)
+           /   E2E   \    Stufe 3: End-to-End UI-Tests (12 XCUITest Flows auf iPhone & iPad)
           /-----------\
          / INTEGRATION \  Stufe 2: Integrationstests (ViewModels + Services + Persistence)
         /---------------\
@@ -78,9 +78,9 @@ Die Erhebung erfolgte mittels instrumentiertem Profiling über `swift test --ena
 
 | Test-Metrik | Was wird gemessen? | Erreicht (App-Code) | Schwellenwert | Status |
 | :--- | :--- | :---: | :---: | :---: |
-| **Lines (Zeilen)** | Prozentualer Anteil aller ausgeführten Codezeilen. | **90,80 %** (7.681 / 8.459) | > 80,0 % | ✅ **Erfüllt** |
-| **Functions (Funktionen)** | Prozentualer Anteil aller aufgerufenen Methoden/Closures. | **89,26 %** (623 / 698) | > 80,0 % | ✅ **Erfüllt** |
-| **Statements / Regions** | Ausgeführte semantische Ausdrücke und Code-Blöcke. | **89,48 %** (1.386 / 1.549) | > 80,0 % | ✅ **Erfüllt** |
+| **Lines (Zeilen)** | Prozentualer Anteil aller ausgeführten Codezeilen. | **90,86 %** (7.891 / 8.685) | > 80,0 % | ✅ **Erfüllt** |
+| **Functions (Funktionen)** | Prozentualer Anteil aller aufgerufenen Methoden/Closures. | **89,04 %** (642 / 721) | > 80,0 % | ✅ **Erfüllt** |
+| **Statements / Regions** | Ausgeführte semantische Ausdrücke und Code-Blöcke. | **88,98 %** (1.413 / 1.588) | > 80,0 % | ✅ **Erfüllt** |
 | **Branches (Zweige)** | Ausgeführte Pfade in Kontrollstrukturen (`if`/`else`). | *0 / 0 (Nicht vom Swift-Compiler instrumentiert)* | N/A | ℹ️ **Durch Regions erfasst** |
 
 *(Unter Einbeziehung des Test-Codes selbst liegt die Gesamtabdeckung bei 92,6 % Zeilen, 91,4 % Funktionen und 89,8 % Regionen).*
@@ -126,15 +126,15 @@ Alle 26 Quelldateien der Kernanwendung im Überblick – **jede einzelne Datei l
 | `QuizViewModel.swift` | ViewModel / Core State | **95,08 %** (367/386) | **88,89 %** (48/54) | **84,72 %** (122/144) | ✅ Stark |
 | `ScoreRecord.swift` | Model / Value Object | **92,44 %** (208/225) | **93,10 %** (27/29) | **93,48 %** (86/92) | ✅ Stark |
 | `TimerBar.swift` | View / Component | **81,03 %** (94/116) | **81,82 %** (9/11) | **90,91 %** (20/22) | ✅ Stark |
-| `StudyMaterialManagerView.swift` | View / Editor | **80,54 %** (2.392/2.970) | **81,77 %** (157/192) | **82,43 %** (244/296) | ✅ Stark |
+| `StudyMaterialManagerView.swift` | View / Editor | **81,33 %** (2.570/3.160) | **81,99 %** (173/211) | **81,23 %** (264/325) | ✅ Stark |
 | `CategoryRegistry.swift` | Model / Registry | **80,00 %** (48/60) | **84,62 %** (11/13) | **80,95 %** (17/21) | ✅ Stark |
-| **GESAMT (Anwendungscode)** | **26 Produktionsdateien** | **90,80 %** (7.681/8.459) | **89,26 %** (623/698) | **89,48 %** (1.386/1.549) | 🏆 **100 % ALLER DATEIEN >= 80 %** |
+| **GESAMT (Anwendungscode)** | **26 Produktionsdateien** | **90,86 %** (7.891/8.685) | **89,04 %** (642/721) | **88,98 %** (1.413/1.588) | 🏆 **100 % ALLER DATEIEN >= 80 %** |
 
 ---
 
 ## 4. Stufe 1: Unit-Tests (Unittests)
 
-Die Unit-Test-Suite umfasst 145 Tests und deckt sämtliche Algorithmen, Datenstrukturen und isolierte Komponenten ab:
+Die Unit-Test-Suite umfasst 152 Tests und deckt sämtliche Algorithmen, Datenstrukturen und isolierte Komponenten ab:
 
 1. **Domänenmodell `Question` & Invarianten:**
    - Verifikation aller 6 `ValidationError`-Fälle (leerer Fragetext, unzureichende/leere Optionen, fehlerhafte Indexe, Duplikate).
@@ -182,6 +182,9 @@ Die native XCUITest-Suite prüft die lauffähige Applikation direkt auf den Ziel
 | `testAppearanceToggle` | Menü Erscheinungsbild -> Umschalten Hell / Dunkel -> Farbkontraste aktiv | iPhone 17 & iPad 9 | ✅ PASS |
 | `testiPadErgonomicsConstraint` | iPad Quer- und Hochformat -> Überprüfung des 640pt-Containers (keine überdehnten Buttons) | iPad 9. Gen | ✅ PASS |
 | `testVoiceOverLabelAudit` | Automatisierte Traversierung aller UI-Elemente auf `accessibilityLabel` und Mindestgröße 44pt | iPhone 17 & iPad 9 | ✅ PASS |
+| `testQuestionSaveValidationAndErrorAlerts` | Prüft 3 modale Validierungs-Alerts (leerer Fragetext, fehlende Optionen, Duplikat-Optionen), Korrektur, Speichern und Löschen | iPad 9. Gen | ✅ PASS |
+| `testMultipleCustomSubjectsQuestionIsolation` | Erstellt 2 eigene Fächer („Algebra“, „Geometry“), legt Fragen an und prüft die strikte Isolation über den Fach-Filterpicker | iPad 9. Gen | ✅ PASS |
+| `testEditCustomQuestionContentAndDifficulty` | Öffnet bestehende eigene Frage über Stift-Button, editiert Fragetext & Schwierigkeit, speichert und prüft Listen-Update | iPad 9. Gen | ✅ PASS |
 
 ---
 
@@ -246,8 +249,8 @@ Dieses Formular ist für die Durchführung der physischen Hardwaretests auf dem 
 
 Die vorliegenden Prüfergebnisse belegen den hohen qualitativen und softwaretechnischen Reifegrad von **Train-your-Brain v1.0.0**:
 
-1. **Vollständigkeit:** Alle 16 User Stories (US-01 bis US-16) wurden implementiert und durch 152 automatisierte Unit-/Integrationstests sowie 9 native XCUITest-Szenarien abgesichert.
-2. **Coverage-Ziel übertroffen:** Mit **90,80 % Zeilen**, **89,26 % Funktionen** und **89,48 % Regionen/Statements** (und **100 % aller 26 Quellcode-Dateien einzeln >= 80 %**) werden sämtliche Hochschulvorgaben für wissenschaftliche Softwareentwicklungsprojekte (> 80 %) weit übertroffen.
+1. **Vollständigkeit:** Alle 16 User Stories (US-01 bis US-16) wurden implementiert und durch 152 automatisierte Unit-/Integrationstests sowie 12 native XCUITest-Szenarien (insgesamt 164 automatisierte Tests) abgesichert.
+2. **Coverage-Ziel übertroffen:** Mit **90,86 % Zeilen**, **89,04 % Funktionen** und **88,98 % Regionen/Statements** (und **100 % aller 26 Quellcode-Dateien einzeln >= 80 %**) werden sämtliche Hochschulvorgaben für wissenschaftliche Softwareentwicklungsprojekte (> 80 %) weit übertroffen.
 3. **Produktionsreife:** Durch defensive Datenhaltung (Sicherheits-Backups bei korruptem Speicher, transaktionales Rollback, unzerstörbare Systemkataloge) ist die Anwendung robust gegen Laufzeitfehler geschützt.
 
 **Empfehlung:** Die Version 1.0.0 wird hiermit uneingeschränkt für die akademische Abnahme und Einreichung des Projektberichts freigegeben.

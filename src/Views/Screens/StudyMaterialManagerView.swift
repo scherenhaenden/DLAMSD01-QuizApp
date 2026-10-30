@@ -79,6 +79,7 @@ public struct StudyMaterialManagerView: View {
         QuestionEditorSheet(
             viewModel: viewModel,
             editingQuestion: questionToEdit,
+            initialCategoryId: (selectedCategoryFilter != "all") ? selectedCategoryFilter : nil,
             onCompletion: handleQuestionEditorCompletion
         )
     }
@@ -356,6 +357,7 @@ public struct StudyMaterialManagerView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("studyMaterial.categoryFilterPicker")
                 .frame(minHeight: 44)
             }
             .padding(.horizontal, 16)
@@ -648,6 +650,7 @@ struct AddCategorySheet: View {
     @State private var description: String = ""
     @State private var selectedIcon: String = "folder.fill"
     @State private var errorMessage: String?
+    @State private var showErrorAlert: Bool = false
     
     private let availableIcons = [
         "folder.fill", "book.fill", "graduationcap.fill", "laptopcomputer",
@@ -667,6 +670,7 @@ struct AddCategorySheet: View {
         self._description = State(initialValue: initialDescription)
         self._selectedIcon = State(initialValue: initialIcon)
         self._errorMessage = State(initialValue: initialErrorMessage)
+        self._showErrorAlert = State(initialValue: initialErrorMessage != nil)
         self.onCompletion = onCompletion
     }
     
@@ -681,6 +685,19 @@ struct AddCategorySheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let error = errorMessage {
+                    Section {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(Color.adaptiveErrorText)
+                            Text(error)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(Color.adaptiveErrorText)
+                        }
+                        .accessibilityIdentifier("studyMaterial.addCategoryErrorBanner")
+                    }
+                }
+                
                 Section(header: Text("Subject Details")) {
                     TextField("Subject Name (e.g. Cloud Computing)", text: $name)
                         .accessibilityIdentifier("studyMaterial.newSubjectNameField")
@@ -710,19 +727,17 @@ struct AddCategorySheet: View {
                         .padding(.vertical, 8)
                     }
                 }
-                
-                if let error = errorMessage {
-                    Section {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(Color.adaptiveErrorText)
-                    }
-                }
             }
             .navigationTitle("New Subject")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
+            .alert("Cannot Save Subject", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) { }
+                    .accessibilityIdentifier("studyMaterial.addCategoryAlertOKButton")
+            } message: {
+                Text(errorMessage ?? "")
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: triggerDismiss)
@@ -736,6 +751,15 @@ struct AddCategorySheet: View {
                         .accessibilityIdentifier("studyMaterial.saveNewSubjectButton")
                         .frame(minHeight: 44)
                 }
+                #if os(iOS)
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                    .accessibilityIdentifier("studyMaterial.addCategoryKeyboardDoneButton")
+                }
+                #endif
             }
         }
     }
@@ -744,6 +768,7 @@ struct AddCategorySheet: View {
         let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanName.isEmpty else {
             errorMessage = "Subject name cannot be empty."
+            showErrorAlert = true
             return
         }
         
@@ -757,6 +782,7 @@ struct AddCategorySheet: View {
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
+            showErrorAlert = true
         }
     }
 }
@@ -772,6 +798,7 @@ struct EditCategorySheet: View {
     @State private var description: String
     @State private var selectedIcon: String
     @State private var errorMessage: String?
+    @State private var showErrorAlert: Bool = false
     
     private let availableIcons = [
         "folder.fill", "book.fill", "graduationcap.fill", "laptopcomputer",
@@ -794,6 +821,7 @@ struct EditCategorySheet: View {
         _description = State(initialValue: initialDescription ?? category.localizedDescription)
         _selectedIcon = State(initialValue: initialIcon ?? category.iconName)
         _errorMessage = State(initialValue: initialErrorMessage)
+        _showErrorAlert = State(initialValue: initialErrorMessage != nil)
     }
     
     func selectIcon(_ icon: String) {
@@ -807,6 +835,19 @@ struct EditCategorySheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let error = errorMessage {
+                    Section {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(Color.adaptiveErrorText)
+                            Text(error)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(Color.adaptiveErrorText)
+                        }
+                        .accessibilityIdentifier("studyMaterial.editCategoryErrorBanner")
+                    }
+                }
+                
                 Section(header: Text("Subject Details")) {
                     TextField("Subject Name", text: $name)
                         .accessibilityIdentifier("studyMaterial.editSubjectNameField")
@@ -836,19 +877,17 @@ struct EditCategorySheet: View {
                         .padding(.vertical, 8)
                     }
                 }
-                
-                if let error = errorMessage {
-                    Section {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(Color.adaptiveErrorText)
-                    }
-                }
             }
             .navigationTitle("Edit Subject")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
+            .alert("Cannot Save Subject", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) { }
+                    .accessibilityIdentifier("studyMaterial.editCategoryAlertOKButton")
+            } message: {
+                Text(errorMessage ?? "")
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: triggerDismiss)
@@ -862,6 +901,15 @@ struct EditCategorySheet: View {
                         .accessibilityIdentifier("studyMaterial.saveEditSubjectButton")
                         .frame(minHeight: 44)
                 }
+                #if os(iOS)
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                    .accessibilityIdentifier("studyMaterial.editCategoryKeyboardDoneButton")
+                }
+                #endif
             }
         }
     }
@@ -870,6 +918,7 @@ struct EditCategorySheet: View {
         let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanName.isEmpty else {
             errorMessage = "Subject name cannot be empty."
+            showErrorAlert = true
             return
         }
         
@@ -884,6 +933,7 @@ struct EditCategorySheet: View {
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
+            showErrorAlert = true
         }
     }
 }
@@ -905,6 +955,7 @@ struct QuestionEditorSheet: View {
     @State private var selectedCategoryId: String = ""
     @State private var difficulty: Difficulty = .medium
     @State private var errorMessage: String?
+    @State private var showErrorAlert: Bool = false
     
     init(
         viewModel: QuizViewModel,
@@ -936,6 +987,7 @@ struct QuestionEditorSheet: View {
         _explanation = State(initialValue: initialExplanation ?? editingQuestion?.explanation ?? "")
         _difficulty = State(initialValue: initialDifficulty ?? editingQuestion?.difficulty ?? .medium)
         _errorMessage = State(initialValue: initialErrorMessage)
+        _showErrorAlert = State(initialValue: initialErrorMessage != nil)
     }
     
     func selectCorrectIndex(_ index: Int) {
@@ -949,6 +1001,19 @@ struct QuestionEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let error = errorMessage {
+                    Section {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(Color.adaptiveErrorText)
+                            Text(error)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(Color.adaptiveErrorText)
+                        }
+                        .accessibilityIdentifier("studyMaterial.questionEditorErrorBanner")
+                    }
+                }
+                
                 Section(header: Text("Classification")) {
                     Picker("Subject", selection: $selectedCategoryId) {
                         ForEach(viewModel.allCategories, id: \.rawValue) { (cat: QuizCategory) in
@@ -982,24 +1047,22 @@ struct QuestionEditorSheet: View {
                     optionRow(index: 3, text: $option3)
                 }
                 
-                Section(header: Text("Pedagogical Explanation")) {
+                Section(header: Text("Pedagogical Explanation (Required)")) {
                     TextField("Explain why the correct answer is right…", text: $explanation)
                         .accessibilityIdentifier("studyMaterial.questionExplanationField")
                         .frame(minHeight: 44)
-                }
-                
-                if let error = errorMessage {
-                    Section {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(Color.adaptiveErrorText)
-                    }
                 }
             }
             .navigationTitle(editingQuestion == nil ? "New Question" : "Edit Question")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
+            .alert("Cannot Save Question", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) { }
+                    .accessibilityIdentifier("studyMaterial.questionAlertOKButton")
+            } message: {
+                Text(errorMessage ?? "")
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: triggerDismiss)
@@ -1012,6 +1075,15 @@ struct QuestionEditorSheet: View {
                         .accessibilityIdentifier("studyMaterial.saveQuestionButton")
                         .frame(minHeight: 44)
                 }
+                #if os(iOS)
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                    .accessibilityIdentifier("studyMaterial.keyboardDoneButton")
+                }
+                #endif
             }
         }
     }
@@ -1037,31 +1109,59 @@ struct QuestionEditorSheet: View {
     }
     
     func saveQuestion() {
-        guard let cat = viewModel.allCategories.first(where: { $0.rawValue == selectedCategoryId }) else {
-            errorMessage = "Please select a valid subject."
+        let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedPrompt.isEmpty else {
+            presentError("Please enter a question prompt.")
             return
         }
         
-        let options = [option0, option1, option2, option3]
+        guard let cat = viewModel.allCategories.first(where: { $0.rawValue == selectedCategoryId }) else {
+            presentError("Please select a valid subject.")
+            return
+        }
+        
+        let trimmedOption0 = option0.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedOption1 = option1.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedOption2 = option2.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedOption3 = option3.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !trimmedOption0.isEmpty && !trimmedOption1.isEmpty && !trimmedOption2.isEmpty && !trimmedOption3.isEmpty else {
+            presentError("Please provide text for all 4 multiple-choice options.")
+            return
+        }
+        
+        let uniqueOptions = Set([trimmedOption0, trimmedOption1, trimmedOption2, trimmedOption3])
+        guard uniqueOptions.count == 4 else {
+            presentError("All 4 options must be unique to prevent ambiguity.")
+            return
+        }
+        
+        let trimmedExplanation = explanation.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedExplanation.isEmpty else {
+            presentError("Please provide a pedagogical explanation for feedback.")
+            return
+        }
+        
+        let options = [trimmedOption0, trimmedOption1, trimmedOption2, trimmedOption3]
         
         do {
             if let editing = editingQuestion {
                 try viewModel.updateCustomQuestion(
                     id: editing.id,
-                    prompt: prompt,
+                    prompt: trimmedPrompt,
                     options: options,
                     correctAnswerIndex: correctAnswerIndex,
-                    explanation: explanation,
+                    explanation: trimmedExplanation,
                     category: cat,
                     difficulty: difficulty
                 )
                 onCompletion(true, "Question updated.")
             } else {
                 try viewModel.addCustomQuestion(
-                    prompt: prompt,
+                    prompt: trimmedPrompt,
                     options: options,
                     correctAnswerIndex: correctAnswerIndex,
-                    explanation: explanation,
+                    explanation: trimmedExplanation,
                     category: cat,
                     difficulty: difficulty
                 )
@@ -1069,7 +1169,12 @@ struct QuestionEditorSheet: View {
             }
             dismiss()
         } catch {
-            errorMessage = error.localizedDescription
+            presentError(error.localizedDescription)
         }
+    }
+    
+    private func presentError(_ message: String) {
+        self.errorMessage = message
+        self.showErrorAlert = true
     }
 }

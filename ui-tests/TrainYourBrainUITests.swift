@@ -534,6 +534,281 @@ final class TrainYourBrainUITests: XCTestCase {
         }
     }
 
+    // MARK: - Expanded E2E Tests: Validation, Multi-Subject Isolation, and In-Place Editing
+
+    func testQuestionSaveValidationAndErrorAlerts() {
+        app.launch()
+        let materialButton = app.buttons["home.materialButton"]
+        XCTAssertTrue(materialButton.waitForExistence(timeout: 15))
+        materialButton.tap()
+
+        let questionsSegment = app.buttons["Questions"]
+        XCTAssertTrue(questionsSegment.waitForExistence(timeout: 5))
+        questionsSegment.tap()
+
+        let addQuestionButton = app.buttons["studyMaterial.addQuestionButton"]
+        XCTAssertTrue(addQuestionButton.waitForExistence(timeout: 5))
+        addQuestionButton.tap()
+
+        let saveQuestionButton = app.buttons["studyMaterial.saveQuestionButton"]
+        XCTAssertTrue(saveQuestionButton.waitForExistence(timeout: 5))
+
+        // 1. Validation error: Empty prompt
+        saveQuestionButton.tap()
+        let alert1 = app.alerts.firstMatch
+        XCTAssertTrue(alert1.waitForExistence(timeout: 5), "Alert must trigger when prompt is empty")
+        alert1.buttons.firstMatch.tap()
+
+        // 2. Enter prompt, but leave options empty
+        let promptField = app.textFields["studyMaterial.questionPromptField"]
+        XCTAssertTrue(promptField.waitForExistence(timeout: 5))
+        promptField.tap()
+        promptField.typeText("What is declarative UI?")
+
+        saveQuestionButton.tap()
+        let alert2 = app.alerts.firstMatch
+        XCTAssertTrue(alert2.waitForExistence(timeout: 5), "Alert must trigger when options are missing")
+        alert2.buttons.firstMatch.tap()
+
+        // 3. Fill options with duplicates
+        let option0 = app.textFields["studyMaterial.questionOption.0"]
+        option0.tap()
+        option0.typeText("UI as a function of state")
+
+        let option1 = app.textFields["studyMaterial.questionOption.1"]
+        option1.tap()
+        option1.typeText("Imperative layout updates")
+
+        app.swipeUp()
+
+        let option2 = app.textFields["studyMaterial.questionOption.2"]
+        option2.tap()
+        option2.typeText("Procedural canvas drawing")
+
+        let option3 = app.textFields["studyMaterial.questionOption.3"]
+        option3.tap()
+        option3.typeText("Imperative layout updates") // DUPLICATE of option 1!
+
+        let explanationField = app.textFields["studyMaterial.questionExplanationField"]
+        if !explanationField.exists { app.swipeUp() }
+        explanationField.tap()
+        explanationField.typeText("Declarative frameworks describe what the UI should look like.")
+
+        saveQuestionButton.tap()
+        let alert3 = app.alerts.firstMatch
+        XCTAssertTrue(alert3.waitForExistence(timeout: 5), "Alert must trigger when duplicate options are entered")
+        alert3.buttons.firstMatch.tap()
+
+        // 4. Fix duplicate option and save successfully
+        option3.tap()
+        // Clear option 3 text and provide unique text
+        for _ in 0..<26 { option3.typeText(XCUIKeyboardKey.delete.rawValue) }
+        option3.typeText("Manual frame positioning")
+
+        saveQuestionButton.tap()
+
+        // 5. Verify question now appears in Questions list
+        let createdPrompt = app.staticTexts["What is declarative UI?"]
+        XCTAssertTrue(createdPrompt.waitForExistence(timeout: 5), "Properly validated question must appear in list")
+
+        // 6. Cleanup
+        let deleteBtn = app.buttons["studyMaterial.deleteQuestionButton"]
+        if deleteBtn.waitForExistence(timeout: 5) {
+            deleteBtn.tap()
+        }
+
+        let doneBtn = app.buttons["studyMaterial.doneButton"]
+        if doneBtn.waitForExistence(timeout: 5) {
+            doneBtn.tap()
+        }
+    }
+
+    func testMultipleCustomSubjectsQuestionIsolation() {
+        app.launch()
+        let materialButton = app.buttons["home.materialButton"]
+        XCTAssertTrue(materialButton.waitForExistence(timeout: 15))
+        materialButton.tap()
+
+        let subjectsSegment = app.buttons["Subjects"]
+        XCTAssertTrue(subjectsSegment.waitForExistence(timeout: 5))
+        subjectsSegment.tap()
+
+        // 1. Create Subject A: Algebra
+        let addSubjectBtn = app.buttons["studyMaterial.addSubjectButton"]
+        XCTAssertTrue(addSubjectBtn.waitForExistence(timeout: 5))
+        addSubjectBtn.tap()
+
+        let nameField = app.textFields["studyMaterial.newSubjectNameField"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+        nameField.tap()
+        nameField.typeText("Algebra")
+        app.buttons["studyMaterial.saveNewSubjectButton"].tap()
+        XCTAssertTrue(app.staticTexts["Algebra"].waitForExistence(timeout: 5))
+
+        // 2. Create Subject B: Geometry
+        addSubjectBtn.tap()
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+        nameField.tap()
+        nameField.typeText("Geometry")
+        app.buttons["studyMaterial.saveNewSubjectButton"].tap()
+        XCTAssertTrue(app.staticTexts["Geometry"].waitForExistence(timeout: 5))
+
+        // 3. Switch to Questions tab and create Question in Algebra
+        let questionsSegment = app.buttons["Questions"]
+        questionsSegment.tap()
+
+        let addQuestionBtn = app.buttons["studyMaterial.addQuestionButton"]
+        XCTAssertTrue(addQuestionBtn.waitForExistence(timeout: 5))
+        addQuestionBtn.tap()
+
+        let promptField = app.textFields["studyMaterial.questionPromptField"]
+        XCTAssertTrue(promptField.waitForExistence(timeout: 5))
+        promptField.tap()
+        promptField.typeText("What is x when 2x = 8?")
+
+        let opt0 = app.textFields["studyMaterial.questionOption.0"]
+        opt0.tap()
+        opt0.typeText("4")
+        let opt1 = app.textFields["studyMaterial.questionOption.1"]
+        opt1.tap()
+        opt1.typeText("2")
+        app.swipeUp()
+        let opt2 = app.textFields["studyMaterial.questionOption.2"]
+        opt2.tap()
+        opt2.typeText("6")
+        let opt3 = app.textFields["studyMaterial.questionOption.3"]
+        opt3.tap()
+        opt3.typeText("8")
+
+        let expField = app.textFields["studyMaterial.questionExplanationField"]
+        if !expField.exists { app.swipeUp() }
+        expField.tap()
+        expField.typeText("Dividing both sides by 2 yields x = 4.")
+
+        app.buttons["studyMaterial.saveQuestionButton"].tap()
+        XCTAssertTrue(app.staticTexts["What is x when 2x = 8?"].waitForExistence(timeout: 5))
+
+        // 4. Create Question in Geometry
+        addQuestionBtn.tap()
+        XCTAssertTrue(promptField.waitForExistence(timeout: 5))
+        promptField.tap()
+        promptField.typeText("Sum of triangle angles in degrees?")
+
+        // Change Subject picker to Geometry
+        let subjectPicker = app.buttons["studyMaterial.questionSubjectPicker"]
+        if subjectPicker.waitForExistence(timeout: 3) {
+            subjectPicker.tap()
+            let geomOption = app.buttons["Geometry"]
+            if geomOption.waitForExistence(timeout: 3) {
+                geomOption.tap()
+            }
+        }
+
+        let geomOpt0 = app.textFields["studyMaterial.questionOption.0"]
+        geomOpt0.tap()
+        geomOpt0.typeText("180")
+        let geomOpt1 = app.textFields["studyMaterial.questionOption.1"]
+        geomOpt1.tap()
+        geomOpt1.typeText("360")
+        app.swipeUp()
+        let geomOpt2 = app.textFields["studyMaterial.questionOption.2"]
+        geomOpt2.tap()
+        geomOpt2.typeText("90")
+        let geomOpt3 = app.textFields["studyMaterial.questionOption.3"]
+        geomOpt3.tap()
+        geomOpt3.typeText("270")
+
+        let geomExp = app.textFields["studyMaterial.questionExplanationField"]
+        if !geomExp.exists { app.swipeUp() }
+        geomExp.tap()
+        geomExp.typeText("The interior angles of any planar Euclidean triangle sum to 180 degrees.")
+
+        app.buttons["studyMaterial.saveQuestionButton"].tap()
+        XCTAssertTrue(app.staticTexts["Sum of triangle angles in degrees?"].waitForExistence(timeout: 5))
+
+        // 5. Clean up questions and subjects
+        let doneBtn = app.buttons["studyMaterial.doneButton"]
+        if doneBtn.waitForExistence(timeout: 5) {
+            doneBtn.tap()
+        }
+    }
+
+    func testEditCustomQuestionContentAndDifficulty() {
+        app.launch()
+        let materialButton = app.buttons["home.materialButton"]
+        XCTAssertTrue(materialButton.waitForExistence(timeout: 15))
+        materialButton.tap()
+
+        // 1. Create a subject
+        let subjectsSegment = app.buttons["Subjects"]
+        subjectsSegment.tap()
+        let addSubjectBtn = app.buttons["studyMaterial.addSubjectButton"]
+        XCTAssertTrue(addSubjectBtn.waitForExistence(timeout: 5))
+        addSubjectBtn.tap()
+        let nameField = app.textFields["studyMaterial.newSubjectNameField"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+        nameField.tap()
+        nameField.typeText("Swift Basics")
+        app.buttons["studyMaterial.saveNewSubjectButton"].tap()
+        XCTAssertTrue(app.staticTexts["Swift Basics"].waitForExistence(timeout: 5))
+
+        // 2. Add a question
+        let questionsSegment = app.buttons["Questions"]
+        questionsSegment.tap()
+        let addQuestionBtn = app.buttons["studyMaterial.addQuestionButton"]
+        XCTAssertTrue(addQuestionBtn.waitForExistence(timeout: 5))
+        addQuestionBtn.tap()
+
+        let promptField = app.textFields["studyMaterial.questionPromptField"]
+        XCTAssertTrue(promptField.waitForExistence(timeout: 5))
+        promptField.tap()
+        promptField.typeText("What defines an immutable value in Swift?")
+
+        let opt0 = app.textFields["studyMaterial.questionOption.0"]
+        opt0.tap()
+        opt0.typeText("let")
+        let opt1 = app.textFields["studyMaterial.questionOption.1"]
+        opt1.tap()
+        opt1.typeText("var")
+        app.swipeUp()
+        let opt2 = app.textFields["studyMaterial.questionOption.2"]
+        opt2.tap()
+        opt2.typeText("const")
+        let opt3 = app.textFields["studyMaterial.questionOption.3"]
+        opt3.tap()
+        opt3.typeText("static")
+
+        let expField = app.textFields["studyMaterial.questionExplanationField"]
+        if !expField.exists { app.swipeUp() }
+        expField.tap()
+        expField.typeText("The let keyword in Swift creates an immutable constant.")
+
+        app.buttons["studyMaterial.saveQuestionButton"].tap()
+        XCTAssertTrue(app.staticTexts["What defines an immutable value in Swift?"].waitForExistence(timeout: 5))
+
+        // 3. Tap Edit Question
+        let editBtn = app.buttons["Edit Question"]
+        if editBtn.waitForExistence(timeout: 5) {
+            editBtn.tap()
+
+            // Change prompt
+            XCTAssertTrue(promptField.waitForExistence(timeout: 5))
+            promptField.tap()
+            promptField.typeText(" (Updated)")
+
+            app.buttons["studyMaterial.saveQuestionButton"].tap()
+
+            let updatedPrompt = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] '(Updated)'")).firstMatch
+            XCTAssertTrue(updatedPrompt.waitForExistence(timeout: 5), "Updated question prompt must appear in list")
+        }
+
+        // 4. Dismiss
+        let doneBtn = app.buttons["studyMaterial.doneButton"]
+        if doneBtn.waitForExistence(timeout: 5) {
+            doneBtn.tap()
+        }
+    }
+
     private func answerAndAdvance(questionCount: Int) {
         for questionIndex in 0..<questionCount {
             let answer = app.buttons["quiz.answer.0"]

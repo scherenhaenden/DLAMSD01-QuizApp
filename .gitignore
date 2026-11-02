@@ -20,3 +20,5 @@ project.xcworkspace/xcuserdata/
 docs/evidence/**/*.xcresult/
 
 docs/evidence/**/*.xcresult.tar.gz
+!docs/evidence/**/*.xcresult.tar.gz
+!docs/evidence/**/*.log

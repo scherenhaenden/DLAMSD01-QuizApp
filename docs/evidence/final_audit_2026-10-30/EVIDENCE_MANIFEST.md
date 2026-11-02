@@ -1,8 +1,8 @@
 # Verifiable Execution & Coverage Evidence Summary (2026-10-30)
 
 **Project:** Train-your-Brain (`v1.0.0`, Build `20261025.100000`)  
-**Branch:** `fix/history-robustness-and-docs`  
-**Date:** 2026-10-30  
+**Branch:** `master`  
+**Date:** 2026-10-30 (Consolidated: 2026-11-02)  
 **Maintainer:** `scherenhaenden`  
 
 ---
@@ -14,10 +14,11 @@
   swift test --enable-code-coverage
   ```
 - **Target Platform:** `arm64e-apple-macos14.0` (Apple Silicon Host)
-- **Archived Artifacts in this Directory:**
-  - [`llvm_cov_report.txt`](./llvm_cov_report.txt): Tabular coverage report generated via `xcrun llvm-cov report` (`152 tests, 0 failures in 0.961s`).
+- **Tracked Sanitized Artifacts:**
+  - [`swiftpm_test_152_passed.log`](./swiftpm_test_152_passed.log): Full test execution log (`152 tests, 0 failures in 0.961s`). Sanitized to replace local machine paths with relative paths.
+  - [`llvm_cov_report.txt`](./llvm_cov_report.txt): Tabular coverage report generated via `xcrun llvm-cov report`.
   - [`llvm_cov_export_summary.json`](./llvm_cov_export_summary.json): Sanitized JSON coverage summary exported via `xcrun llvm-cov export --summary-only`.
-  - [`SHA256SUMS.txt`](./SHA256SUMS.txt): SHA-256 checksums for the tracked summary files in this folder. *(Raw console logs and full `.xcresult` bundles are archived offline outside the public repository to avoid exposing local machine paths and device identifiers).*
+  - [`SHA256SUMS.txt`](./SHA256SUMS.txt): SHA-256 checksums covering all sanitized files in this directory.
 
 ### Summary of `llvm-cov` Metrics (26 Production Files in `src/`):
 - **Lines:** `90.84%` (`7,862 / 8,655` lines executed, `793` missed)
@@ -39,8 +40,11 @@
     -only-testing:TrainYourBrainUITests/TrainYourBrainUITests
   ```
 - **Target Simulator:** `iPad (9th generation)` (`iPad12,2`, iPadOS Simulator 27.0)
-- **Archived Artifact in this Directory:**
+- **Tracked Sanitized Artifacts:**
+  - [`xcodebuild_12_uitests_ipad9.log`](./xcodebuild_12_uitests_ipad9.log): Complete console log of all 12 E2E test methods. Sanitized to replace local user paths with relative paths and simulator UDIDs with generic placeholders.
   - [`xcresult_12_uitests_summary.json`](./xcresult_12_uitests_summary.json): Native test result summary exported via `xcrun xcresulttool get test-results summary` (`result: Passed`, `passedTests: 12`, `failedTests: 0`, `skippedTests: 0`).
+  - [`UITests_12_iPad9_Sim.xcresult.tar.gz`](./UITests_12_iPad9_Sim.xcresult.tar.gz): Sanitized native `.xcresult` bundle (4.2 MB). System diagnostics containing raw binary logs were stripped to protect machine privacy while fully preserving test activities, summaries, and all 19 native screenshots. *(The unredacted original bundle remains in the private university submission archive).*
+  - [`experiment_no_keyboard_toolbar.log`](./experiment_no_keyboard_toolbar.log): Isolated test run verifying that removing `ToolbarItemGroup(placement: .keyboard)` eliminates the system frame warnings.
 
 ### 12 Verified XCUITest Methods (`ui-tests/TrainYourBrainUITests.swift`):
 1. `testAccessibilityDynamicTypeKeepsCategoryStartAvailable`
@@ -65,7 +69,12 @@
 
 ---
 
-## 4. Technical Note on Runtime Warning: `Invalid frame dimension (negative or non-finite)`
+## 4. Technical Notes on Observed Test Logs & Warnings
 
-- **Observation:** During XCUITest runs on the iPad (9th generation) Simulator, 4 occurrences of `Invalid frame dimension (negative or non-finite)` appear right after the first tap on a text field when the software keyboard is presented. All 12 tests pass without assertion failures.
-- **Investigation:** All fixed `.frame(...)` modifiers in `StudyMaterialManagerView.swift` use positive constants (32/44 pt) or `maxWidth/minHeight`. In an isolated simulator test run with the three `ToolbarItemGroup(placement: .keyboard)` toolbars temporarily disabled, `testEditCustomQuestionContentAndDifficulty` completed with 0 warnings, indicating that the message originates from system keyboard-accessory toolbar layout on iPadOS rather than custom view geometry.
+To ensure 100% academic transparency, all non-fatal runtime warnings observed during testing are explicitly recorded:
+1. **`Invalid frame dimension (negative or non-finite)` (XCUITest):**  
+   4 occurrences appear in `xcodebuild_12_uitests_ipad9.log` immediately when the iPadOS software keyboard is presented on a text field. An isolated experiment (`experiment_no_keyboard_toolbar.log`) demonstrated that temporarily removing the keyboard accessory toolbar eliminated all 4 warnings, confirming that the notice is emitted by UIKit's internal keyboard accessory layout on iPadOS rather than custom view frames.
+2. **`Accessing State's value outside of being installed on a View` (SwiftPM):**  
+   Observed in `ViewInteractionTests.swift` when headless unit tests instantiate SwiftUI `State` properties directly in isolated assertions without an active hosting window. This is an expected artifact of unit-testing standalone view structs outside a running UI application context.
+3. **Simulator Diagnostics Timeout (XCUITest):**  
+   At the conclusion of the automated suite, `xcodebuild` records a timeout while collecting background daemon diagnostics (`simctl_diagnostics`). All 12 test assertions finished with `** TEST SUCCEEDED **` prior to this diagnostic step.

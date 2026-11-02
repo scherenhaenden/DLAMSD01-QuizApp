@@ -70,8 +70,8 @@ The six screenshots exported from the successful iPad 9 run are preserved in `do
 
 ## Final local acceptance run (23 October 2026)
 
-- Simulator: `TrainYourBrain 0.3 Acceptance iPad 9`, iPad (9th generation), iOS 27.0, device `SIMULATOR-IPAD-9TH-GEN`.
-- Command: `xcodebuild -project TrainYourBrain.xcodeproj -scheme TrainYourBrain -destination 'platform=iOS Simulator,id=SIMULATOR-IPAD-9TH-GEN' -derivedDataPath /private/tmp/dlamsd01-ui-tests -resultBundlePath /private/tmp/dlamsd01-ui-full-20261023.xcresult -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test`.
+- Simulator: `TrainYourBrain 0.3 Acceptance iPad 9`, iPad (9th generation), iOS 27.0, device `iPad-9th-Gen-Simulator`.
+- Command: `xcodebuild -project TrainYourBrain.xcodeproj -scheme TrainYourBrain -destination 'platform=iOS Simulator,id=iPad-9th-Gen-Simulator' -derivedDataPath /private/tmp/dlamsd01-ui-tests -resultBundlePath /private/tmp/dlamsd01-ui-full-20261023.xcresult -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test`.
 - Result bundle: `/private/tmp/dlamsd01-ui-full-20261023.xcresult`; 4 passed, 0 failed. It includes six kept screenshot attachments. Xcode logged simulator/runtime metadata warnings, but the test result bundle reports `Passed` with no runtime warnings or failures.
 - The separate Swift Package run passed 51 tests, 0 failures. This includes a regression test for the new accessibility-value mapping.
 - Coverage command: `swift test --enable-code-coverage --scratch-path /private/tmp/dlamsd01-0.3x-final/coverage --cache-path /private/tmp/dlamsd01-0.3x-final/cache-coverage --disable-sandbox`; `xcrun llvm-cov report` filtered tests, the app entry point, and generated `resource_bundle_accessor.swift`. Result: 2,385/2,619 instrumented production lines (91.07%).

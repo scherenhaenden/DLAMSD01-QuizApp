@@ -24,9 +24,9 @@ public struct GermanAcademicGrade: Codable, Equatable, Hashable, Sendable {
     
     /// Derives the German university grade from the mathematical accuracy percentage.
     ///
-    /// Standardized linear university grading scale (Lineare Notenskala) aligned with
-    /// German higher education standards (§ 15 APO der IU Internationalen Hochschule),
-    /// using a 50% passing threshold for 4.0 and 95% for 1.0 structured in 5% brackets:
+    /// Product grading scale (Produktskala) inspired by the German university grading system
+    /// (Lineare Notenskala), using a 50% passing threshold for 4.0 and 95% for 1.0
+    /// structured in 5% brackets (without normative derivation from official examination regulations):
     /// - 95% - 100%: 1.0 (Sehr Gut / Outstanding)
     /// - 90% - 94%:  1.3 (Sehr Gut / Excellent)
     /// - 85% - 89%:  1.7 (Gut / Very Good)

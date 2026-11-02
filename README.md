@@ -4,11 +4,11 @@ Native SwiftUI quiz developed for DLAMSD01 Apple Mobile Solution Development I a
 
 ## Current development stage
 
-Version **1.0.0** (Build `20261025.100000`), Sprint 10: Final Academic Release (Final code freeze, hardened non-conditional UI assertions, corruption warning UI verification, 135 unit/integration tests with 100% success, 9 native UI acceptance tests on iPhone 17 and iPad 9, 20-screenshot operational suite, and comprehensive Word user manual `docs/user_manual.md`).
+Version **1.0.0** (Build `20261025.100000`), Sprint 10: Final Release (Final code freeze, hardened non-conditional UI assertions, modal validation alerts & keyboard dismissal toolbar for iPadOS, corruption warning UI verification, 152 unit/integration tests with 100% success, 12 native UI acceptance tests on the iPad (9th generation) Simulator (9 core flows additionally verified earlier on the iPhone 17 Simulator), >90% code coverage across 26 production files, 20-screenshot operational suite, and user manual `docs/user_manual.md`).
 
 ### Implemented
 
-- Final Academic Release Gate (Sprint 10): Version 1.0.0 code freeze, monotonic build number 20261025.100000, 135 XCTest unit/integration tests (100% passing in 0.66s), 9 native UI tests on iPhone 17 and iPad 9 (100% passing), hardened non-conditional UI deletion verification, and verified corruption alert rendering.
+- Final Academic Release Gate (Sprint 10): Version 1.0.0 code freeze, monotonic build number 20261025.100000, 152 XCTest unit/integration tests (100% passing in 0.96s), 12 native UI tests on the iPad (9th generation) Simulator (100% passing; the 9 core flows were additionally verified earlier on the iPhone 17 Simulator), 90.84% line coverage (100% of files >= 80%), hardened non-conditional UI deletion verification, modal validation alerts for study material authoring, and verified corruption alert rendering.
 
 - Dynamic Study Material & Extensible Categories: `QuizCategory` is an open struct supported by thread-safe in-memory `CategoryRegistry`, combining foundational B.Sc. curriculum subjects with user-defined or imported subjects.
 - In-App Question Authoring: Direct on-device question creation with prompt, 4 options, radio-picker to designate the single correct choice, pedagogical rationale, category classification, and difficulty rating (`Easy`, `Medium`, `Hard`).
@@ -27,7 +27,7 @@ Version **1.0.0** (Build `20261025.100000`), Sprint 10: Final Academic Release (
 - Local JSON catalog with 24 German questions in four categories; the interface is currently English.
 - Validated question model, Fisher-Yates shuffled question and option order, and a separate quiz session state machine.
 - Category and mixed rounds, immediate pedagogical answer explanation, manual next action, and result analytics.
-- Results analytics and academic scorecard: Post-game `ResultView` with unified German university grading scale (`1.0` Sehr Gut to `5.0` Nicht Bestanden) matching standard linear grading (§ 15 APO), accuracy percentage, 4-metric grid (Score, Accuracy, Streak, Average Speed), category performance breakdown with mini progress bars, continuous session duration (`durationSeconds`), and decoupled active response speed (`averageResponseTime`).
+- Results analytics and academic scorecard: Post-game `ResultView` with unified academic grading scale (`1.0` Sehr Gut to `5.0` Nicht Bestanden) inspired by German university grading (Produktskala), accuracy percentage, 4-metric grid (Score, Accuracy, Streak, Average Speed), category performance breakdown with mini progress bars, continuous session duration (`durationSeconds`), and decoupled active response speed (`averageResponseTime`).
 - Strict domain invariant enforcement on `ScoreRecord` decoding preventing corrupted or impossible scores (e.g. negative values or correct answers exceeding total questions).
 - Local persistence and high score tracking (`ScoreStoreProtocol`, `UserDefaultsScoreStore`): Thread-safe (`NSLock`) JSON serialization with ISO8601 timestamps, automatic quiz session saving upon completion, 100-record capacity cap with all-time personal best and category best retention protection (`pruneRecordsWithBestProtection`), and resilient recovery against corrupted payloads (ADR-07).
 - Canonical tie-breaking (`ScoreRecord: Comparable`): Centralized four-tier ordering logic (score, accuracy, streak, completion date) ensuring 1:1 identity between the #1 leaderboard card and personal best metrics.
@@ -76,15 +76,15 @@ docs/                      Sprint reports and versioning notes
 
 ## Evidence and limits
 
-The package test suite executes 113 unit tests with 0 failures and measures **90.86%** instrumented production line coverage on macOS via `llvm-cov` (4,134 / 4,550 lines across all 22 production files), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, background-to-foreground lifecycle resumption, scorecard dashboard metrics, Leaderboard modal presentation/dismissal, and iPad 10.2" landscape/portrait ergonomic rotation with touch target bounds (8/8 tests passed in 204.101s on iPad 9th generation simulator).
+The package test suite executes **152 unit and integration tests** with 0 failures and measures **90.84%** instrumented production line coverage on macOS via `llvm-cov` (7,862 / 8,655 lines; 89.12% function coverage; 89.10% region coverage across all 26 production files, with 100% of files exceeding $\ge 80\%$), excluding tests and the app entry point. Native UI acceptance tests in `ui-tests/` verify category flows, mixed rounds, incorrect option marking, Dynamic Type XXXL, live countdown timeout, background-to-foreground lifecycle resumption, scorecard dashboard metrics, Leaderboard modal presentation/dismissal, iPad 10.2" landscape/portrait ergonomic rotation, full study material authoring/import/deletion, modal validation alerts, multi-subject question isolation, and in-place question editing (12/12 tests passed on iPad 9th generation simulator).
 
-Hardware qualification: While the software protocol and conditional compilation are 100% verified via automated tests, physical tactile vibration requires a physical iPhone device equipped with a Taptic Engine.
+Hardware qualification: While the software protocol and conditional compilation are 100% verified via automated tests, physical tactile vibration requires a physical iPhone device equipped with a Taptic Engine. The application has also been code-signed and deployed directly to a physical iPad 9th generation (`iPad12,1`, iPadOS 27.0.1).
 
-Accessibility and Ergonomics (Sprint 8): Evaluated and verified with formal mathematical WCAG 2.1 AA contrast calculations (7.87:1 on correct feedback and passing badges, 6.57:1 on incorrect feedback and failing badges), comprehensive VoiceOver accessibility labels/hints/traits, and 640 pt centered container layout for iPadOS regular size classes.
+Accessibility and Ergonomics (Sprint 8–10): Evaluated and verified with formal mathematical WCAG 2.1 AA contrast calculations (7.87:1 on correct feedback and passing badges, 6.57:1 on incorrect feedback and failing badges), comprehensive VoiceOver accessibility labels/hints/traits, and 640 pt centered container layout for iPadOS regular size classes.
 
-See the [Sprint 8 technical report](docs/sprint8_ipad_ergonomics_and_accessibility_report.md) for architectural details, contrast ratios, and layout specifications.
+See the [Sprint 10 final academic release report](docs/sprint10_final_academic_release_report.md) and [Test & Coverage Report v1.0.0](docs/test_and_coverage_report_v1.0.0.md) for architectural details, coverage tables, and verification evidence.
 
-## Remaining roadmap
+## Release roadmap
 
 | Milestone | Planned work |
 | --- | --- |
@@ -97,7 +97,7 @@ See the [Sprint 8 technical report](docs/sprint8_ipad_ergonomics_and_accessibili
 | **0.4.2** | Monotonic hardware clock anti-cheat, background/resume UI test, exact coverage reconciliation *(Completed)* |
 | **0.5.0** | Multisensory feedback: visual cues, touch debouncing, and decoupled haptics *(Completed)* |
 | **0.5.1** | Retained haptic generator lifecycle persistence, exact coverage reconciliation (91.45%), documentation alignment *(Completed)* |
-| **0.6.0** | Results analytics, scorecard dashboard, German academic grading scale (1.0–5.0), continuous monotonic timing, category performance breakdown *(Completed)* |
+| **0.6.0** | Results analytics, scorecard dashboard, academic grading scale (1.0–5.0, Produktskala), continuous monotonic timing, category performance breakdown *(Completed)* |
 | **0.6.1** | Sprint 6 maintenance patch: unified grade badge, active response speed decoupling, decoder invariants, and UI dashboard assertions *(Completed)* |
 | **0.7.0** | Local persistence layer (`UserDefaultsScoreStore`), game history logging, high score ranking, and accessible Leaderboard modal view *(Completed)* |
 | **0.7.1** | Sprint 7 maintenance patch: personal best retention protection, centralized 4-tier tie breaking *(Completed)* |
@@ -105,9 +105,9 @@ See the [Sprint 8 technical report](docs/sprint8_ipad_ergonomics_and_accessibili
 | **0.8.1** | Solid high-contrast grade badges, TimerBar trait, contrast formulas *(Completed)* |
 | **0.8.2** | Dark Mode contrast fix, adaptive color tokens, 640pt landscape UI gameplay verification *(Completed)* |
 | **0.8.3** | Category breakdown contrast hardening, adaptive progress pills, and VoiceOver protocol alignment *(Completed)* |
-| **0.8.4** | Adaptive metric icons, full native iPad UI evidence verification, and accessibility audit polish *(Current)* |
-| 0.9.0 | Verification and CI hardening |
-| 1.0.0 | Final app release and completed academic deliverables |
+| **0.8.4** | Adaptive metric icons, full native iPad UI evidence verification, and accessibility audit polish *(Completed)* |
+| **0.9.0** | Dynamic study material management, in-app authoring, transactional JSON/URL import, and emergency backup *(Completed)* |
+| **1.0.0** | Final academic release gate: 152 unit/integration tests, 12 E2E UI tests, >90% line coverage, iPad 9 validation alerts & keyboard toolbar, and user manual *(Completed / Current)* |
 
 The roadmap is a plan. Future milestones are not completion evidence. See [versioning](docs/versioning.md) and the [Sprint 2 incident report](docs/sprint2_incident_and_bugfix_report.md).
 

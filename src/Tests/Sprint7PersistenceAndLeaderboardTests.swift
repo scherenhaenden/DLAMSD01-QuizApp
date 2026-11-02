@@ -141,11 +141,23 @@ final class Sprint7PersistenceAndLeaderboardTests: XCTestCase {
         )
         
         // Write corrupted arbitrary bytes into the key
-        testUserDefaults.set("Corrupted JSON Payload {invalid".data(using: .utf8), forKey: testStorageKey)
+        let corruptRaw = "Corrupted JSON Payload {invalid".data(using: .utf8)!
+        testUserDefaults.set(corruptRaw, forKey: testStorageKey)
         
         let loaded = store.loadRecords()
         XCTAssertTrue(loaded.isEmpty, "Corrupted storage must recover safely with empty array")
-        XCTAssertNil(testUserDefaults.data(forKey: testStorageKey), "Corrupted payload must be discarded")
+        XCTAssertNil(testUserDefaults.data(forKey: testStorageKey), "Corrupted payload must be discarded from active key")
+        XCTAssertEqual(store.loadCorruptedBackupData(), corruptRaw, "Corrupted payload must be preserved in backup key")
+        
+        // Repeated load should remain empty and preserve backup
+        let reloaded = store.loadRecords()
+        XCTAssertTrue(reloaded.isEmpty)
+        XCTAssertEqual(store.loadCorruptedBackupData(), corruptRaw)
+        
+        // Subsequent save should write to active key without destroying backup
+        try? store.save(record: ScoreRecord(score: 100, totalQuestions: 10, correctAnswers: 10))
+        XCTAssertEqual(store.loadRecords().count, 1)
+        XCTAssertEqual(store.loadCorruptedBackupData(), corruptRaw)
     }
     
     // MARK: - 6. Clear All Records

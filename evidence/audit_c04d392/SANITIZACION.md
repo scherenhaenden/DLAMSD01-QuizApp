@@ -1,5 +1,7 @@
-# Evidencia saneada — auditoría c04d392
+# Bereinigung der Prüfnachweise
 
-Estos archivos son derivados de los originales conservados en el archivo privado del proyecto universitario. Los resultados, fechas y advertencias se mantienen. Se sustituyeron los nombres de usuario en rutas y los identificadores del Mac y del simulador por `XXXXXXXX` para evitar exponer datos locales. Las cifras pertenecen a la ejecución histórica y no a una ejecución nueva.
+Die Dateien sind bereinigte Kopien der ursprünglichen Prüfnachweise. Die Originale bleiben im privaten Studienarchiv erhalten. Benutzernamen in lokalen Pfaden und Gerätekennungen wurden durch `XXXXXXXX` ersetzt; Testergebnisse, Zeitpunkte und Warnungen wurden beibehalten.
 
-El paquete incluye los dos logs y los resúmenes exportados de cobertura y pruebas. El archivo xcresult original contiene datos binarios adicionales y su saneamiento completo sigue pendiente de verificación; por esa razón no está incluido en esta copia.
+Das archivierte `.xcresult` wurde aus dem ursprünglichen Ergebnis erstellt. Die Systemdiagnosedaten wurden aus der Kopie entfernt, da sie lokale Daten in binären Systemprotokollen enthalten. Die Testergebnisse, Testaktivitäten und 19 Bildschirmaufnahmen bleiben erhalten. Xcode konnte die Zusammenfassung, die Liste aller 12 Tests sowie die Details und Aktivitäten jedes Tests lesen; alle 19 Aufnahmen ließen sich exportieren. Die Liste der Tests stimmt nach Bereinigung der Gerätekennung mit dem Original überein. Der vollständige, unveränderte Ergebnisordner bleibt privat archiviert.
+
+Die SHA-256-Liste bezieht sich auf die hier veröffentlichten, bereinigten Dateien. Sie ist kein Hashnachweis für die unveränderten Originaldateien.

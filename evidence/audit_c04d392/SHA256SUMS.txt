@@ -1,6 +1,6 @@
 15a4cc8cd0b72282e1829281c4dfa8e5801539cf04b12028302bb7ee170d9df7  ./README.md
-29c8d98c32f70195dc925bf8ae86d6496fdb061712034401a3e16a041a3555b0  ./SANITIZACION.md
-4f5278c1a22f00a08eea35c4dd276109e533e586d29c50b976694eb5c11a716c  ./docs/evidence/final_audit_2026-10-30/EVIDENCE_MANIFEST.md
+6cbc6f0fc453085fc0278a7ea8ad94d7f13c859f5ee80dde3b4c6db0c3239eac  ./SANITIZACION.md
+8f532e87f3649780b8467f62d9bda490cd54e18620a04f565275ab75070204c6  ./docs/evidence/final_audit_2026-10-30/EVIDENCE_MANIFEST.md
 cc00ae710a1c120dac488eebbec6ddd85cd27a77cc1995975a2f1a82da2ecee6  ./docs/evidence/final_audit_2026-10-30/UITests_12_iPad9_Sim.xcresult.tar.gz
 4461cbc86423d9254d8a2b0d00493444d18e2f368da9e9d31f81c69944729510  ./docs/evidence/final_audit_2026-10-30/experiment_no_keyboard_toolbar.log
 2ec43c78e998e9db2d475cd290ae773517ccd5952d932a5bd3f9ffaad7b6d9da  ./docs/evidence/final_audit_2026-10-30/llvm_cov_export_summary.json

@@ -1,5 +1,5 @@
-# Prüfnachweise vom 30.10.2026
+# Test evidence from October 30, 2026
 
-Die Dateien in diesem Verzeichnis stammen aus dem archivierten Testlauf. Die Xcode-Tests ergaben 12 bestandene Tests, keine Fehler und keine Auslassungen. Die SwiftPM-Ausführung ergab 152 bestandene Tests. Die Coverage-Dateien dokumentieren den zugehörigen Export. Der Kontrolllauf ohne Tastaturleisten ist gesondert protokolliert.
+The files in this directory derive from the archived test run. The Xcode run recorded 12 passed tests, no failures and no skipped tests. The SwiftPM run recorded 152 passed tests. The coverage files document the corresponding export. The control run without keyboard toolbars is recorded separately.
 
-Das `.xcresult` ist eine bereinigte Kopie des ursprünglichen Bundles. Die Systemdiagnosedaten wurden entfernt; die Testergebnisse, Aktivitäten und Bildschirmaufnahmen sind enthalten. Lokale Benutzernamen und Gerätekennungen wurden ersetzt. Die Originale liegen weiterhin im privaten Studienarchiv. Einzelheiten und Prüfsummen stehen im übergeordneten Nachweispaket.
+The `.xcresult` is a sanitized copy of the original bundle. System diagnostics were removed; test results, activities and screenshots remain. Local usernames and device identifiers were replaced. The originals remain in the private university archive. Details and checksums are in the parent evidence package.

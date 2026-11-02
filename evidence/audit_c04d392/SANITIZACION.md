@@ -1,7 +1,7 @@
-# Bereinigung der Prüfnachweise
+# Evidence sanitization
 
-Die Dateien sind bereinigte Kopien der ursprünglichen Prüfnachweise. Die Originale bleiben im privaten Studienarchiv erhalten. Benutzernamen in lokalen Pfaden und Gerätekennungen wurden durch `XXXXXXXX` ersetzt; Testergebnisse, Zeitpunkte und Warnungen wurden beibehalten.
+These files are sanitized copies of the original test evidence, which remains in the private university archive. Local usernames in paths and device identifiers were replaced with `XXXXXXXX`. Test results, dates and warnings were preserved.
 
-Das archivierte `.xcresult` wurde aus dem ursprünglichen Ergebnis erstellt. Die Systemdiagnosedaten wurden aus der Kopie entfernt, da sie lokale Daten in binären Systemprotokollen enthalten. Die Testergebnisse, Testaktivitäten und 19 Bildschirmaufnahmen bleiben erhalten. Xcode konnte die Zusammenfassung, die Liste aller 12 Tests sowie die Details und Aktivitäten jedes Tests lesen; alle 19 Aufnahmen ließen sich exportieren. Die Liste der Tests stimmt nach Bereinigung der Gerätekennung mit dem Original überein. Der vollständige, unveränderte Ergebnisordner bleibt privat archiviert.
+The archived `.xcresult` is derived from the original result bundle. System diagnostics were removed from this copy because their binary logs contain local data. Test results, test activities and all 19 screenshots remain. Xcode successfully read the summary, the list of all 12 tests, and the details and activities of each test; all 19 screenshots were exported. The test list matches the original after replacing the device identifier. The complete, unmodified result bundle remains in the private archive.
 
-Die SHA-256-Liste bezieht sich auf die hier veröffentlichten, bereinigten Dateien. Sie ist kein Hashnachweis für die unveränderten Originaldateien.
+The SHA-256 manifest covers these sanitized files; it does not record the hashes of the unmodified originals.

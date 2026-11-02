@@ -24,9 +24,9 @@ All 10 disciplined development sprints are successfully completed and verified:
 |---|---|---|---|
 | **Marketing Version** | `0.9.0` | **`1.0.0`** | Formal release candidate for examination evaluation. |
 | **Monotonic Build Number** | `20261024.150000` | **`20261025.100000`** | Exact timestamped correlation to Git release tag. |
-| **Package Test Suite** | 128 tests (100%) | **152 tests (100% success)** in 0.83s | Added `Sprint10FinalReleaseTests.swift` and `Sprint10CoverageBoostTests.swift` (24 new test suites). |
+| **Package Test Suite** | 128 tests (100%) | **152 tests (100% success)** in 0.96s | Added `Sprint10FinalReleaseTests.swift` and `Sprint10CoverageBoostTests.swift` (24 new test suites). |
 | **Native UI Acceptance** | 9 tests | **12 deterministic E2E tests (100% passing)** | Added validation alert E2E tests, multi-subject isolation, and in-place question editing on iPad 9. |
-| **Manager Coverage** | 43.55% lines | **Elevated to 81.33% lines, 81.99% functions, 81.23% regions** | `QuizViewModel` reached 95.08% lines; `LocalQuestionService` reached 96.17%. |
+| **Manager Coverage** | 43.55% lines | **Elevated to 81.27% lines, 81.99% functions, 81.23% regions** | `QuizViewModel` reached 95.08% lines; `LocalQuestionService` reached 96.17%. |
 | **iPad 9 Keyboard & Alerts** | Bottom inline error only | **Modal `.alert`, top error banner & keyboard "Done" toolbar** | Resolved off-screen validation feedback when software keyboard is active on iPad 9. |
 | **Corruption Alert** | Service-only verified | **UI warning banner verified** | Confirmed visible diagnostic banner when emergency backup triggers. |
 | **Documentation & Assets** | 16 screenshots | **Full 20-screenshot operational suite + Word DOCX manual** | Complete visual and operative guide for autonomous testing. |
@@ -57,7 +57,7 @@ Services/ScoreStoreProtocol.swift                      7                 0   100
 ViewModels/QuizViewModel.swift                       144                22    84.72%          54                 6    88.89%         386                19    95.08%
 ViewModels/LeaderboardViewModel.swift                 34                 1    97.06%          18                 0   100.00%          73                 2    97.26%
 Views/Screens/LeaderboardView.swift                   73                10    86.30%          46                 8    82.61%         704                26    96.31%
-Views/Screens/StudyMaterialManagerView.swift         325                61    81.23%         211                38    81.99%        3160               590    81.33%
+Views/Screens/StudyMaterialManagerView.swift         325                61    81.23%         211                38    81.99%        3166               593    81.27%
 Views/Screens/HomeView.swift                          50                 9    82.00%          40                 8    80.00%         556                27    95.14%
 Views/Screens/ResultView.swift                        38                 0   100.00%          21                 0   100.00%         695                 0   100.00%
 Views/Screens/QuizView.swift                          56                 7    87.50%          26                 4    84.62%         566                22    96.11%
@@ -67,14 +67,14 @@ Views/Components/QuestionCard.swift                   20                 2    90
 Views/Components/CategoryCard.swift                   50                 6    88.00%          20                 2    90.00%         239                 9    96.23%
 Views/Components/AnswerButton.swift                   69                 5    92.75%          18                 1    94.44%         250                 6    97.60%
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-TOTAL                                               1588               175    88.98%         721                79    89.04%        8685               794    90.86%
+TOTAL                                               1578               172    89.10%         717                78    89.12%        8655               793    90.84%
 ```
 
-- **Line Coverage:** **90.86%** (7,891 / 8,685 lines)
-- **Function Coverage:** **89.04%** (642 / 721 functions)
-- **Region / Statement Coverage:** **88.98%** (1,413 / 1,588 regions)
-- **Branch Coverage:** In Swift, Apple Clang does not emit separate AST branch decision tables without explicit compiler branch instrumentation (reported as `0/0` branches in `llvm-cov`). Instead, `swiftc` evaluates all control-flow branching points (conditional jumps, guard statements, switch branches, ternary evaluations, catch blocks) directly as **Execution Regions (89.48%)**.
-- **Every Single Production File:** Exceeds the **80.0% threshold** across all measurable dimensions (Lines, Functions, Regions).
+- **Line Coverage:** **90.84%** (7,862 / 8,655 lines)
+- **Function Coverage:** **89.12%** (639 / 717 functions)
+- **Region / Statement Coverage:** **89.10%** (1,406 / 1,578 regions)
+- **Branch vs. Region Coverage Boundary:** In standard SwiftPM coverage profiling, `llvm-cov` outputs `0/0` for `Branches` and tracks **Execution Regions (89.10%)**. An execution region measures whether an AST block or sub-expression (such as an `if`, `else`, `guard`, `switch`, or `catch` body) was entered at least once; it does not equate to combinatorial branch or full path coverage. Critical domain branches are therefore explicitly covered via dedicated positive and negative unit tests.
+- **Internal Project Quality Goal:** Every single production file (`26/26`) exceeds the self-imposed **80.0% internal project target** across all three dimensions measured by `llvm-cov` (Lines, Functions, Regions).
 
 ---
 

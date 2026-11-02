@@ -17,3 +17,6 @@ project.xcworkspace/xcuserdata/
 .vscode/
 *.swp
 *~
+docs/evidence/**/*.xcresult/
+
+docs/evidence/**/*.xcresult.tar.gz

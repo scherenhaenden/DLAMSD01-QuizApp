@@ -417,6 +417,7 @@ public struct StudyMaterialManagerView: View {
                                 }
                                 .buttonStyle(.borderless)
                                 .accessibilityLabel("Edit Question")
+                                .accessibilityIdentifier("studyMaterial.editQuestionButton")
                                 
                                 Button(role: .destructive) {
                                     deleteQuestion(question)

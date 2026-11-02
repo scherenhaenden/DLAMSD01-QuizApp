@@ -37,17 +37,17 @@
 
 ## 1. Management Summary
 
-Der vorliegende Prüfbericht dokumentiert die Qualitätssicherung und die empirischen Testergebnisse der mobilen Anwendung **Train-your-Brain (v1.0.0)**. Ziel der Teststrategie war es, eine lückenlose Verifikation aller funktionalen und nicht-funktionalen Anforderungen gemäß den User Stories US-01 bis US-16 sicherzustellen und eine strenge akademische Code-Qualitätsgrenze von **über 80 % Testabdeckung** in den maßgeblichen softwaretechnischen Dimensionen zu erreichen.
+Der vorliegende Prüfbericht dokumentiert die Qualitätssicherung und die empirischen Testergebnisse der mobilen Anwendung **Train-your-Brain (v1.0.0)**. Ziel der Teststrategie war es, eine systematische Verifikation der funktionalen und nicht-funktionalen Anforderungen gemäß den User Stories US-01 bis US-16 durchzuführen und das selbstgesetzte **interne Projektqualitätsziel von mindestens 80 % Testabdeckung** in den vom Swift-Toolchain-Profiler (`llvm-cov`) gemessenen Dimensionen zu erreichen.
 
 ### Wichtigste Ergebnisse auf einen Blick:
-- **152 von 152 Unit- und Integrationstests bestanden (100 % Erfolgsquote, 0 Fehler).**
-- **Alle messbaren Coverage-Dimensionen liegen über dem geforderten 80 %-Schwellenwert:**
-  - **Lines of Code (Zeilenabdeckung):** **90,86 %** (7.891 / 8.685 Zeilen)
-  - **Functions (Methodenabdeckung):** **89,04 %** (642 / 721 Funktionen)
-  - **Statements / Execution Regions:** **88,98 %** (1.413 / 1.588 Regionen)
-- **100 % aller 26 Quellcode-Dateien erfüllen oder übertreffen einzeln den Schwellenwert von >= 80 % in allen 3 Metriken.**
-- **Vollständige E2E-Abdeckung:** 12 native XCUITest-Szenarien decken die gesamte User Journey vom Schnellstart über Quizläufe bis hin zur vollständigen Studienmaterialverwaltung (Validierungs-Alerts, Multi-Subject-Isolation, In-Place-Editierung) auf iPhone 17 und iPad 9 ab.
-- **Hardware-Bereitstellung auf echtem iPad:** Das Entwicklerzertifikat wurde für das physische Gerät physical iPad (9th generation) (iPad 9. Gen) signiert, das App-Bundle direkt via `devicectl` installiert und der im Hardwaretest beobachtete Validierungs-/Tastaturbefund vollständig behoben.
+- **152 von 152 Unit- und Integrationstests bestanden (100 % Erfolgsquote, 0 Fehler, SwiftPM auf macOS arm64).**
+- **Alle von `llvm-cov` instrumentierten Coverage-Dimensionen erreichen das interne Projektziel ($\ge 80\%$):**
+  - **Lines of Code (Zeilenabdeckung):** **90,84 %** (7.862 / 8.655 Zeilen)
+  - **Functions (Methodenabdeckung):** **89,12 %** (639 / 717 Funktionen)
+  - **Execution Regions (Ausführungsregionen):** **89,10 %** (1.406 / 1.578 Regionen)
+- **Alle 26 Produktionsdateien (`src/`) erreichen einzeln $\ge 80,0\%$ in Zeilen, Funktionen und Regionen.**
+- **12 native E2E-UI-Tests (`XCUITest`):** Alle 12 Testmethoden in `ui-tests/TrainYourBrainUITests.swift` laufen deterministisch auf dem **iPad (9th generation) Simulator** durch; die 9 Kern-Flows wurden zusätzlich auf dem **iPhone 17 Simulator** verifiziert.
+- **Hardware-Bereitstellung & bestätigter physischer Nachtest (02.11.2026):** Das aktualisierte App-Bundle (`v1.0.0`, Build `20261025.100000`) wurde am 02.11.2026 auf einem physischen iPad (9. Generation, `iPad12,1`, iPadOS 27.0.1 Build `24A446`) installiert und anhand eines unabhängigen Testplans erfolgreich geprüft: Das Speichern eigener Fragen funktionierte einwandfrei; ein ergänzender UX-Hinweis zur Übersichtlichkeit der Fragen- und Fächeraufteilung wurde als Verbesserungspotenzial für eine Folgeversion (`v1.1`) aufgenommen.
 
 ---
 
@@ -74,25 +74,25 @@ Die Testarchitektur folgt der klassischen Software-Testpyramide nach Mike Cohn, 
 
 ### 3.1 Globale Metriken und Schwellenwerte
 
-Die Erhebung erfolgte mittels instrumentiertem Profiling über `swift test --enable-code-coverage` und den offiziellen LLVM-Coverage-Export (`TrainYourBrain.json`):
+Die Erhebung erfolgte mittels instrumentiertem Profiling über `swift test --enable-code-coverage` und den offiziellen LLVM-Coverage-Export (`docs/evidence/final_audit_2026-10-30/llvm_cov_report.txt` & `llvm_cov_export_summary.json`):
 
-| Test-Metrik | Was wird gemessen? | Erreicht (App-Code) | Schwellenwert | Status |
+| Test-Metrik | Was wird gemessen? | Erreicht (App-Code) | Internes Projektziel | Status |
 | :--- | :--- | :---: | :---: | :---: |
-| **Lines (Zeilen)** | Prozentualer Anteil aller ausgeführten Codezeilen. | **90,86 %** (7.891 / 8.685) | > 80,0 % | ✅ **Erfüllt** |
-| **Functions (Funktionen)** | Prozentualer Anteil aller aufgerufenen Methoden/Closures. | **89,04 %** (642 / 721) | > 80,0 % | ✅ **Erfüllt** |
-| **Statements / Regions** | Ausgeführte semantische Ausdrücke und Code-Blöcke. | **88,98 %** (1.413 / 1.588) | > 80,0 % | ✅ **Erfüllt** |
-| **Branches (Zweige)** | Ausgeführte Pfade in Kontrollstrukturen (`if`/`else`). | *0 / 0 (Nicht vom Swift-Compiler instrumentiert)* | N/A | ℹ️ **Durch Regions erfasst** |
+| **Lines (Zeilen)** | Prozentualer Anteil aller ausgeführten Codezeilen. | **90,84 %** (7.862 / 8.655) | $\ge 80,0\%$ | ✅ **Erfüllt** |
+| **Functions (Funktionen)** | Prozentualer Anteil aller aufgerufenen Methoden/Closures. | **89,12 %** (639 / 717) | $\ge 80,0\%$ | ✅ **Erfüllt** |
+| **Execution Regions** | Ausgeführte AST-Code-Regionen und Teilausdrücke. | **89,10 %** (1.406 / 1.578) | $\ge 80,0\%$ | ✅ **Erfüllt** |
+| **Branches (Zweige)** | Wahrheitswert-Verzweigungen (`true`/`false` je Bedingung). | *0 / 0 (In SwiftPM-Standardprofil nicht ausgewiesen)* | N/A | ℹ️ **Nicht instrumentiert** |
 
 *(Unter Einbeziehung des Test-Codes selbst liegt die Gesamtabdeckung bei 92,6 % Zeilen, 91,4 % Funktionen und 89,8 % Regionen).*
 
-### 3.2 Compilertechnische Erklärung zur Branch-Abdeckung in Swift
+### 3.2 Compilertechnische Abgrenzung: Execution Regions vs. Branch-Coverage in Swift
 
-In standardisierten Softwarequalitätsmodellen werden häufig vier Metriken genannt: *Statements, Branches, Functions, Lines*. 
+In der Literatur zur Softwarequalitätssicherung werden häufig *Line-, Function-, Region/Statement-* und *Branch-/Path-Coverage* unterschieden.
 
-> **Wichtiger Hinweis zum LLVM-Export (`branches: 0/0`):**  
-> Der Swift-Frontend-Compiler (`swiftc` / Apple Clang) generiert für Swift-Quellcode prinzipbedingt **keine Branch-Coverage-Tabellen** im LLVM-Profil. In der LLVM-Coverage-Architektur von Swift werden Kontrollstrukturen (`if`, `guard`, `switch`, ternäre Operatoren und `catch`-Blöcke) stattdessen über **Execution Regions** (Ausführungsregionen) instrumentiert und gemessen.  
+> **Methodische Einordnung zum LLVM-Export (`branches: 0/0`):**  
+> Beim Ausführen von `swift test --enable-code-coverage` erzeugt der Swift-Compiler (`swiftc` / Apple Clang) Zähler für **Lines**, **Functions** und **Execution Regions**, gibt jedoch in der Standardkonfiguration `branches: 0/0` aus.  
 > 
-> Jede Region repräsentiert einen deterministischen Ausführungszweig. Die in diesem Bericht auditierte **Regionen- und Statement-Abdeckung von 89,48 %** deckt somit genau die logische Verzweigungsdichte der Anwendung ab und garantiert eine vollständige Verifikation aller Entscheidungspfade.
+> **Wichtige Abgrenzung:** Eine *Execution Region* markiert einen zusammenhängenden Code-Abschnitt oder Teilausdruck im abstrakten Syntaxbaum (AST), etwa den Rumpf eines `if`-, `else`-, `guard`-, `switch`- oder `catch`-Blocks. Eine Regionenabdeckung von **89,10 %** belegt, welcher Anteil dieser Code-Blöcke mindestens einmal betreten wurde. Sie ist jedoch **nicht gleichbedeutend mit einer vollständigen Branch- oder Pfadabdeckung** (d. h. sie beweist nicht automatisch, dass jede einzelne boolesche Teilbedingung sowohl zu `true` als auch zu `false` ausgewertet oder jede kombinatorische Pfadfolge durchlaufen wurde). Kritische fachliche Verzweigungen wurden deshalb gezielt über dedizierte Positiv- und Negativ-Unit-Tests geprüft.
 
 ---
 
@@ -126,9 +126,9 @@ Alle 26 Quelldateien der Kernanwendung im Überblick – **jede einzelne Datei l
 | `QuizViewModel.swift` | ViewModel / Core State | **95,08 %** (367/386) | **88,89 %** (48/54) | **84,72 %** (122/144) | ✅ Stark |
 | `ScoreRecord.swift` | Model / Value Object | **92,44 %** (208/225) | **93,10 %** (27/29) | **93,48 %** (86/92) | ✅ Stark |
 | `TimerBar.swift` | View / Component | **81,03 %** (94/116) | **81,82 %** (9/11) | **90,91 %** (20/22) | ✅ Stark |
-| `StudyMaterialManagerView.swift` | View / Editor | **81,33 %** (2.570/3.160) | **81,99 %** (173/211) | **81,23 %** (264/325) | ✅ Stark |
+| `StudyMaterialManagerView.swift` | View / Editor | **81,27 %** (2.573/3.166) | **81,99 %** (173/211) | **81,23 %** (264/325) | ✅ Stark |
 | `CategoryRegistry.swift` | Model / Registry | **80,00 %** (48/60) | **84,62 %** (11/13) | **80,95 %** (17/21) | ✅ Stark |
-| **GESAMT (Anwendungscode)** | **26 Produktionsdateien** | **90,86 %** (7.891/8.685) | **89,04 %** (642/721) | **88,98 %** (1.413/1.588) | 🏆 **100 % ALLER DATEIEN >= 80 %** |
+| **GESAMT (`llvm-cov report`)** | **26 Produktionsdateien** | **90,84 %** (7.862/8.655) | **89,12 %** (639/717) | **89,10 %** (1.406/1.578) | 🏆 **100 % ALLER DATEIEN >= 80 %** |
 
 ---
 
@@ -169,22 +169,22 @@ Die Integrationstests validieren das Zusammenspiel mehrerer Schichten und extern
 
 ## 6. Stufe 3: End-to-End & UI-Automatisierungstests (XCUITest)
 
-Die native XCUITest-Suite prüft die lauffähige Applikation direkt auf den Zielbetriebssystemen:
+Die native XCUITest-Suite in `ui-tests/TrainYourBrainUITests.swift` umfasst exakt **12 Testmethoden** und prüft die lauffähige Applikation im Simulator:
 
-| Test-Szenario (XCUITest) | Geprüfter User-Flow | Gerät / Plattform | Ergebnis |
+| Exakter Methodenname (`TrainYourBrainUITests.swift`) | Geprüfter User-Flow & Pflicht-Assertions | Verifizierte Umgebung | Ergebnis |
 | :--- | :--- | :---: | :---: |
-| `testLaunchAndQuickPlayRound` | App-Start -> Klick auf Gesamtkatalog -> 1. Frage beantworten -> Next -> Ergebnisansicht | iPhone 17 & iPad 9 | ✅ PASS |
-| `testCategoryFilteringFlow` | Auswahl "Swift & Apple Platform" -> Quizrunde nur mit Swift-Fragen -> Validierung Chip-Header | iPhone 17 & iPad 9 | ✅ PASS |
-| `testTimerCountdownAndTimeout` | Warten auf 15s Timer-Ablauf -> Verifikation rotes Timeout-Banner -> Richtige Antwort rot markiert | iPhone 17 & iPad 9 | ✅ PASS |
-| `testLeaderboardNavigation` | Home -> Trophäen-Button -> Wechsel zwischen "Top 10" und "Historie" -> Filter nach Fach | iPhone 17 & iPad 9 | ✅ PASS |
-| `testStudyMaterialCreation` | Home -> Material -> Fach anlegen ("Cloud Computing") -> Frage anlegen -> Speichern | iPhone 17 & iPad 9 | ✅ PASS |
-| `testImportCatalogJSON` | Material -> Tab "Import" -> URL eingeben -> Import ausführen -> Bestätigungs-Toast prüfen | iPhone 17 & iPad 9 | ✅ PASS |
-| `testAppearanceToggle` | Menü Erscheinungsbild -> Umschalten Hell / Dunkel -> Farbkontraste aktiv | iPhone 17 & iPad 9 | ✅ PASS |
-| `testiPadErgonomicsConstraint` | iPad Quer- und Hochformat -> Überprüfung des 640pt-Containers (keine überdehnten Buttons) | iPad 9. Gen | ✅ PASS |
-| `testVoiceOverLabelAudit` | Automatisierte Traversierung aller UI-Elemente auf `accessibilityLabel` und Mindestgröße 44pt | iPhone 17 & iPad 9 | ✅ PASS |
-| `testQuestionSaveValidationAndErrorAlerts` | Prüft 3 modale Validierungs-Alerts (leerer Fragetext, fehlende Optionen, Duplikat-Optionen), Korrektur, Speichern und Löschen | iPad 9. Gen | ✅ PASS |
-| `testMultipleCustomSubjectsQuestionIsolation` | Erstellt 2 eigene Fächer („Algebra“, „Geometry“), legt Fragen an und prüft die strikte Isolation über den Fach-Filterpicker | iPad 9. Gen | ✅ PASS |
-| `testEditCustomQuestionContentAndDifficulty` | Öffnet bestehende eigene Frage über Stift-Button, editiert Fragetext & Schwierigkeit, speichert und prüft Listen-Update | iPad 9. Gen | ✅ PASS |
+| `testCategoryRoundShowsFeedbackResultsAndCanReplay` | Auswahl Fach „Software Engineering“ $\to$ 6 Fragen beantworten $\to$ Scorecard-Metriken (`result.gradeValue`, `result.scoreValue`, `result.accuracyValue`, `result.speedValue`, `result.categoryBreakdownSection`) $\to$ „Play Again“ | iPad 9 Sim & iPhone 17 Sim | ✅ PASS |
+| `testMixedRoundStartsAndReturnsToTopics` | Start „All Topics (Mixed)“ $\to$ 24 Fragen durchspielen $\to$ Ergebnisansicht $\to$ „Change Topic“ zurück zu `HomeView` | iPad 9 Sim & iPhone 17 Sim | ✅ PASS |
+| `testIncorrectAnswerMarksTheCorrectOption` | Start Fachrunde $\to$ Antwort wählen $\to$ Prüfung auf Feedback-Erklärung (`quiz.explanation`) und Weiter-Button (`quiz.nextButton`) | iPad 9 Sim & iPhone 17 Sim | ✅ PASS |
+| `testAccessibilityDynamicTypeKeepsCategoryStartAvailable` | App-Start mit `-UIPreferredContentSizeCategoryName UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge` (XXXL) $\to$ Startbarkeit der Fachrunde | iPad 9 Sim & iPhone 17 Sim | ✅ PASS |
+| `testLiveCountdownReachesTimeoutAndEnablesAdvance` | Warten auf realen Countdown-Ablauf (25 s Timeout-Fenster) $\to$ Prüfung auf `Time's Up!` Banner und Aktivierung von `quiz.nextButton` | iPad 9 Sim & iPhone 17 Sim | ✅ PASS |
+| `testBackgroundAndForegroundResumeDeductsTimeAndPreservesGameplay` | Spielstart $\to$ `XCUIDevice.shared.press(.home)` (Hintergrund) $\to$ `app.activate()` $\to$ Abzug verstrichener Zeit (`systemUptime`) und Fortsetzung der Runde | iPad 9 Sim & iPhone 17 Sim | ✅ PASS |
+| `testLeaderboardAndHistoryOpensAndDismisses` | Öffnen von `home.scoresButton` $\to$ Wechsel zwischen „High Scores“ und „Recent Games“ (`leaderboard.modePicker`) $\to$ Schließen per `leaderboard.doneButton` | iPad 9 Sim & iPhone 17 Sim | ✅ PASS |
+| `testIPadLandscapeAndPortraitErgonomicAdaptation` | Rotation `.landscapeLeft` $\to$ Prüfung 640pt-Containerbreite (`width <= 680pt`) und Touch-Targets ($\ge 44\text{ pt}$) auf `HomeView`, `QuizView`, `ResultView`, `LeaderboardView` $\to$ `.portrait` | iPad 9 Sim (`iPad12,2`) | ✅ PASS |
+| `testStudyMaterialManagerSheetCanOpenAndClose` | E2E-Durchstich: Fach „Robotics“ anlegen $\to$ umbenennen in „Robotics Lab“ $\to$ Frage „What is ROS?“ anlegen $\to$ Runde spielen $\to$ Frage & Fach löschen (`XCTAssertFalse`) | iPad 9 Sim & iPhone 17 Sim | ✅ PASS |
+| `testQuestionSaveValidationAndErrorAlerts` | Prüft alle 4 modalen Validierungs-Alerts inkl. exakter Fehlertexte (leerer Fragetext, fehlende Optionen, Duplikat-Optionen, leere Erklärung), Korrektur, Speichern und Pflicht-Löschung | iPad 9 Sim (`iPad12,2`) | ✅ PASS |
+| `testMultipleCustomSubjectsQuestionIsolation` | Erstellt 2 eigene Fächer („Algebra“, „Geometry“), legt je eine Frage an und prüft über `studyMaterial.categoryFilterPicker` mit `XCTAssertTrue`/`XCTAssertFalse` die strikte Isolation | iPad 9 Sim (`iPad12,2`) | ✅ PASS |
+| `testEditCustomQuestionContentAndDifficulty` | Erstellt eigene Frage (`Medium`), öffnet Editor (Pflicht-Assertion ohne `if`), ändert Schwierigkeit auf `Hard` und Text auf `(Updated)`, prüft Liste sowie Persistenz nach `app.terminate()` + `app.launch()` | iPad 9 Sim (`iPad12,2`) | ✅ PASS |
 
 ---
 
@@ -247,10 +247,8 @@ Dieses Formular ist für die Durchführung der physischen Hardwaretests auf dem 
 
 ## 8. Fazit und Freigabe-Empfehlung
 
-Die vorliegenden Prüfergebnisse belegen den hohen qualitativen und softwaretechnischen Reifegrad von **Train-your-Brain v1.0.0**:
+Die vorliegenden Prüfergebnisse fassen den verifizierten Stand von **Train-your-Brain v1.0.0** zusammen:
 
-1. **Vollständigkeit:** Alle 16 User Stories (US-01 bis US-16) wurden implementiert und durch 152 automatisierte Unit-/Integrationstests sowie 12 native XCUITest-Szenarien (insgesamt 164 automatisierte Tests) abgesichert.
-2. **Coverage-Ziel übertroffen:** Mit **90,86 % Zeilen**, **89,04 % Funktionen** und **88,98 % Regionen/Statements** (und **100 % aller 26 Quellcode-Dateien einzeln >= 80 %**) werden sämtliche Hochschulvorgaben für wissenschaftliche Softwareentwicklungsprojekte (> 80 %) weit übertroffen.
-3. **Produktionsreife:** Durch defensive Datenhaltung (Sicherheits-Backups bei korruptem Speicher, transaktionales Rollback, unzerstörbare Systemkataloge) ist die Anwendung robust gegen Laufzeitfehler geschützt.
-
-**Empfehlung:** Die Version 1.0.0 wird hiermit uneingeschränkt für die akademische Abnahme und Einreichung des Projektberichts freigegeben.
+1. **Automatisierte Testabdeckung:** Alle 16 User Stories (US-01 bis US-16) sind durch 152 automatisierte Unit-/Integrationstests (SwiftPM) sowie 12 native XCUITest-Szenarien (insgesamt 164 automatisierte Tests) abgedeckt.
+2. **Internes Coverage-Ziel erreicht:** Mit **90,84 % Zeilen**, **89,12 % Funktionen** und **89,10 % Ausführungsregionen** (und **allen 26 Quellcode-Dateien einzeln $\ge 80\%$**) wird das selbstgesetzte interne Projektqualitätsziel ($\ge 80\%$) in allen von `llvm-cov` instrumentierten Dimensionen erreicht.
+3. **Physischer Hardware-Nachtest & Usability-Feedback abgeschlossen (02.11.2026):** Nach dem Deployment des gehärteten Builds auf ein physisches iPad (9. Generation, `iPad12,1`, iPadOS 27.0.1) wurde der Nachtest anhand eines unabhängigen Benutzertestplans durchgeführt. Das Speichern eigener Fragen ist auf dem Endgerät behoben; das qualitative UX-Feedback zur Vereinfachung der Fragen- und Fächeraufteilung wird im Sinne eines sauberen Release-Freezes als Weiterentwicklungspotenzial für eine Folgeversion (`v1.1`) festgehalten. Die detaillierte Schritt-für-Schritt-Prüfung aller Editor-Aktionen ist zusätzlich durch die 12 XCUITest-Szenarien auf dem iPad-9-Simulator abgesichert.
